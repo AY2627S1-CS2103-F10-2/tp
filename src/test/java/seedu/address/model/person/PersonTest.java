@@ -18,6 +18,8 @@ import seedu.address.testutil.PersonBuilder;
 
 public class PersonTest {
 
+    private static final String REMARK = "Likes baseball";
+
     @Test
     public void asObservableList_modifyList_throwsUnsupportedOperationException() {
         Person person = new PersonBuilder().build();
@@ -40,6 +42,10 @@ public class PersonTest {
         // different name, all other attributes same -> returns false
         editedAlice = new PersonBuilder(ALICE).withName(VALID_NAME_BOB).build();
         assertFalse(ALICE.isSamePerson(editedAlice));
+
+        // same name and different remark -> returns true
+        editedAlice = new PersonBuilder(ALICE).withRemark(REMARK).build();
+        assertTrue(ALICE.isSamePerson(editedAlice));
 
         // name differs in case, all other attributes same -> returns false
         Person editedBob = new PersonBuilder(BOB).withName(VALID_NAME_BOB.toLowerCase()).build();
@@ -88,12 +94,23 @@ public class PersonTest {
         // different tags -> returns false
         editedAlice = new PersonBuilder(ALICE).withTags(VALID_TAG_HUSBAND).build();
         assertFalse(ALICE.equals(editedAlice));
+
+        // different remark -> returns false
+        editedAlice = new PersonBuilder(ALICE).withRemark(REMARK).build();
+        assertFalse(ALICE.equals(editedAlice));
+    }
+
+    @Test
+    public void getRemark() {
+        Person person = new PersonBuilder().withRemark(REMARK).build();
+        assertEquals(new Remark(REMARK), person.getRemark());
     }
 
     @Test
     public void toStringMethod() {
         String expected = Person.class.getCanonicalName() + "{name=" + ALICE.getName() + ", phone=" + ALICE.getPhone()
-                + ", email=" + ALICE.getEmail() + ", address=" + ALICE.getAddress() + ", tags=" + ALICE.getTags() + "}";
+                + ", email=" + ALICE.getEmail() + ", address=" + ALICE.getAddress() + ", remark=" + ALICE.getRemark()
+                + ", tags=" + ALICE.getTags() + "}";
         assertEquals(expected, ALICE.toString());
     }
 }
