@@ -90,7 +90,9 @@ public class AddressBookParserTest {
 
     @Test
     public void parseCommand_remark() throws Exception {
-        assertTrue(parser.parseCommand(RemarkCommand.COMMAND_WORD) instanceof RemarkCommand);
+        RemarkCommand command = (RemarkCommand) parser.parseCommand(
+                RemarkCommand.COMMAND_WORD + " 1 r/Likes baseball");
+        assertEquals(new RemarkCommand(INDEX_FIRST_PERSON, "Likes baseball"), command);
     }
 
     @Test
