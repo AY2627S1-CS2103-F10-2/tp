@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
+import seedu.address.model.person.Remark;
 
 public class RemarkCommandTest {
 
@@ -19,7 +20,7 @@ public class RemarkCommandTest {
 
     @Test
     public void execute_throwsCommandExceptionWithArguments() {
-        RemarkCommand remarkCommand = new RemarkCommand(INDEX_FIRST_PERSON, REMARK);
+        RemarkCommand remarkCommand = new RemarkCommand(INDEX_FIRST_PERSON, new Remark(REMARK));
         String expectedMessage = String.format(RemarkCommand.MESSAGE_ARGUMENTS,
                 INDEX_FIRST_PERSON.getOneBased(), REMARK);
 
@@ -28,12 +29,13 @@ public class RemarkCommandTest {
 
     @Test
     public void equals() {
-        RemarkCommand firstRemarkCommand = new RemarkCommand(INDEX_FIRST_PERSON, REMARK);
-        RemarkCommand secondRemarkCommand = new RemarkCommand(INDEX_SECOND_PERSON, REMARK);
+        RemarkCommand firstRemarkCommand = new RemarkCommand(INDEX_FIRST_PERSON, new Remark(REMARK));
+        RemarkCommand secondRemarkCommand = new RemarkCommand(INDEX_SECOND_PERSON, new Remark(REMARK));
 
         assertTrue(firstRemarkCommand.equals(firstRemarkCommand));
-        assertTrue(firstRemarkCommand.equals(new RemarkCommand(INDEX_FIRST_PERSON, REMARK)));
-        assertFalse(firstRemarkCommand.equals(new RemarkCommand(INDEX_FIRST_PERSON, "Likes swimming")));
+        assertTrue(firstRemarkCommand.equals(new RemarkCommand(INDEX_FIRST_PERSON, new Remark(REMARK))));
+        assertFalse(firstRemarkCommand.equals(
+                new RemarkCommand(INDEX_FIRST_PERSON, new Remark("Likes swimming"))));
         assertFalse(firstRemarkCommand.equals(secondRemarkCommand));
         assertFalse(firstRemarkCommand.equals(1));
         assertFalse(firstRemarkCommand.equals(null));

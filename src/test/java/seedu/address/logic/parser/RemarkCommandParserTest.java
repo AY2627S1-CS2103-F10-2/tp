@@ -8,6 +8,7 @@ import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.commands.RemarkCommand;
+import seedu.address.model.person.Remark;
 
 public class RemarkCommandParserTest {
 
@@ -16,12 +17,12 @@ public class RemarkCommandParserTest {
     @Test
     public void parse_validArgs_returnsRemarkCommand() {
         assertParseSuccess(parser, "1 r/Likes baseball",
-                new RemarkCommand(INDEX_FIRST_PERSON, "Likes baseball"));
+                new RemarkCommand(INDEX_FIRST_PERSON, new Remark("Likes baseball")));
     }
 
     @Test
     public void parse_emptyRemark_returnsRemarkCommand() {
-        assertParseSuccess(parser, "1 r/", new RemarkCommand(INDEX_FIRST_PERSON, ""));
+        assertParseSuccess(parser, "1 r/", new RemarkCommand(INDEX_FIRST_PERSON, new Remark("")));
     }
 
     @Test
