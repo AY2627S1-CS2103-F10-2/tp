@@ -58,12 +58,11 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 * Role: Developer
 * Responsibilities: UI
 
+### Simon Christian Luigi Soriano
 
-### Ryan Yong
+<img src="images/luigi-simon.png" width="200px">
 
-<img src="images/ryanyzh.png" width="200px">
+[[github](https://github.com/Luigi-Simon)]
 
-[[github](https://github.com/ryanyzh)]
-
-* Role: Tester
-* Responsibilities: Plans tests, checks features, manages bug reports and regression testing
+* Role: Documentation Lead
+* Responsibilities: Maintaining and coordinating project documentation
