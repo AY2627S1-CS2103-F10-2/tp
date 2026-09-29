@@ -11,10 +11,59 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 
 ## Project team
 
+### Lee Wen Kang
+
+<img src="images/leewenkang-nus.png" width="200px">
+
+[[homepage](https://wenkang.dev/)]
+[[github](https://github.com/LeeWenKang-NUS)]
+
+<!-- [[portfolio](team/johndoe.md)] -->
+
+- Role: Tech Lead
+
+### Jane Doe
+
+<img src="images/johndoe.png" width="200px">
+
+[[github](http://github.com/johndoe)]
+[[portfolio](team/johndoe.md)]
+
+* Role: Team Lead
+* Responsibilities: UI
+
+### Johnny Doe
+
+<img src="images/johndoe.png" width="200px">
+
+[[github](http://github.com/johndoe)] [[portfolio](team/johndoe.md)]
+
+* Role: Developer
+* Responsibilities: Data
+
+### Lu Yao
+
+<img src="images/luyao-111.png" width="200px">
+
+[[github](http://github.com/luyao-111)]
+
+* Role: Integration
+
 ### Bevan Poh
 
 <img src="images/bevanpoh.png" width="200px">
 
 [[github](https://github.com/bevanpoh)]
 
-* Role: Code Quality
+* Role: Developer
+* Responsibilities: UI
+
+
+### Ryan Yong
+
+<img src="images/ryanyzh.png" width="200px">
+
+[[github](https://github.com/ryanyzh)]
+
+* Role: Tester
+* Responsibilities: Plans tests, checks features, manages bug reports and regression testing
