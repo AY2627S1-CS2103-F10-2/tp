@@ -58,3 +58,12 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 
 * Role: Developer
 * Responsibilities: UI
+
+### Simon Christian Luigi Soriano
+
+<img src="images/luigi-simon.png" width="200px">
+
+[[github](https://github.com/Luigi-Simon)]
+
+* Role: Documentation Lead
+* Responsibilities: Maintaining and coordinating project documentation
