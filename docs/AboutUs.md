@@ -11,15 +11,16 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 
 ## Project team
 
-### John Doe
+### Lee Wen Kang
 
-<img src="images/johndoe.png" width="200px">
+<img src="images/leewenkang-nus.png" width="200px">
 
-[[homepage](http://www.comp.nus.edu.sg/~damithch)]
-[[github](https://github.com/johndoe)]
-[[portfolio](team/johndoe.md)]
+[[homepage](https://wenkang.dev/)]
+[[github](https://github.com/LeeWenKang-NUS)]
 
-* Role: Project Advisor
+<!-- [[portfolio](team/johndoe.md)] -->
+
+- Role: Tech Lead
 
 ### Jane Doe
 
@@ -40,15 +41,13 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 * Role: Developer
 * Responsibilities: Data
 
-### Jean Doe
+### Lu Yao
 
-<img src="images/johndoe.png" width="200px">
+<img src="images/luyao-111.png" width="200px">
 
-[[github](http://github.com/johndoe)]
-[[portfolio](team/johndoe.md)]
+[[github](http://github.com/luyao-111)]
 
-* Role: Developer
-* Responsibilities: Dev Ops + Threading
+* Role: Integration
 
 ### Bevan Poh
 
