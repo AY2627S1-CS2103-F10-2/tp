@@ -19,11 +19,11 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 
 * Role: Project Advisor
 
-### Jane Doe
+### Lu Yao
 
-<img src="images/johndoe.png" width="200px">
+<img src="images/luyao-111.png" width="200px">
 
-[[github](http://github.com/johndoe)]
+[[github](http://github.com/luyao-111)]
 [[portfolio](team/johndoe.md)]
 
 * Role: Team Lead
