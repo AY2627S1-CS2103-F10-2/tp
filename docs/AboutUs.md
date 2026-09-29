@@ -22,6 +22,7 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 
 - Role: Tech Lead
 
+
 ### Jane Doe
 
 <img src="images/johndoe.png" width="200px">
@@ -31,6 +32,7 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 
 * Role: Team Lead
 * Responsibilities: UI
+
 
 ### Johnny Doe
 
@@ -49,6 +51,7 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 
 * Role: Integration
 
+
 ### Bevan Poh
 
 <img src="images/bevanpoh.png" width="200px">
@@ -58,6 +61,7 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 * Role: Developer
 * Responsibilities: UI
 
+
 ### Simon Christian Luigi Soriano
 
 <img src="images/luigi-simon.png" width="200px">
@@ -66,3 +70,25 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 
 * Role: Documentation Lead
 * Responsibilities: Maintaining and coordinating project documentation
+
+
+### Aden Koh
+
+<img src="images/aster0.png" width="200px">
+
+[[homepage](https://astero.me)]
+[[github](https://github.com/aster0)]
+
+* Role: Deliverables and Deadlines
+* Responsibility: Ensures project deliverables are done on time and in the right format.
+
+
+### Ryan Yong
+
+<img src="images/ryanyzh.png" width="200px">
+
+[[github](https://github.com/ryanyzh)]
+
+* Role: Tester
+* Responsibilities: Plans tests, checks features, manages bug reports and regression testing
+
