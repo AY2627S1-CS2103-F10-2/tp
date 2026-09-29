@@ -59,3 +59,13 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 
 * Role: Developer
 * Responsibilities: UI
+
+
+### Ryan Yong
+
+<img src="images/ryanyzh.png" width="200px">
+
+[[github](https://github.com/ryanyzh)]
+
+* Role: Tester
+* Responsibilities: Plans tests, checks features, manages bug reports and regression testing
