@@ -11,15 +11,15 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 
 ## Project team
 
-### John Doe
+### Aden Koh
 
-<img src="images/johndoe.png" width="200px">
+<img src="images/aster0.png" width="200px">
 
-[[homepage](http://www.comp.nus.edu.sg/~damithch)]
-[[github](https://github.com/johndoe)]
-[[portfolio](team/johndoe.md)]
+[[homepage](https://astero.me)]
+[[github](https://github.com/aster0)]
 
-* Role: Project Advisor
+* Role: Deliverables and Deadlines
+* Responsibility: Ensures project deliverables are done on time and in the right format.
 
 ### Jane Doe
 
