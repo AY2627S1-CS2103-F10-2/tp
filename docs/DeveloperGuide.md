@@ -297,32 +297,82 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 ### Use cases
 
-(For all use cases below, the **System** is the `AddressBook` and the **Actor** is the `user`, unless specified otherwise)
+#### **Create Student**
 
-**Use case: Delete a person**
+**System:** TAssist  
+**Actor:** Teaching Assistant (TA)  
+**Guarantee:** If creation fails, existing data remains unchanged.  
+**Main Success Scenario (MSS):**
 
-**MSS**
+1. TA requests to create a student, providing the student number, name,
+   email address and, optionally, Telegram username.
+2. TAssist creates the student profile and confirms successful creation.
+3. TAssist displays the updated student list, including the newly created student.
 
-1.  User requests to list persons
-2.  AddressBook shows a list of persons
-3.  User requests to delete a specific person in the list
-4.  AddressBook deletes the person
+Use case ends.  
+**Extensions:**
 
-    Use case ends.
+- **1a. Required details are missing, or the supplied details are invalid.**
+  - 1a1. TAssist informs TA of the error and the expected input.
+  - Use case ends.
 
-**Extensions**
+- **1b. The student number, email address or supplied Telegram username matches an existing student's corresponding detail.**
+  - 1b1. TAssist informs TA of the duplicate detail and rejects the creation request.
+  - Use case ends.
 
-* 2a. The list is empty.
+- **1c. TAssist is unable to save the new student.**
+  - 1c1. TAssist informs TA that the student could not be saved and asks TA to try again.
+  - Use case ends.
 
-  Use case ends.
+#### **Create Class**
 
-* 3a. The given index is invalid.
+**System:** TAssist  
+**Actor:** Teaching Assistant (TA)  
+**Guarantee:** If creation fails, existing data remains unchanged.
 
-    * 3a1. AddressBook shows an error message.
+**Main Success Scenario (MSS):**
 
-      Use case resumes at step 2.
+1. TA requests to create a class, providing its module code and class name.
+2. TAssist creates the class and confirms successful creation.
+3. TAssist displays the updated class list, including the newly created class.
 
-*{More to be added}*
+Use case ends.
+
+**Extensions:**
+
+- **1a. Required details are missing, or the supplied details are invalid.**
+  - 1a1. TAssist informs TA of the error and the expected input.
+  - Use case ends.
+
+- **1b. A class with the same module code and class name already exists.**
+  - 1b1. TAssist informs TA that the class already exists and rejects the creation request.
+  - Use case ends.
+
+- **1c. TAssist is unable to save the new class.**
+  - 1c1. TAssist informs TA that the class could not be saved and asks TA to try again.
+  - Use case ends.
+
+#### **Search Student**
+
+**System:** TAssist  
+**Actor:** Teaching Assistant (TA)
+
+**Main Success Scenario (MSS):**
+
+1. TA requests to search for students by providing one or more name keywords.
+2. TAssist displays the matching students.
+
+Use case ends.
+
+**Extensions:**
+
+- **1a. The search keywords are missing or invalid.**
+  - 1a1. TAssist informs TA of the error and the expected input.
+  - Use case ends.
+
+- **1b. No students match the search keywords.**
+  - 1b1. TAssist displays an empty student list and informs TA that no students were found.
+  - Use case ends.
 
 ### Non-Functional Requirements
 
