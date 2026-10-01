@@ -270,13 +270,14 @@ _{Explain here how the data archiving feature will be implemented}_
 
 **Target user profile**:
 
-* has a need to manage a significant number of contacts
-* prefers desktop apps over other types of applications
+* is a Teaching Assistant (TA) managing multiple modules and tutorial or lab groups.
+* has a need to manage a significant number of student contacts, track assignment submissions, and record attendance.
 * can type fast
-* prefers typing to mouse interactions
-* is reasonably comfortable using CLI apps
+* needs to maintain clear boundaries between the different cohorts and modules they teach.
+* can type fast and prefers typing over mouse interactions to navigate the application.
+* is reasonably comfortable using Command Line Interface (CLI) apps and command shortcuts.
 
-**Value proposition**: Manage contacts faster than with a typical mouse-driven GUI application.
+**Value proposition**: helps Teaching Assistants organise all their modules, student contacts, and assignment details in a centralized application significantly faster than a typical mouse-driven GUI app.
 
 
 ### User stories
