@@ -283,14 +283,44 @@ _{Explain here how the data archiving feature will be implemented}_
 
 Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unlikely to have) - `*`
 
-| Priority | As a …                                    | I want to …                 | So that I can…                                                        |
-|----------|--------------------------------------------|------------------------------|------------------------------------------------------------------------|
-| `* * *`  | new user                                   | see usage instructions       | refer to instructions when I forget how to use the App                 |
-| `* * *`  | user                                       | add a new person             |                                                                        |
-| `* * *`  | user                                       | delete a person              | remove entries that I no longer need                                   |
-| `* * *`  | user                                       | find a person by name        | locate details of persons without having to go through the entire list |
-| `* *`    | user                                       | hide private contact details | minimize chance of someone else seeing them by accident                |
-| `*`      | user with many persons in the address book | sort persons by name         | locate a person easily                                                 |
+| Priority | As a … | I want to … | So that I can… |
+|---|---|---|---|
+| `* * *` | TA | create student profiles with their contact information | maintain an up-to-date record of the students I teach |
+| `* * *` | TA | edit a student’s information | correct inaccurate or outdated records without recreating their profile |
+| `* * *` | TA | remove a student from a specific module without affecting their records in other modules | stop tracking students who have dropped that module |
+| `* * *` | TA | search for students by name across all modules or within a selected module | quickly locate the correct student during a class |
+| `* * *` | TA | filter students by module and tutorial or lab group identifier | quickly view the students in a particular class |
+| `* * *` | TA | create assignments with deadlines under a specific module | track the work expected from students in that module |
+| `* * *` | TA | record whether an individual student has submitted an assignment | distinguish submitted work from outstanding submissions |
+| `* * *` | TA | record whether each submission has been marked and view those still awaiting marking | resume grading where I left off |
+| `* * *` | TA | receive clear feedback when I enter an invalid command or perform an invalid action | understand the problem and correct it |
+| `* *` | new user | access an in-app guide explaining its features, commands and usage examples | understand its capabilities and learn to use it without external assistance |
+| `* *` | TA managing several modules | create modules and their tutorial or lab groups | organise the different classes I teach |
+| `* *` | TA managing several modules | assign students to their respective modules and tutorial or lab groups | keep different cohorts clearly organised |
+| `* *` | TA | assign custom tags to students | record relevant learning needs and tailor my teaching approach |
+| `* *` | TA | view a student’s communication handles, such as NUS email or Telegram | contact them without searching other platforms |
+| `* *` | TA | copy the email addresses of students in a selected module or class group to my clipboard | send announcements or lesson materials through my email client |
+| `* *` | TA | view a student’s assignment records alongside the relevant module information | review their progress within the correct module |
+| `* *` | TA | filter students within a selected module by their submission status for a specific assignment | identify students with outstanding submissions |
+| `* *` | TA | record grades for each student’s assignments | review their performance and identify areas where they may need additional support |
+| `* *` | TA | view upcoming assignment deadlines across my modules | remind students about approaching deadlines |
+| `* *` | TA | record each student’s attendance for weekly tutorial or lab sessions | maintain participation records for grading and follow-up |
+| `* *` | experienced user | define shortcuts for frequently used commands | perform repetitive tasks with less typing |
+| `* *` | TA | view and recall previously entered commands | reuse them without retyping them |
+| `* *` | returning TA | archive a completed module and its associated student and assignment records | keep my active workspace focused on the current semester while preserving historical records |
+| `*` | first-time user | explore sample student records and assignments across multiple modules and clear the sample data when ready | understand the application before entering real records |
+| `*` | TA | import a CSV student roster into a specified module and tutorial or lab group | populate my classes without entering each student individually |
+| `*` | TA | bulk-delete unwanted student records after confirmation | clear records efficiently without deleting students individually |
+| `*` | TA who is also a student | distinguish between modules I teach and modules I take | keep my teaching and learning contacts separate |
+| `*` | TA | view the contact details of the professor in charge of each module | conveniently raise teaching-related queries |
+| `*` | TA | batch-update an assignment’s submission status for an entire tutorial or lab group | perform routine submission checks efficiently |
+| `*` | TA | import assignment submission records from a CSV file into the relevant module and assignment | avoid updating every student’s status manually |
+| `*` | TA | export a selected module’s student grades and submission records as a CSV file | share them with the module coordinator without manually copying the data |
+| `*` | TA | receive an end-of-day notification listing students recorded as absent from my lab sessions | follow up with them about their absence |
+| `*` | TA arranging consultations | use my calendar to automatically share available consultation times with students | reduce scheduling conflicts and back-and-forth communication |
+| `*` | TA who prefers typing | navigate and operate the application using only the keyboard | complete tasks without switching to the mouse |
+| `*` | TA who frequently enters commands | use command autocompletion | enter commands more quickly and with fewer typing errors |
+| `*` | TA | switch between light and dark modes | use the application comfortably in different lighting conditions |                                         |
 
 *{More to be added}*
 
