@@ -376,16 +376,37 @@ Use case ends.
 
 ### Non-Functional Requirements
 
-1.  Should work on any _mainstream OS_ as long as it has Java `25` or above installed.
-2.  Should be able to hold up to 1000 persons without noticeable sluggishness in performance for typical usage.
-3.  A user with above average typing speed for regular English text (i.e. not code, not system admin commands) should be able to accomplish most of the tasks faster using commands than using the mouse.
-
-*{More to be added}*
+| ID | Category | Non-Functional Requirement |
+| --- | --- | --- |
+| NFR01 | Usability | TAssist should be optimised for users who are comfortable with typing, with typed commands as the primary means of interacting with the application. |
+| NFR02 | Performance | TAssist should respond to normal user commands within 2 seconds under typical usage conditions. |
+| NFR03 | Capacity | TAssist should support at least 500 students across 20 classes and 10 modules while maintaining normal command response times. |
+| NFR04 | Data Persistence | Every successful operation that modifies application data should be automatically saved to local storage so that the latest data remains available after the application is restarted. |
+| NFR05 | Data Integrity | A failed or invalid operation should not result in partially modified or inconsistent application data. Existing valid data should remain unchanged if the operation cannot be completed successfully. |
+| NFR06 | Error Handling | When an invalid command or input is entered, TAssist should provide a clear error message that identifies the problem and, where appropriate, indicates the expected command format. |
+| NFR07 | Single-User Operation | TAssist should operate as a single-user application and should not support multiple users accessing the same application data during normal operation. |
+| NFR08 | Data Storage | TAssist data should be stored locally in a human-editable text file and should not rely on a database management system. |
+| NFR09 | Platform Compatibility | TAssist should work on Windows, Linux, and macOS without relying on operating-system-specific functionality. |
+| NFR10 | Runtime Compatibility | TAssist should be compatible with Java 25. |
+| NFR11 | Portability | TAssist should run without requiring an installer and should be distributed as a single JAR file, or a single ZIP file if additional files are unavoidable. |
+| NFR12 | Offline Availability | Core TAssist functionality should not depend on the team's own remote server and should remain usable without an Internet connection. |
+| NFR13 | Display Compatibility | The GUI should work without resolution-related inconvenience at 1920×1080 or above at 100%/125% scaling, and all functionality should remain usable at 1280×720 or above at 150% scaling. |
 
 ### Glossary
 
-* **Mainstream OS**: Windows, Linux, Unix, or macOS
-* **Private contact detail**: A contact detail that is not meant to be shared with others
+| Term | Definition |
+| --- | --- |
+| TAssist | The application developed to help teaching assistants manage student contacts and information across the classes they teach. |
+| TA | Teaching Assistant. The primary target user of TAssist. |
+| Student | A person whose contact and class information is managed by a TA using TAssist. |
+| Student Number | The unique institutional identifier used by TAssist to identify a student. |
+| Module | An academic course taught by the TA, identified by its module code, such as `CS2103`. A module may contain one or more classes. |
+| Class | A tutorial or lab group belonging to a module, identified by a class name such as `F10-2`. A class is uniquely identified by its combination of module and class name. |
+| Student Profile | The information stored about a student, such as their student number, name, email address, Telegram username, and class associations. |
+| Communication Handle | Contact information used to communicate with a student, such as their email address or Telegram username. |
+| CLI | Command-Line Interface. The text-based interface through which the user enters commands in TAssist. |
+| Command | A textual instruction entered into TAssist to perform an operation, such as `addstudent`, `find`, or `assign`. |
+| Command Prefix | A prefix used to specify a parameter in a command, such as `sn/` for student number, `m/` for module, or `c/` for class. |
 
 --------------------------------------------------------------------------------------------------------------------
 
