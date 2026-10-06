@@ -452,6 +452,34 @@ Use case ends.
   - 2a1. TAssist informs TA that the removal of the assignment could not be saved.
   - Use case ends.
 
+#### **List Students by Class**
+
+**System:** TAssist  
+**Actor:** Teaching Assistant (TA)  
+**Guarantee:** Student profiles, classes and class assignments remain unchanged.
+
+**Main Success Scenario (MSS):**
+
+1. TA requests to list the students assigned to a class, providing its module code and class name.
+2. TAssist displays the names of all students assigned to the specified class in alphabetical order,
+   identifying the module code and class name.
+
+Use case ends.
+
+**Extensions:**
+
+- **1a. Required details are missing or blank, or the request is invalid.**
+  - 1a1. TAssist informs TA of the error and the required details.
+  - Use case ends.
+
+- **1b. No class matches the supplied module code and class name.**
+  - 1b1. TAssist informs TA that the class does not exist and asks TA to create the class or specify an existing class.
+  - Use case ends.
+
+- **1c. The specified class exists but has no assigned students.**
+  - 1c1. TAssist displays an empty student list for the specified module code and class name.
+  - Use case ends.
+
 ### Non-Functional Requirements
 
 1.  Should work on any _mainstream OS_ as long as it has Java `25` or above installed.
