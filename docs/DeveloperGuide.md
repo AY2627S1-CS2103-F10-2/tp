@@ -413,6 +413,45 @@ Use case ends.
   - 2a1. TAssist informs TA that the assignment could not be saved.
   - Use case ends.
 
+#### **Unassign Student from Class**
+
+**System:** TAssist  
+**Actor:** Teaching Assistant (TA)  
+**Guarantee:** The student profile, class and all other class assignments remain unchanged.
+
+**Main Success Scenario (MSS):**
+
+1. TA requests to unassign a student from a class, providing the student number,
+   module code and class name.
+2. TAssist removes the student's assignment to the specified class and automatically saves the change.
+3. TAssist confirms that the student is no longer assigned to the class, identifying the student and the class.
+
+Use case ends.
+
+**Extensions:**
+
+- **1a. Required details are missing, or unrecognised or extra details are supplied.**
+  - 1a1. TAssist informs TA of the error and the required details, without changing any assignments.
+  - Use case ends.
+
+- **1b. No student matches the supplied student number.**
+  - 1b1. TAssist informs TA that the student does not exist, identifying the supplied student number.
+  - 1b2. TAssist rejects the request without changing any assignments.
+  - Use case ends.
+
+- **1c. No class matches the supplied module code and class name.**
+  - 1c1. TAssist informs TA that the class does not exist, identifying the supplied module code and class name.
+  - 1c2. TAssist rejects the request without changing any assignments.
+  - Use case ends.
+
+- **1d. The student is not assigned to the specified class.**
+  - 1d1. TAssist leaves the student unassigned to the class without changing any data.
+  - Use case resumes from step 3.
+
+- **2a. TAssist is unable to save the change.**
+  - 2a1. TAssist informs TA that the removal of the assignment could not be saved.
+  - Use case ends.
+
 ### Non-Functional Requirements
 
 1.  Should work on any _mainstream OS_ as long as it has Java `25` or above installed.
