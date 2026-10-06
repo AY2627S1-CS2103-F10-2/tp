@@ -385,7 +385,7 @@ Use case ends.
 1. TA requests to assign a student to a class, providing the student number,
    module code and class name.
 2. TAssist assigns the student to the specified class and automatically saves the assignment.
-3. TAssist confirms the successful assignment, identifying the student and the class.
+3. TAssist returns a confirmation of the successful assignment, identifying the student and the class.
 
 Use case ends.
 
@@ -424,7 +424,7 @@ Use case ends.
 1. TA requests to unassign a student from a class, providing the student number,
    module code and class name.
 2. TAssist removes the student's assignment to the specified class and automatically saves the change.
-3. TAssist confirms that the student is no longer assigned to the class, identifying the student and the class.
+3. TAssist returns a confirmation that the student is no longer assigned to the class, identifying the student and the class.
 
 Use case ends.
 
