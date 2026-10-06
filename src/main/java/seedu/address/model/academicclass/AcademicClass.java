@@ -26,11 +26,10 @@ public class AcademicClass {
     /**
      * Every field must be present and not null.
      */
-    public AcademicClass(ModuleCode moduleCode, ClassName className, Set<Person> students) {
-        requireAllNonNull(moduleCode, className, students);
+    public AcademicClass(ModuleCode moduleCode, ClassName className) {
+        requireAllNonNull(moduleCode, className);
         this.moduleCode = moduleCode;
         this.className = className;
-        this.students.addAll(students);
     }
 
     public ModuleCode getModuleCode() {
@@ -51,7 +50,6 @@ public class AcademicClass {
 
     /**
      * Returns true if both classes have the same module code and class name.
-     * This defines a weaker notion of equality between two classes.
      */
     public boolean isSameAcademicClass(AcademicClass otherAcademicClass) {
         if (otherAcademicClass == this) {
@@ -64,8 +62,7 @@ public class AcademicClass {
     }
 
     /**
-     * Returns true if both classes have the same identity and data fields.
-     * This defines a stronger notion of equality between two classes.
+     * Returns true if both classes have the same module code and class name.
      */
     @Override
     public boolean equals(Object other) {
@@ -78,15 +75,13 @@ public class AcademicClass {
             return false;
         }
 
-        return moduleCode.equals(otherAcademicClass.moduleCode)
-                && className.equals(otherAcademicClass.className)
-                && students.equals(otherAcademicClass.students);
+        return isSameAcademicClass(otherAcademicClass);
     }
 
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
-        return Objects.hash(moduleCode, className, students);
+        return Objects.hash(moduleCode, className);
     }
 
     @Override
