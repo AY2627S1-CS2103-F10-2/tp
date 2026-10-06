@@ -21,29 +21,6 @@ public class AcademicClassTest {
     }
 
     @Test
-    public void isSameAcademicClass() {
-        AcademicClass cs2103F10 = new AcademicClass(CS2103T, F10_2);
-
-        // same object -> returns true
-        assertTrue(cs2103F10.isSameAcademicClass(cs2103F10));
-
-        // null -> returns false
-        assertFalse(cs2103F10.isSameAcademicClass(null));
-
-        // same normalized module code and class name -> returns true
-        AcademicClass editedCs2103F10 = new AcademicClass(new ModuleCode("cs2103t"), new ClassName("f10-2"));
-        assertTrue(cs2103F10.isSameAcademicClass(editedCs2103F10));
-
-        // same module code, different class name -> returns false
-        AcademicClass sameModuleDifferentClass = new AcademicClass(CS2103T, T24);
-        assertFalse(cs2103F10.isSameAcademicClass(sameModuleDifferentClass));
-
-        // different module code, same class name -> returns false
-        AcademicClass differentModuleSameClass = new AcademicClass(ST2334, F10_2);
-        assertFalse(cs2103F10.isSameAcademicClass(differentModuleSameClass));
-    }
-
-    @Test
     public void equals() {
         AcademicClass cs2103F10 = new AcademicClass(CS2103T, F10_2);
 

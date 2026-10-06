@@ -51,19 +51,6 @@ public class AcademicClass {
     /**
      * Returns true if both classes have the same module code and class name.
      */
-    public boolean isSameAcademicClass(AcademicClass otherAcademicClass) {
-        if (otherAcademicClass == this) {
-            return true;
-        }
-
-        return otherAcademicClass != null
-                && otherAcademicClass.getModuleCode().equals(getModuleCode())
-                && otherAcademicClass.getClassName().equals(getClassName());
-    }
-
-    /**
-     * Returns true if both classes have the same module code and class name.
-     */
     @Override
     public boolean equals(Object other) {
         if (other == this) {
@@ -75,7 +62,8 @@ public class AcademicClass {
             return false;
         }
 
-        return isSameAcademicClass(otherAcademicClass);
+        return moduleCode.equals(otherAcademicClass.moduleCode)
+                && className.equals(otherAcademicClass.className);
     }
 
     @Override
