@@ -81,4 +81,8 @@ public class AcademicClass {
                 .toString();
     }
 
+    public void unAssignStudent(Person person) {
+        students.remove(person);
+    }
+
 }
