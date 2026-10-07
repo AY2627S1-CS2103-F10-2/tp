@@ -81,7 +81,15 @@ public class AcademicClass {
                 .toString();
     }
 
-    public boolean unAssignStudent(Person person) {
+
+    /**
+     * Unassigns the specified person from this academic class.
+     *
+     * @param person The person to unassign from the class.
+     * @return true if the person was successfully removed, false if the person
+     *         was not assigned to the class.
+     */
+    public boolean unassignStudent(Person person) {
 
         if (students.contains(person)) {
             students.remove(person);
