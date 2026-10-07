@@ -5,14 +5,50 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
 
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.model.academicclass.exceptions.DuplicateAcademicClassException;
+
 public class UniqueAcademicClassListTest {
 
     private final UniqueAcademicClassList uniqueAcademicClassList = new UniqueAcademicClassList();
+
+    @Test
+    public void setAcademicClasses_nullListOrElement_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> uniqueAcademicClassList.setAcademicClasses(null));
+        assertThrows(NullPointerException.class, ()
+            -> uniqueAcademicClassList.setAcademicClasses(Arrays.asList((AcademicClass) null)));
+    }
+
+    @Test
+    public void setAcademicClasses_validList_replacesContentsAndUpdatesView() {
+        AcademicClass first = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+        AcademicClass second = new AcademicClass(new ModuleCode("ST2334"), new ClassName("T24"));
+        var view = uniqueAcademicClassList.asUnmodifiableObservableList();
+        uniqueAcademicClassList.setAcademicClasses(List.of(first));
+        uniqueAcademicClassList.setAcademicClasses(List.of(second));
+        assertEquals(List.of(second), view);
+        assertEquals(second, uniqueAcademicClassList.iterator().next());
+        uniqueAcademicClassList.setAcademicClasses(view);
+        assertEquals(List.of(second), view);
+        uniqueAcademicClassList.setAcademicClasses(List.of());
+        assertTrue(view.isEmpty());
+    }
+
+    @Test
+    public void setAcademicClasses_duplicateClasses_throwsAndPreservesContents() {
+        AcademicClass first = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+        AcademicClass duplicate = new AcademicClass(new ModuleCode("cs2103t"), new ClassName("f10-2"));
+        uniqueAcademicClassList.setAcademicClasses(List.of(first));
+        assertThrows(DuplicateAcademicClassException.class, ()
+            -> uniqueAcademicClassList.setAcademicClasses(List.of(first, duplicate)));
+        assertEquals(List.of(first), uniqueAcademicClassList.asUnmodifiableObservableList());
+    }
 
     @Test
     public void asUnmodifiableObservableList_emptyList_returnsEmptyList() {
