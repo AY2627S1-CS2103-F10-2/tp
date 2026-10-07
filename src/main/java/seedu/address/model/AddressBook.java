@@ -51,12 +51,18 @@ public class AddressBook implements ReadOnlyAddressBook {
 
     /**
      * Resets the existing data of this {@code AddressBook} with {@code newData}.
+     * Both lists are validated before either existing list is modified.
      */
     public void resetData(ReadOnlyAddressBook newData) {
         requireNonNull(newData);
 
-        setPersons(newData.getPersonList());
-        setAcademicClasses(newData.getAcademicClassList());
+        UniquePersonList replacementPersons = new UniquePersonList();
+        replacementPersons.setPersons(newData.getPersonList());
+        UniqueAcademicClassList replacementClasses = new UniqueAcademicClassList();
+        replacementClasses.setAcademicClasses(newData.getAcademicClassList());
+
+        persons.setPersons(replacementPersons);
+        academicClasses.setAcademicClasses(replacementClasses.asUnmodifiableObservableList());
     }
 
     //// person-level operations

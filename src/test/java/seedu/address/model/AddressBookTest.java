@@ -7,8 +7,10 @@ import static seedu.address.logic.commands.CommandTestUtil.VALID_ADDRESS_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_TAG_HUSBAND;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.ALICE;
+import static seedu.address.testutil.TypicalPersons.BOB;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -117,8 +119,36 @@ public class AddressBookTest {
     @Test
     public void resetData_withDuplicateClasses_throwsDuplicateAcademicClassException() {
         AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
-        AddressBookStub newData = new AddressBookStub(List.of(), List.of(academicClass, academicClass));
+        addressBook.addPerson(ALICE);
+        addressBook.setAcademicClasses(List.of(academicClass));
+        AddressBookStub newData = new AddressBookStub(List.of(BOB), List.of(academicClass, academicClass));
         assertThrows(DuplicateAcademicClassException.class, () -> addressBook.resetData(newData));
+        assertEquals(List.of(ALICE), addressBook.getPersonList());
+        assertEquals(List.of(academicClass), addressBook.getAcademicClassList());
+    }
+
+    @Test
+    public void resetData_withNullClass_throwsAndPreservesData() {
+        AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+        addressBook.addPerson(ALICE);
+        addressBook.setAcademicClasses(List.of(academicClass));
+        AddressBookStub newData = new AddressBookStub(List.of(BOB), Arrays.asList((AcademicClass) null));
+        assertThrows(NullPointerException.class, () -> addressBook.resetData(newData));
+        assertEquals(List.of(ALICE), addressBook.getPersonList());
+        assertEquals(List.of(academicClass), addressBook.getAcademicClassList());
+    }
+
+    @Test
+    public void resetData_validData_updatesExistingViewsAndSupportsSelfReset() {
+        AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+        ObservableList<Person> personView = addressBook.getPersonList();
+        ObservableList<AcademicClass> classView = addressBook.getAcademicClassList();
+        addressBook.resetData(new AddressBookStub(List.of(ALICE), List.of(academicClass)));
+        assertEquals(List.of(ALICE), personView);
+        assertEquals(List.of(academicClass), classView);
+        addressBook.resetData(addressBook);
+        assertEquals(List.of(ALICE), personView);
+        assertEquals(List.of(academicClass), classView);
     }
 
     @Test
