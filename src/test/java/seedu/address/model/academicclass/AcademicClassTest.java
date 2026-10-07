@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
+import static seedu.address.testutil.TypicalPersons.ALICE;
 
 import org.junit.jupiter.api.Test;
 
@@ -18,6 +19,14 @@ public class AcademicClassTest {
     public void getStudents_modifySet_throwsUnsupportedOperationException() {
         AcademicClass academicClass = new AcademicClass(CS2103T, F10_2);
         assertThrows(UnsupportedOperationException.class, () -> academicClass.getStudents().clear());
+    }
+
+    @Test
+    public void unassignStudent_studentNotAssigned_returnsFalse() {
+        AcademicClass academicClass = new AcademicClass(CS2103T, F10_2);
+
+        assertFalse(academicClass.unassignStudent(ALICE));
+        assertTrue(academicClass.getStudents().isEmpty());
     }
 
     @Test
