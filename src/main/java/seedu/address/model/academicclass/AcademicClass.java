@@ -81,8 +81,15 @@ public class AcademicClass {
                 .toString();
     }
 
-    public void unAssignStudent(Person person) {
-        students.remove(person);
+    public boolean unAssignStudent(Person person) {
+
+        if (students.contains(person)) {
+            students.remove(person);
+
+            return true; // can output if removal success or not
+        }
+
+        return false;
     }
 
 }
