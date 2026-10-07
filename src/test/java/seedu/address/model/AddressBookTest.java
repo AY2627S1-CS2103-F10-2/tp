@@ -128,9 +128,36 @@ public class AddressBookTest {
 
     @Test
     public void equalsAndHashCode_sameData_returnsTrueAndSameHashCode() {
+        addressBook.addPerson(ALICE);
+        addressBook.setAcademicClasses(List.of(
+                new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"))));
         AddressBook copy = new AddressBook(addressBook);
         assertEquals(addressBook, copy);
         assertEquals(addressBook.hashCode(), copy.hashCode());
+    }
+
+    @Test
+    public void equals() {
+        // same object -> returns true
+        assertTrue(addressBook.equals(addressBook));
+
+        // null or different type -> returns false
+        assertFalse(addressBook.equals(null));
+        assertFalse(addressBook.equals(5));
+
+        // same values -> returns true
+        assertTrue(addressBook.equals(new AddressBook()));
+
+        // different persons, same classes -> returns false
+        AddressBook differentPersons = new AddressBook();
+        differentPersons.addPerson(ALICE);
+        assertFalse(addressBook.equals(differentPersons));
+
+        // same persons, different classes -> returns false
+        AddressBook differentClasses = new AddressBook();
+        differentClasses.setAcademicClasses(List.of(
+                new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"))));
+        assertFalse(addressBook.equals(differentClasses));
     }
 
     /**
