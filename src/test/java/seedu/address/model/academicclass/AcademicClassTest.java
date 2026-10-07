@@ -62,8 +62,7 @@ public class AcademicClassTest {
     @Test
     public void toStringMethod() {
         AcademicClass academicClass = new AcademicClass(CS2103T, F10_2);
-        String expected = AcademicClass.class.getCanonicalName() + "{moduleCode=" + academicClass.getModuleCode()
-                + ", className=" + academicClass.getClassName() + ", students=" + academicClass.getStudents() + "}";
+        String expected = academicClass.getModuleCode() + "-" + academicClass.getClassName();
         assertEquals(expected, academicClass.toString());
     }
 }
