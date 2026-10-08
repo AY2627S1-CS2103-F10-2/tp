@@ -10,7 +10,7 @@ import seedu.address.model.Model;
 import seedu.address.model.academicclass.AcademicClass;
 
 /**
- * Adds an academic class to the address book.
+ * Adds a new academic class to the address book.
  */
 public class AddClassCommand extends Command {
 
@@ -30,7 +30,7 @@ public class AddClassCommand extends Command {
     private final AcademicClass toAdd;
 
     /**
-     * Creates an AddClassCommand to add the specified {@code AcademicClass}.
+     * Creates an AddClassCommand for the specified {@code AcademicClass}.
      */
     public AddClassCommand(AcademicClass academicClass) {
         requireNonNull(academicClass);

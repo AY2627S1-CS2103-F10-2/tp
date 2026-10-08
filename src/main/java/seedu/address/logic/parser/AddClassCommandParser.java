@@ -15,7 +15,7 @@ import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
 
 /**
- * Parses input arguments and creates a new AddClassCommand object.
+ * Parses input arguments and creates a new add class command.
  */
 public class AddClassCommandParser implements Parser<AddClassCommand> {
 
