@@ -1,8 +1,10 @@
 package seedu.address.ui;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -13,6 +15,7 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ListView;
+import seedu.address.model.ModelManager;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
@@ -40,6 +43,23 @@ public class AcademicClassListPanelTest {
             assertNotNull(academicClassListPanel.getRoot());
             ListView<?> academicClassListView = (ListView<?>) academicClassListPanel.getRoot().lookup(".list-view");
             assertNotNull(academicClassListView.getCellFactory().call(null));
+        });
+    }
+
+    @Test
+    public void deleteAcademicClass_updatesBoundListView() {
+        runOnFxThreadAndWait(() -> {
+            ModelManager model = new ModelManager();
+            AcademicClass remaining = new AcademicClass(new ModuleCode("ST2334"), new ClassName("T24"));
+            model.addAcademicClass(CS2103T_F10);
+            model.addAcademicClass(remaining);
+            AcademicClassListPanel panel = new AcademicClassListPanel(model.getAcademicClassList());
+            ListView<?> listView = (ListView<?>) panel.getRoot().lookup(".list-view");
+            assertEquals(List.of(CS2103T_F10, remaining), listView.getItems());
+
+            model.deleteAcademicClass(CS2103T_F10);
+
+            assertEquals(List.of(remaining), listView.getItems());
         });
     }
 

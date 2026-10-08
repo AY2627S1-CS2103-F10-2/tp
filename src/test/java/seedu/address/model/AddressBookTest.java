@@ -21,6 +21,7 @@ import javafx.collections.ObservableList;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
+import seedu.address.model.academicclass.exceptions.AcademicClassNotFoundException;
 import seedu.address.model.academicclass.exceptions.DuplicateAcademicClassException;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.exceptions.DuplicatePersonException;
@@ -119,6 +120,31 @@ public class AddressBookTest {
         AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
         addressBook.addAcademicClass(academicClass);
         assertThrows(DuplicateAcademicClassException.class, () -> addressBook.addAcademicClass(academicClass));
+    }
+
+    @Test
+    public void removeAcademicClass_nullClass_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> addressBook.removeAcademicClass(null));
+    }
+
+    @Test
+    public void removeAcademicClass_missingClass_throwsAcademicClassNotFoundException() {
+        AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103"), new ClassName("F10-2"));
+        assertThrows(AcademicClassNotFoundException.class, () -> addressBook.removeAcademicClass(academicClass));
+    }
+
+    @Test
+    public void removeAcademicClass_existingClass_preservesOtherClassesAndPersons() {
+        AcademicClass first = new AcademicClass(new ModuleCode("CS2103"), new ClassName("F10-2"));
+        AcademicClass second = new AcademicClass(new ModuleCode("CS2103"), new ClassName("F11-2"));
+        addressBook.addAcademicClass(first);
+        addressBook.addAcademicClass(second);
+        addressBook.addPerson(ALICE);
+
+        addressBook.removeAcademicClass(first);
+
+        assertEquals(List.of(second), addressBook.getAcademicClassList());
+        assertEquals(List.of(ALICE), addressBook.getPersonList());
     }
 
     @Test

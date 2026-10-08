@@ -91,6 +91,20 @@ public class ModelManagerTest {
     }
 
     @Test
+    public void deleteAcademicClass_existingClass_updatesViewAndPreservesPersons() {
+        AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103"), new ClassName("F10-2"));
+        modelManager.addAcademicClass(academicClass);
+        modelManager.addPerson(ALICE);
+        var view = modelManager.getAcademicClassList();
+
+        modelManager.deleteAcademicClass(academicClass);
+
+        assertTrue(view.isEmpty());
+        assertFalse(modelManager.hasAcademicClass(academicClass));
+        assertEquals(List.of(ALICE), modelManager.getAddressBook().getPersonList());
+    }
+
+    @Test
     public void getAcademicClassList_modifyList_throwsUnsupportedOperationException() {
         assertThrows(UnsupportedOperationException.class, () -> modelManager.getAcademicClassList().remove(0));
     }
