@@ -43,6 +43,12 @@ public class JsonAdaptedAcademicClassTest {
     }
 
     @Test
+    public void toModelType_emptyModuleCode_throwsIllegalValueException() {
+        JsonAdaptedAcademicClass jsonAdaptedAcademicClass = new JsonAdaptedAcademicClass(" ", VALID_CLASS_NAME);
+        assertThrows(IllegalValueException.class, ModuleCode.MESSAGE_EMPTY, jsonAdaptedAcademicClass::toModelType);
+    }
+
+    @Test
     public void toModelType_nullModuleCode_throwsIllegalValueException() {
         JsonAdaptedAcademicClass jsonAdaptedAcademicClass = new JsonAdaptedAcademicClass(null, VALID_CLASS_NAME);
         String expectedMessage = String.format(MISSING_FIELD_MESSAGE_FORMAT, ModuleCode.class.getSimpleName());
@@ -55,6 +61,12 @@ public class JsonAdaptedAcademicClassTest {
                 INVALID_CLASS_NAME);
         assertThrows(IllegalValueException.class, ClassName.MESSAGE_CONSTRAINTS,
                 jsonAdaptedAcademicClass::toModelType);
+    }
+
+    @Test
+    public void toModelType_emptyClassName_throwsIllegalValueException() {
+        JsonAdaptedAcademicClass jsonAdaptedAcademicClass = new JsonAdaptedAcademicClass(VALID_MODULE_CODE, " ");
+        assertThrows(IllegalValueException.class, ClassName.MESSAGE_EMPTY, jsonAdaptedAcademicClass::toModelType);
     }
 
     @Test
