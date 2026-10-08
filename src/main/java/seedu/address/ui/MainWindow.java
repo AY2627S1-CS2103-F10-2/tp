@@ -10,6 +10,7 @@ import javafx.scene.control.TextInputControl;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
@@ -34,6 +35,7 @@ public class MainWindow extends UiPart<Stage> {
 
     // Independent Ui parts residing in this Ui container
     private PersonListPanel personListPanel;
+    private ClassListPanel classListPanel;
     private ResultDisplay resultDisplay;
     private HelpWindow helpWindow;
 
@@ -45,6 +47,15 @@ public class MainWindow extends UiPart<Stage> {
 
     @FXML
     private StackPane personListPanelPlaceholder;
+
+    @FXML
+    private StackPane classListPanelPlaceholder;
+
+    @FXML
+    private VBox personListSection;
+
+    @FXML
+    private VBox classListSection;
 
     @FXML
     private StackPane resultDisplayPlaceholder;
@@ -117,6 +128,10 @@ public class MainWindow extends UiPart<Stage> {
         personListPanel = new PersonListPanel(logic.getFilteredPersonList());
         personListPanelPlaceholder.getChildren().add(personListPanel.getRoot());
 
+        classListPanel = new ClassListPanel(logic.getAcademicClassList());
+        classListPanelPlaceholder.getChildren().add(classListPanel.getRoot());
+        showPersonList();
+
         resultDisplay = new ResultDisplay();
         resultDisplayPlaceholder.getChildren().add(resultDisplay.getRoot());
 
@@ -171,6 +186,10 @@ public class MainWindow extends UiPart<Stage> {
         return personListPanel;
     }
 
+    public ClassListPanel getClassListPanel() {
+        return classListPanel;
+    }
+
     /**
      * Executes the command and returns the result.
      *
@@ -181,6 +200,12 @@ public class MainWindow extends UiPart<Stage> {
             CommandResult commandResult = logic.execute(commandText);
             logger.info("Result: " + commandResult.getFeedbackToUser());
             resultDisplay.setFeedbackToUser(commandResult.getFeedbackToUser());
+
+            if (commandText.trim().equals("listclass")) {
+                showClassList();
+            } else if (commandText.trim().equals("list")) {
+                showPersonList();
+            }
 
             if (commandResult.isShowHelp()) {
                 handleHelp();
@@ -196,5 +221,19 @@ public class MainWindow extends UiPart<Stage> {
             resultDisplay.setFeedbackToUser(e.getMessage());
             throw e;
         }
+    }
+
+    private void showPersonList() {
+        personListSection.setVisible(true);
+        personListSection.setManaged(true);
+        classListSection.setVisible(false);
+        classListSection.setManaged(false);
+    }
+
+    private void showClassList() {
+        personListSection.setVisible(false);
+        personListSection.setManaged(false);
+        classListSection.setVisible(true);
+        classListSection.setManaged(true);
     }
 }

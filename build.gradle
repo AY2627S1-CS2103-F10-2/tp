@@ -35,9 +35,15 @@ task coverage(type: JacocoReport) {
     classDirectories.from files(sourceSets.main.output)
     executionData.from files(jacocoTestReport.executionData)
     afterEvaluate {
-        classDirectories.from files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: ['**/*.jar'])
-        })
+    classDirectories.setFrom files(classDirectories.files.collect {
+        // These JavaFX presentation classes require a graphical toolkit and are covered by manual UI testing.
+        fileTree(dir: it, exclude: [
+            '**/*.jar',
+            '**/ui/ClassCard*.class',
+            '**/ui/ClassListPanel*.class',
+            '**/ui/MainWindow*.class'
+        ])
+    })
     }
     reports {
         html.required = true
