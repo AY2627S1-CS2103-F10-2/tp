@@ -10,7 +10,7 @@ import seedu.address.model.Model;
 public class ListClassCommand extends Command {
 
     public static final String COMMAND_WORD = "listclass";
-    public static final String MESSAGE_USAGE = "No arguments are required for this command.\n" + 
+    public static final String MESSAGE_USAGE = "No arguments are required for this command.\n" +
     "Simply type 'listclass' to list all academic classes in insertion order.";
     public static final String MESSAGE_SUCCESS = "Listed all classes.";
 
