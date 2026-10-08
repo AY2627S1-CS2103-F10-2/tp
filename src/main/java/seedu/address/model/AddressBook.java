@@ -2,6 +2,7 @@ package seedu.address.model;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -21,6 +22,9 @@ public class AddressBook implements ReadOnlyAddressBook {
     private final UniquePersonList persons = new UniquePersonList();
     private final UniqueAcademicClassList academicClasses = new UniqueAcademicClassList();
 
+    /**
+     * Creates an empty AddressBook.
+     */
     public AddressBook() {}
 
     /**
@@ -100,6 +104,27 @@ public class AddressBook implements ReadOnlyAddressBook {
      */
     public void removePerson(Person key) {
         persons.remove(key);
+    }
+
+    //// academic class-level operations
+
+    /**
+     * Returns true if an academic class with the same module code and class name exists in the address book.
+     */
+    public boolean hasAcademicClass(AcademicClass academicClass) {
+        requireNonNull(academicClass);
+        return academicClasses.asUnmodifiableObservableList().contains(academicClass);
+    }
+
+    /**
+     * Adds an academic class to the address book.
+     * The academic class must not already exist in the address book.
+     */
+    public void addAcademicClass(AcademicClass academicClass) {
+        requireNonNull(academicClass);
+        List<AcademicClass> updatedAcademicClasses = new ArrayList<>(academicClasses.asUnmodifiableObservableList());
+        updatedAcademicClasses.add(academicClass);
+        academicClasses.setAcademicClasses(updatedAcademicClasses);
     }
 
     //// util methods

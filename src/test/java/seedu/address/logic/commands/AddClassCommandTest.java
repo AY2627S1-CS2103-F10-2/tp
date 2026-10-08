@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
-import static seedu.address.testutil.TypicalPersons.ALICE;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,73 +14,73 @@ import org.junit.jupiter.api.Test;
 
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
-import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.ReadOnlyUserPrefs;
 import seedu.address.model.academicclass.AcademicClass;
+import seedu.address.model.academicclass.ClassName;
+import seedu.address.model.academicclass.ModuleCode;
 import seedu.address.model.person.Person;
-import seedu.address.testutil.PersonBuilder;
 
-public class AddCommandTest {
+public class AddClassCommandTest {
+
+    private static final AcademicClass CS2103_F10 = new AcademicClass(new ModuleCode("CS2103"),
+            new ClassName("F10-2"));
+    private static final AcademicClass ST2334_T24 = new AcademicClass(new ModuleCode("ST2334"), new ClassName("T24"));
 
     @Test
-    public void constructor_nullPerson_throwsNullPointerException() {
-        assertThrows(NullPointerException.class, () -> new AddCommand(null));
+    public void constructor_nullAcademicClass_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> new AddClassCommand(null));
     }
 
     @Test
-    public void execute_personAcceptedByModel_addSuccessful() throws Exception {
-        ModelStubAcceptingPersonAdded modelStub = new ModelStubAcceptingPersonAdded();
-        Person validPerson = new PersonBuilder().build();
+    public void execute_academicClassAcceptedByModel_addSuccessful() throws Exception {
+        ModelStubAcceptingAcademicClassAdded modelStub = new ModelStubAcceptingAcademicClassAdded();
 
-        CommandResult commandResult = new AddCommand(validPerson).execute(modelStub);
+        CommandResult commandResult = new AddClassCommand(CS2103_F10).execute(modelStub);
 
-        assertEquals(String.format(AddCommand.MESSAGE_SUCCESS, Messages.format(validPerson)),
-                commandResult.getFeedbackToUser());
-        assertEquals(List.of(validPerson), modelStub.personsAdded);
+        assertEquals(String.format(AddClassCommand.MESSAGE_SUCCESS, CS2103_F10), commandResult.getFeedbackToUser());
+        assertEquals(List.of(CS2103_F10), modelStub.academicClassesAdded);
     }
 
     @Test
-    public void execute_duplicatePerson_throwsCommandException() {
-        Person validPerson = new PersonBuilder().build();
-        AddCommand addCommand = new AddCommand(validPerson);
-        ModelStub modelStub = new ModelStubWithPerson(validPerson);
+    public void execute_duplicateAcademicClass_throwsCommandException() {
+        AddClassCommand addClassCommand = new AddClassCommand(CS2103_F10);
+        ModelStub modelStub = new ModelStubWithAcademicClass(CS2103_F10);
 
-        assertThrows(CommandException.class, AddCommand.MESSAGE_DUPLICATE_PERSON, () -> addCommand.execute(modelStub));
+        assertThrows(CommandException.class, AddClassCommand.MESSAGE_DUPLICATE_CLASS, () ->
+                addClassCommand.execute(modelStub));
     }
 
     @Test
     public void equals() {
-        Person alice = new PersonBuilder().withName("Alice").build();
-        Person bob = new PersonBuilder().withName("Bob").build();
-        AddCommand addAliceCommand = new AddCommand(alice);
-        AddCommand addBobCommand = new AddCommand(bob);
+        AddClassCommand addCs2103Command = new AddClassCommand(CS2103_F10);
+        AddClassCommand addSt2334Command = new AddClassCommand(ST2334_T24);
 
         // same object -> returns true
-        assertTrue(addAliceCommand.equals(addAliceCommand));
+        assertTrue(addCs2103Command.equals(addCs2103Command));
 
         // same values -> returns true
-        AddCommand addAliceCommandCopy = new AddCommand(alice);
-        assertTrue(addAliceCommand.equals(addAliceCommandCopy));
+        AddClassCommand addCs2103CommandCopy = new AddClassCommand(CS2103_F10);
+        assertTrue(addCs2103Command.equals(addCs2103CommandCopy));
 
         // different types -> returns false
-        assertFalse(addAliceCommand.equals(1));
+        assertFalse(addCs2103Command.equals(1));
 
         // null -> returns false
-        assertFalse(addAliceCommand.equals(null));
+        assertFalse(addCs2103Command.equals(null));
 
-        // different person -> returns false
-        assertFalse(addAliceCommand.equals(addBobCommand));
+        // different academic class -> returns false
+        assertFalse(addCs2103Command.equals(addSt2334Command));
     }
 
     @Test
     public void toStringMethod() {
-        AddCommand addCommand = new AddCommand(ALICE);
-        String expected = AddCommand.class.getCanonicalName() + "{toAdd=" + ALICE + "}";
-        assertEquals(expected, addCommand.toString());
+        AddClassCommand addClassCommand = new AddClassCommand(CS2103_F10);
+        String expected = AddClassCommand.class.getCanonicalName() + "{toAdd=" + CS2103_F10 + "}";
+        assertEquals(expected, addClassCommand.toString());
     }
 
     /**
@@ -104,12 +103,7 @@ public class AddCommandTest {
         }
 
         @Override
-        public void addPerson(Person person) {
-            throw new AssertionError("This method should not be called.");
-        }
-
-        @Override
-        public void setAddressBook(ReadOnlyAddressBook newData) {
+        public void setAddressBook(ReadOnlyAddressBook addressBook) {
             throw new AssertionError("This method should not be called.");
         }
 
@@ -125,6 +119,11 @@ public class AddCommandTest {
 
         @Override
         public void deletePerson(Person target) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public void addPerson(Person person) {
             throw new AssertionError("This method should not be called.");
         }
 
@@ -160,39 +159,39 @@ public class AddCommandTest {
     }
 
     /**
-     * A Model stub that contains a single person.
+     * A Model stub that contains a single academic class.
      */
-    private class ModelStubWithPerson extends ModelStub {
-        private final Person person;
+    private class ModelStubWithAcademicClass extends ModelStub {
+        private final AcademicClass academicClass;
 
-        ModelStubWithPerson(Person person) {
-            requireNonNull(person);
-            this.person = person;
+        ModelStubWithAcademicClass(AcademicClass academicClass) {
+            requireNonNull(academicClass);
+            this.academicClass = academicClass;
         }
 
         @Override
-        public boolean hasPerson(Person person) {
-            requireNonNull(person);
-            return this.person.isSamePerson(person);
+        public boolean hasAcademicClass(AcademicClass academicClass) {
+            requireNonNull(academicClass);
+            return this.academicClass.equals(academicClass);
         }
     }
 
     /**
-     * A Model stub that always accepts the person being added.
+     * A Model stub that always accepts the academic class being added.
      */
-    private class ModelStubAcceptingPersonAdded extends ModelStub {
-        final ArrayList<Person> personsAdded = new ArrayList<>();
+    private class ModelStubAcceptingAcademicClassAdded extends ModelStub {
+        final ArrayList<AcademicClass> academicClassesAdded = new ArrayList<>();
 
         @Override
-        public boolean hasPerson(Person person) {
-            requireNonNull(person);
-            return personsAdded.stream().anyMatch(person::isSamePerson);
+        public boolean hasAcademicClass(AcademicClass academicClass) {
+            requireNonNull(academicClass);
+            return academicClassesAdded.contains(academicClass);
         }
 
         @Override
-        public void addPerson(Person person) {
-            requireNonNull(person);
-            personsAdded.add(person);
+        public void addAcademicClass(AcademicClass academicClass) {
+            requireNonNull(academicClass);
+            academicClassesAdded.add(academicClass);
         }
 
         @Override
@@ -200,5 +199,4 @@ public class AddCommandTest {
             return new AddressBook();
         }
     }
-
 }

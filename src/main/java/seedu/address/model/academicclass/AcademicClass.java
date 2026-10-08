@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.model.person.Person;
 
 /**
@@ -74,13 +73,8 @@ public class AcademicClass {
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
-                .add("moduleCode", moduleCode)
-                .add("className", className)
-                .add("students", students)
-                .toString();
+        return moduleCode + "-" + className;
     }
-
 
     /**
      * Unassigns the specified person from this academic class.
