@@ -87,6 +87,11 @@ public class LogicManagerTest {
         assertThrows(UnsupportedOperationException.class, () -> logic.getFilteredPersonList().remove(0));
     }
 
+    @Test
+    public void getAcademicClassList_returnsModelAcademicClasses() {
+        assertEquals(model.getAddressBook().getAcademicClassList(), logic.getAcademicClassList());
+    }
+
     /**
      * Executes the command and confirms that
      * - no exceptions are thrown <br>
