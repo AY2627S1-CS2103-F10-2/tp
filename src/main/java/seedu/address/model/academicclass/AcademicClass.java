@@ -76,7 +76,6 @@ public class AcademicClass {
         return moduleCode + "-" + className;
     }
 
-
     /**
      * Unassigns the specified person from this academic class.
      *

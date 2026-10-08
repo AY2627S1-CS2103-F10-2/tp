@@ -22,6 +22,9 @@ public class AddressBook implements ReadOnlyAddressBook {
     private final UniquePersonList persons = new UniquePersonList();
     private final UniqueAcademicClassList academicClasses = new UniqueAcademicClassList();
 
+    /**
+     * Creates an empty AddressBook.
+     */
     public AddressBook() {}
 
     /**

@@ -72,7 +72,9 @@ public interface Model {
      */
     void addAcademicClass(AcademicClass academicClass);
 
-    /** Returns an unmodifiable view of the academic class list */
+    /**
+     * Returns an unmodifiable view of the academic class list.
+     */
     ObservableList<AcademicClass> getAcademicClassList();
 
     /** Returns an unmodifiable view of the filtered person list */
