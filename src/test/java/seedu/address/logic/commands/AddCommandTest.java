@@ -144,6 +144,11 @@ public class AddCommandTest {
         }
 
         @Override
+        public void deleteAcademicClass(AcademicClass target) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
         public ObservableList<AcademicClass> getAcademicClassList() {
             throw new AssertionError("This method should not be called.");
         }

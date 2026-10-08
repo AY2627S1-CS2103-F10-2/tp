@@ -106,6 +106,11 @@ public class ModelManager implements Model {
     }
 
     @Override
+    public void deleteAcademicClass(AcademicClass target) {
+        addressBook.removeAcademicClass(target);
+    }
+
+    @Override
     public ObservableList<AcademicClass> getAcademicClassList() {
         return addressBook.getAcademicClassList();
     }
