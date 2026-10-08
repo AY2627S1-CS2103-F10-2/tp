@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonRootName;
 import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.ReadOnlyAddressBook;
+import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.person.Person;
 
 /**
@@ -20,15 +21,24 @@ import seedu.address.model.person.Person;
 class JsonSerializableAddressBook {
 
     public static final String MESSAGE_DUPLICATE_PERSON = "Persons list contains duplicate person(s).";
+    public static final String MESSAGE_DUPLICATE_ACADEMIC_CLASS =
+            "Academic classes list contains duplicate class(es).";
 
     private final List<JsonAdaptedPerson> persons = new ArrayList<>();
+    private final List<JsonAdaptedAcademicClass> academicClasses = new ArrayList<>();
 
     /**
      * Constructs a {@code JsonSerializableAddressBook} with the given persons.
      */
     @JsonCreator
-    public JsonSerializableAddressBook(@JsonProperty("persons") List<JsonAdaptedPerson> persons) {
-        this.persons.addAll(persons);
+    public JsonSerializableAddressBook(@JsonProperty("persons") List<JsonAdaptedPerson> persons,
+            @JsonProperty("academicClasses") List<JsonAdaptedAcademicClass> academicClasses) {
+        if (persons != null) {
+            this.persons.addAll(persons);
+        }
+        if (academicClasses != null) {
+            this.academicClasses.addAll(academicClasses);
+        }
     }
 
     /**
@@ -38,6 +48,8 @@ class JsonSerializableAddressBook {
      */
     public JsonSerializableAddressBook(ReadOnlyAddressBook source) {
         persons.addAll(source.getPersonList().stream().map(JsonAdaptedPerson::new).collect(Collectors.toList()));
+        academicClasses.addAll(source.getAcademicClassList().stream()
+                .map(JsonAdaptedAcademicClass::new).collect(Collectors.toList()));
     }
 
     /**
@@ -54,6 +66,15 @@ class JsonSerializableAddressBook {
             }
             addressBook.addPerson(person);
         }
+        List<AcademicClass> modelAcademicClasses = new ArrayList<>();
+        for (JsonAdaptedAcademicClass jsonAdaptedAcademicClass : academicClasses) {
+            AcademicClass academicClass = jsonAdaptedAcademicClass.toModelType();
+            if (modelAcademicClasses.contains(academicClass)) {
+                throw new IllegalValueException(MESSAGE_DUPLICATE_ACADEMIC_CLASS);
+            }
+            modelAcademicClasses.add(academicClass);
+        }
+        addressBook.setAcademicClasses(modelAcademicClasses);
         return addressBook;
     }
 
