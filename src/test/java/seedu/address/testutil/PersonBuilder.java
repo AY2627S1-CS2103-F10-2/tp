@@ -3,11 +3,11 @@ package seedu.address.testutil;
 import java.util.HashSet;
 import java.util.Set;
 
-import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Person;
-import seedu.address.model.person.Phone;
+import seedu.address.model.person.StudentNumber;
+import seedu.address.model.person.Telegram;
 import seedu.address.model.tag.Tag;
 import seedu.address.model.util.SampleDataUtil;
 
@@ -16,25 +16,24 @@ import seedu.address.model.util.SampleDataUtil;
  */
 public class PersonBuilder {
 
+    public static final String DEFAULT_STUDENT_NUMBER = "A0123456X";
     public static final String DEFAULT_NAME = "Amy Bee";
-    public static final String DEFAULT_PHONE = "85355255";
     public static final String DEFAULT_EMAIL = "amy@gmail.com";
-    public static final String DEFAULT_ADDRESS = "123, Jurong West Ave 6, #08-111";
 
+    private StudentNumber studentNumber;
     private Name name;
-    private Phone phone;
     private Email email;
-    private Address address;
+    private Telegram telegram;
     private Set<Tag> tags;
 
     /**
-     * Creates a {@code PersonBuilder} with the default details.
+     * Creates a {@code PersonBuilder} with the default details. The default person has no Telegram username.
      */
     public PersonBuilder() {
+        studentNumber = new StudentNumber(DEFAULT_STUDENT_NUMBER);
         name = new Name(DEFAULT_NAME);
-        phone = new Phone(DEFAULT_PHONE);
         email = new Email(DEFAULT_EMAIL);
-        address = new Address(DEFAULT_ADDRESS);
+        telegram = null;
         tags = new HashSet<>();
     }
 
@@ -42,11 +41,19 @@ public class PersonBuilder {
      * Initializes the PersonBuilder with the data of {@code personToCopy}.
      */
     public PersonBuilder(Person personToCopy) {
+        studentNumber = personToCopy.getStudentNumber();
         name = personToCopy.getName();
-        phone = personToCopy.getPhone();
         email = personToCopy.getEmail();
-        address = personToCopy.getAddress();
+        telegram = personToCopy.getTelegram().orElse(null);
         tags = new HashSet<>(personToCopy.getTags());
+    }
+
+    /**
+     * Sets the {@code StudentNumber} of the {@code Person} that we are building.
+     */
+    public PersonBuilder withStudentNumber(String studentNumber) {
+        this.studentNumber = new StudentNumber(studentNumber);
+        return this;
     }
 
     /**
@@ -58,30 +65,6 @@ public class PersonBuilder {
     }
 
     /**
-     * Parses the {@code tags} into a {@code Set<Tag>} and sets it to the {@code Person} that we are building.
-     */
-    public PersonBuilder withTags(String ... tags) {
-        this.tags = SampleDataUtil.getTagSet(tags);
-        return this;
-    }
-
-    /**
-     * Sets the {@code Address} of the {@code Person} that we are building.
-     */
-    public PersonBuilder withAddress(String address) {
-        this.address = new Address(address);
-        return this;
-    }
-
-    /**
-     * Sets the {@code Phone} of the {@code Person} that we are building.
-     */
-    public PersonBuilder withPhone(String phone) {
-        this.phone = new Phone(phone);
-        return this;
-    }
-
-    /**
      * Sets the {@code Email} of the {@code Person} that we are building.
      */
     public PersonBuilder withEmail(String email) {
@@ -89,8 +72,25 @@ public class PersonBuilder {
         return this;
     }
 
+    /**
+     * Sets the {@code Telegram} of the {@code Person} that we are building.
+     * A null {@code telegram} means the person has no Telegram username.
+     */
+    public PersonBuilder withTelegram(String telegram) {
+        this.telegram = telegram == null ? null : new Telegram(telegram);
+        return this;
+    }
+
+    /**
+     * Parses the {@code tags} into a {@code Set<Tag>} and sets it to the {@code Person} that we are building.
+     */
+    public PersonBuilder withTags(String ... tags) {
+        this.tags = SampleDataUtil.getTagSet(tags);
+        return this;
+    }
+
     public Person build() {
-        return new Person(name, phone, email, address, tags);
+        return new Person(studentNumber, name, email, telegram, tags);
     }
 
 }
