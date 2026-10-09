@@ -16,6 +16,10 @@ public class Messages {
     public static final String MESSAGE_INVALID_COMMAND_FORMAT = "Invalid command format!\n%1$s";
     public static final String MESSAGE_INVALID_PERSON_DISPLAYED_INDEX = "The person index provided is invalid.";
     public static final String MESSAGE_PERSONS_LISTED_OVERVIEW = "%1$d person(s) listed!";
+    public static final String MESSAGE_DUPLICATE_STUDENT_NUMBER =
+            "A student with this student number already exists.";
+    public static final String MESSAGE_DUPLICATE_EMAIL = "A student with this email already exists.";
+    public static final String MESSAGE_DUPLICATE_TELEGRAM = "A student with this Telegram username already exists.";
     public static final String MESSAGE_DUPLICATE_FIELDS =
                 "Multiple values specified for the following single-valued field(s): ";
 
@@ -37,13 +41,12 @@ public class Messages {
     public static String format(Person person) {
         final StringBuilder builder = new StringBuilder();
         builder.append(person.getName())
-                .append("; Phone: ")
-                .append(person.getPhone())
+                .append("; Student Number: ")
+                .append(person.getStudentNumber())
                 .append("; Email: ")
-                .append(person.getEmail())
-                .append("; Address: ")
-                .append(person.getAddress())
-                .append("; Tags: ");
+                .append(person.getEmail());
+        person.getTelegram().ifPresent(telegram -> builder.append("; Telegram: @").append(telegram));
+        builder.append("; Tags: ");
         person.getTags().forEach(builder::append);
         return builder.toString();
     }
