@@ -13,6 +13,9 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import seedu.address.commons.core.GuiSettings;
+import seedu.address.model.academicclass.AcademicClass;
+import seedu.address.model.academicclass.ClassName;
+import seedu.address.model.academicclass.ModuleCode;
 import seedu.address.model.person.NameContainsKeywordsPredicate;
 import seedu.address.testutil.AddressBookBuilder;
 
@@ -94,6 +97,30 @@ public class ModelManagerTest {
         modelManager.addPerson(ALICE);
         assertTrue(modelManager.hasTelegram(ALICE));
         assertFalse(modelManager.hasTelegram(BENSON));
+    }
+
+    @Test
+    public void hasAcademicClass_nullAcademicClass_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> modelManager.hasAcademicClass(null));
+    }
+
+    @Test
+    public void hasAcademicClass_academicClassNotInAddressBook_returnsFalse() {
+        AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+        assertFalse(modelManager.hasAcademicClass(academicClass));
+    }
+
+    @Test
+    public void hasAcademicClass_academicClassInAddressBook_returnsTrue() {
+        AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+        modelManager.addAcademicClass(academicClass);
+        assertTrue(modelManager.hasAcademicClass(academicClass));
+        assertEquals(List.of(academicClass), modelManager.getAcademicClassList());
+    }
+
+    @Test
+    public void getAcademicClassList_modifyList_throwsUnsupportedOperationException() {
+        assertThrows(UnsupportedOperationException.class, () -> modelManager.getAcademicClassList().remove(0));
     }
 
     @Test

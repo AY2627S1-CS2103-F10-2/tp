@@ -10,6 +10,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
+import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.person.Person;
 
 /**
@@ -103,6 +104,22 @@ public class ModelManager implements Model {
         requireAllNonNull(target, editedPerson);
 
         addressBook.setPerson(target, editedPerson);
+    }
+
+    @Override
+    public boolean hasAcademicClass(AcademicClass academicClass) {
+        requireNonNull(academicClass);
+        return addressBook.hasAcademicClass(academicClass);
+    }
+
+    @Override
+    public void addAcademicClass(AcademicClass academicClass) {
+        addressBook.addAcademicClass(academicClass);
+    }
+
+    @Override
+    public ObservableList<AcademicClass> getAcademicClassList() {
+        return addressBook.getAcademicClassList();
     }
 
     //=========== Filtered Person List Accessors =============================================================

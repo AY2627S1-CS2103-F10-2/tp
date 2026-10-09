@@ -120,6 +120,39 @@ public class AddressBookTest {
     }
 
     @Test
+    public void hasAcademicClass_nullAcademicClass_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> addressBook.hasAcademicClass(null));
+    }
+
+    @Test
+    public void hasAcademicClass_academicClassNotInAddressBook_returnsFalse() {
+        AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+        assertFalse(addressBook.hasAcademicClass(academicClass));
+    }
+
+    @Test
+    public void hasAcademicClass_academicClassInAddressBook_returnsTrue() {
+        AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+        addressBook.addAcademicClass(academicClass);
+        assertTrue(addressBook.hasAcademicClass(academicClass));
+    }
+
+    @Test
+    public void hasAcademicClass_academicClassWithSameIdentityInAddressBook_returnsTrue() {
+        AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+        AcademicClass sameAcademicClass = new AcademicClass(new ModuleCode("cs2103t"), new ClassName("f10-2"));
+        addressBook.addAcademicClass(academicClass);
+        assertTrue(addressBook.hasAcademicClass(sameAcademicClass));
+    }
+
+    @Test
+    public void addAcademicClass_duplicateAcademicClass_throwsDuplicateAcademicClassException() {
+        AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+        addressBook.addAcademicClass(academicClass);
+        assertThrows(DuplicateAcademicClassException.class, () -> addressBook.addAcademicClass(academicClass));
+    }
+
+    @Test
     public void toStringMethod() {
         String expected = AddressBook.class.getCanonicalName() + "{persons=" + addressBook.getPersonList()
                 + ", academicClasses=" + addressBook.getAcademicClassList() + "}";
