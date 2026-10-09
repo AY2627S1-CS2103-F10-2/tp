@@ -26,14 +26,14 @@ public class PersonTest {
     @Test
     public void constructor_nullRequiredField_throwsNullPointerException() {
         Set<Tag> tags = new HashSet<>();
-        assertThrows(NullPointerException.class,
-                () -> new Person(null, ALICE.getName(), ALICE.getEmail(), null, tags));
-        assertThrows(NullPointerException.class,
-                () -> new Person(ALICE.getStudentNumber(), null, ALICE.getEmail(), null, tags));
-        assertThrows(NullPointerException.class,
-                () -> new Person(ALICE.getStudentNumber(), ALICE.getName(), null, null, tags));
-        assertThrows(NullPointerException.class,
-                () -> new Person(ALICE.getStudentNumber(), ALICE.getName(), ALICE.getEmail(), null, null));
+        assertThrows(NullPointerException.class, ()
+                -> new Person(null, ALICE.getName(), ALICE.getEmail(), null, tags));
+        assertThrows(NullPointerException.class, ()
+                -> new Person(ALICE.getStudentNumber(), null, ALICE.getEmail(), null, tags));
+        assertThrows(NullPointerException.class, ()
+                -> new Person(ALICE.getStudentNumber(), ALICE.getName(), null, null, tags));
+        assertThrows(NullPointerException.class, ()
+                -> new Person(ALICE.getStudentNumber(), ALICE.getName(), ALICE.getEmail(), null, null));
     }
 
     @Test
