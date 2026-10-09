@@ -73,6 +73,12 @@ public interface Model {
     void addAcademicClass(AcademicClass academicClass);
 
     /**
+     * Deletes the given academic class.
+     * The academic class must exist in the address book.
+     */
+    void deleteAcademicClass(AcademicClass target);
+
+    /**
      * Returns an unmodifiable view of the academic class list.
      */
     ObservableList<AcademicClass> getAcademicClassList();

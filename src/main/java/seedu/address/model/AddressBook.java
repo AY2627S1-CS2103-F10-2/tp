@@ -127,6 +127,14 @@ public class AddressBook implements ReadOnlyAddressBook {
         academicClasses.setAcademicClasses(updatedAcademicClasses);
     }
 
+    /**
+     * Removes {@code key} from this address book without deleting any person records.
+     * {@code key} must exist in the address book.
+     */
+    public void removeAcademicClass(AcademicClass key) {
+        academicClasses.remove(key);
+    }
+
     //// util methods
 
     @Override
