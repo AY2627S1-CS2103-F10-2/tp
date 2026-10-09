@@ -13,9 +13,9 @@ import seedu.address.model.person.exceptions.PersonNotFoundException;
 
 /**
  * A list of persons that enforces uniqueness between its elements and does not allow nulls.
- * A person is considered unique by comparing using {@code Person#isSamePerson(Person)}. As such, adding and updating of
- * persons uses Person#isSamePerson(Person) for equality so as to ensure that the person being added or updated is
- * unique in terms of identity in the UniquePersonList. However, the removal of a person uses Person#equals(Object) so
+ * Two persons conflict if they have the same student number ({@code Person#isSamePerson(Person)}), the same email
+ * ({@code Person#hasSameEmail(Person)}) or the same Telegram username ({@code Person#hasSameTelegram(Person)}).
+ * Adding and updating of persons rejects any conflict. However, the removal of a person uses Person#equals(Object) so
  * as to ensure that the person with exactly the same fields will be removed.
  *
  * Supports a minimal set of list operations.
@@ -37,12 +37,29 @@ public class UniquePersonList implements Iterable<Person> {
     }
 
     /**
+     * Returns true if the list contains a person with the same email (ignoring case) as the given argument.
+     */
+    public boolean containsEmail(Person toCheck) {
+        requireNonNull(toCheck);
+        return internalList.stream().anyMatch(toCheck::hasSameEmail);
+    }
+
+    /**
+     * Returns true if the list contains a person with the same Telegram username (ignoring case) as the given
+     * argument.
+     */
+    public boolean containsTelegram(Person toCheck) {
+        requireNonNull(toCheck);
+        return internalList.stream().anyMatch(toCheck::hasSameTelegram);
+    }
+
+    /**
      * Adds a person to the list.
-     * The person must not already exist in the list.
+     * The person must not conflict with an existing person in the list.
      */
     public void add(Person toAdd) {
         requireNonNull(toAdd);
-        if (contains(toAdd)) {
+        if (internalList.stream().anyMatch(existing -> conflicts(existing, toAdd))) {
             throw new DuplicatePersonException();
         }
         internalList.add(toAdd);
@@ -51,7 +68,8 @@ public class UniquePersonList implements Iterable<Person> {
     /**
      * Replaces the person {@code target} in the list with {@code editedPerson}.
      * {@code target} must exist in the list.
-     * The person identity of {@code editedPerson} must not be the same as another existing person in the list.
+     * The student number, email and Telegram username of {@code editedPerson} must not be the same as those of
+     * another existing person in the list.
      */
     public void setPerson(Person target, Person editedPerson) {
         requireAllNonNull(target, editedPerson);
@@ -61,8 +79,10 @@ public class UniquePersonList implements Iterable<Person> {
             throw new PersonNotFoundException();
         }
 
-        if (!target.isSamePerson(editedPerson) && contains(editedPerson)) {
-            throw new DuplicatePersonException();
+        for (int i = 0; i < internalList.size(); i++) {
+            if (i != index && conflicts(internalList.get(i), editedPerson)) {
+                throw new DuplicatePersonException();
+            }
         }
 
         internalList.set(index, editedPerson);
@@ -139,11 +159,18 @@ public class UniquePersonList implements Iterable<Person> {
     private boolean personsAreUnique(List<Person> persons) {
         for (int i = 0; i < persons.size() - 1; i++) {
             for (int j = i + 1; j < persons.size(); j++) {
-                if (persons.get(i).isSamePerson(persons.get(j))) {
+                if (conflicts(persons.get(i), persons.get(j))) {
                     return false;
                 }
             }
         }
         return true;
+    }
+
+    /**
+     * Returns true if the two persons share a student number, an email or a Telegram username.
+     */
+    private static boolean conflicts(Person first, Person second) {
+        return first.isSamePerson(second) || first.hasSameEmail(second) || first.hasSameTelegram(second);
     }
 }

@@ -50,7 +50,29 @@ public class AddCommandTest {
         AddCommand addCommand = new AddCommand(validPerson);
         ModelStub modelStub = new ModelStubWithPerson(validPerson);
 
-        assertThrows(CommandException.class, AddCommand.MESSAGE_DUPLICATE_PERSON, () -> addCommand.execute(modelStub));
+        assertThrows(CommandException.class, Messages.MESSAGE_DUPLICATE_STUDENT_NUMBER, ()
+                -> addCommand.execute(modelStub));
+    }
+
+    @Test
+    public void execute_duplicateEmail_throwsCommandException() {
+        Person validPerson = new PersonBuilder().build();
+        Person sameEmailDifferentStudent = new PersonBuilder(validPerson).withStudentNumber("A9999999Z").build();
+        ModelStub modelStub = new ModelStubWithPerson(sameEmailDifferentStudent);
+
+        assertThrows(CommandException.class, Messages.MESSAGE_DUPLICATE_EMAIL, ()
+                -> new AddCommand(validPerson).execute(modelStub));
+    }
+
+    @Test
+    public void execute_duplicateTelegram_throwsCommandException() {
+        Person validPerson = new PersonBuilder().withTelegram("amy_bee").build();
+        Person sameTelegramDifferentStudent = new PersonBuilder().withStudentNumber("A9999999Z")
+                .withEmail("other@example.com").withTelegram("AMY_BEE").build();
+        ModelStub modelStub = new ModelStubWithPerson(sameTelegramDifferentStudent);
+
+        assertThrows(CommandException.class, Messages.MESSAGE_DUPLICATE_TELEGRAM, ()
+                -> new AddCommand(validPerson).execute(modelStub));
     }
 
     @Test
@@ -124,6 +146,16 @@ public class AddCommandTest {
         }
 
         @Override
+        public boolean hasEmail(Person person) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public boolean hasTelegram(Person person) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
         public void deletePerson(Person target) {
             throw new AssertionError("This method should not be called.");
         }
@@ -175,6 +207,18 @@ public class AddCommandTest {
             requireNonNull(person);
             return this.person.isSamePerson(person);
         }
+
+        @Override
+        public boolean hasEmail(Person person) {
+            requireNonNull(person);
+            return this.person.hasSameEmail(person);
+        }
+
+        @Override
+        public boolean hasTelegram(Person person) {
+            requireNonNull(person);
+            return this.person.hasSameTelegram(person);
+        }
     }
 
     /**
@@ -187,6 +231,18 @@ public class AddCommandTest {
         public boolean hasPerson(Person person) {
             requireNonNull(person);
             return personsAdded.stream().anyMatch(person::isSamePerson);
+        }
+
+        @Override
+        public boolean hasEmail(Person person) {
+            requireNonNull(person);
+            return personsAdded.stream().anyMatch(person::hasSameEmail);
+        }
+
+        @Override
+        public boolean hasTelegram(Person person) {
+            requireNonNull(person);
+            return personsAdded.stream().anyMatch(person::hasSameTelegram);
         }
 
         @Override

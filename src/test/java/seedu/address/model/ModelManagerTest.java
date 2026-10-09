@@ -72,6 +72,34 @@ public class ModelManagerTest {
     }
 
     @Test
+    public void hasEmail_nullPerson_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> modelManager.hasEmail(null));
+    }
+
+    @Test
+    public void hasEmail() {
+        assertFalse(modelManager.hasEmail(ALICE));
+
+        modelManager.addPerson(ALICE);
+        assertTrue(modelManager.hasEmail(ALICE));
+        assertFalse(modelManager.hasEmail(BENSON));
+    }
+
+    @Test
+    public void hasTelegram_nullPerson_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> modelManager.hasTelegram(null));
+    }
+
+    @Test
+    public void hasTelegram() {
+        assertFalse(modelManager.hasTelegram(ALICE));
+
+        modelManager.addPerson(ALICE);
+        assertTrue(modelManager.hasTelegram(ALICE));
+        assertFalse(modelManager.hasTelegram(BENSON));
+    }
+
+    @Test
     public void hasAcademicClass_nullAcademicClass_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> modelManager.hasAcademicClass(null));
     }

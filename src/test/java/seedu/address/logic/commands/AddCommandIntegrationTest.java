@@ -39,10 +39,36 @@ public class AddCommandIntegrationTest {
     }
 
     @Test
-    public void execute_duplicatePerson_throwsCommandException() {
+    public void execute_newPersonWithoutTelegram_success() {
+        Person validPerson = new PersonBuilder().withTelegram(null).build();
+
+        Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
+        expectedModel.addPerson(validPerson);
+
+        assertCommandSuccess(new AddCommand(validPerson), model,
+                String.format(AddCommand.MESSAGE_SUCCESS, Messages.format(validPerson)),
+                expectedModel);
+    }
+
+    @Test
+    public void execute_duplicateStudentNumber_throwsCommandException() {
         Person personInList = model.getAddressBook().getPersonList().get(0);
-        assertCommandFailure(new AddCommand(personInList), model,
-                AddCommand.MESSAGE_DUPLICATE_PERSON);
+        assertCommandFailure(new AddCommand(personInList), model, Messages.MESSAGE_DUPLICATE_STUDENT_NUMBER);
+    }
+
+    @Test
+    public void execute_duplicateEmail_throwsCommandException() {
+        Person personInList = model.getAddressBook().getPersonList().get(0);
+        Person sameEmail = new PersonBuilder().withEmail(personInList.getEmail().value.toUpperCase()).build();
+        assertCommandFailure(new AddCommand(sameEmail), model, Messages.MESSAGE_DUPLICATE_EMAIL);
+    }
+
+    @Test
+    public void execute_duplicateTelegram_throwsCommandException() {
+        Person personInList = model.getAddressBook().getPersonList().get(0);
+        Person sameTelegram = new PersonBuilder().withTelegram(personInList.getTelegram().get().value.toUpperCase())
+                .build();
+        assertCommandFailure(new AddCommand(sameTelegram), model, Messages.MESSAGE_DUPLICATE_TELEGRAM);
     }
 
 }
