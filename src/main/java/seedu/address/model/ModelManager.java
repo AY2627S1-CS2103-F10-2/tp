@@ -6,12 +6,15 @@ import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.PersonNameComparator;
 
 /**
  * Represents the in-memory model of the address book data.
@@ -22,6 +25,8 @@ public class ModelManager implements Model {
     private final AddressBook addressBook;
     private final UserPrefs userPrefs;
     private final FilteredList<Person> filteredPersons;
+    private final SortedList<Person> sortedPersons;
+    private final ObservableList<Person> displayedPersons;
 
     /**
      * Initializes a ModelManager with the given addressBook and userPrefs.
@@ -34,6 +39,8 @@ public class ModelManager implements Model {
         this.addressBook = new AddressBook(addressBook);
         this.userPrefs = new UserPrefs(userPrefs);
         filteredPersons = new FilteredList<>(this.addressBook.getPersonList());
+        sortedPersons = new SortedList<>(filteredPersons);
+        displayedPersons = FXCollections.unmodifiableObservableList(sortedPersons);
     }
 
     public ModelManager() {
@@ -125,18 +132,24 @@ public class ModelManager implements Model {
     //=========== Filtered Person List Accessors =============================================================
 
     /**
-     * Returns an unmodifiable view of the list of {@code Person} backed by the internal list of
-     * {@code addressBook}
+     * Returns an unmodifiable observable view shared by the UI and index-based commands.
      */
     @Override
     public ObservableList<Person> getFilteredPersonList() {
-        return filteredPersons;
+        return displayedPersons;
     }
 
     @Override
     public void updateFilteredPersonList(Predicate<Person> predicate) {
         requireNonNull(predicate);
         filteredPersons.setPredicate(predicate);
+        sortedPersons.setComparator(null);
+    }
+
+    @Override
+    public void updateFilteredPersonListAlphabetically(Predicate<Person> predicate) {
+        updateFilteredPersonList(predicate);
+        sortedPersons.setComparator(new PersonNameComparator());
     }
 
     @Override
@@ -152,7 +165,7 @@ public class ModelManager implements Model {
 
         return addressBook.equals(otherModelManager.addressBook)
                 && userPrefs.equals(otherModelManager.userPrefs)
-                && filteredPersons.equals(otherModelManager.filteredPersons);
+                && displayedPersons.equals(otherModelManager.displayedPersons);
     }
 
 }
