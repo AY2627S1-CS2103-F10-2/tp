@@ -2,6 +2,7 @@ package seedu.address.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.model.Model.PREDICATE_SHOW_ALL_PERSONS;
 import static seedu.address.testutil.Assert.assertThrows;
@@ -9,6 +10,7 @@ import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.BENSON;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
@@ -116,6 +118,30 @@ public class ModelManagerTest {
         modelManager.addAcademicClass(academicClass);
         assertTrue(modelManager.hasAcademicClass(academicClass));
         assertEquals(List.of(academicClass), modelManager.getAcademicClassList());
+    }
+
+    @Test
+    public void findAcademicClass_classExists_returnsStoredClass() {
+        AcademicClass storedClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+        AcademicClass queryClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+        modelManager.addAcademicClass(storedClass);
+
+        Optional<AcademicClass> result = modelManager.findAcademicClass(queryClass);
+
+        assertTrue(result.isPresent());
+        assertSame(storedClass, result.get());
+    }
+
+    @Test
+    public void findAcademicClass_classDoesNotExist_returnsEmpty() {
+        AcademicClass queryClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+
+        assertTrue(modelManager.findAcademicClass(queryClass).isEmpty());
+    }
+
+    @Test
+    public void findAcademicClass_nullAcademicClass_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> modelManager.findAcademicClass(null));
     }
 
     @Test

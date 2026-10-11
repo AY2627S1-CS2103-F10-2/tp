@@ -3,6 +3,7 @@ package seedu.address.model;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
@@ -131,6 +132,12 @@ public class ModelManager implements Model {
     @Override
     public ObservableList<Person> getFilteredPersonList() {
         return filteredPersons;
+    }
+
+    @Override
+    public Optional<AcademicClass> findAcademicClass(AcademicClass academicClass) {
+        requireNonNull(academicClass);
+        return addressBook.getAcademicClassList().stream().filter(academicClass::equals).findFirst();
     }
 
     @Override
