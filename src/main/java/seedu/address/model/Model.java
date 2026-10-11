@@ -92,6 +92,14 @@ public interface Model {
     /** Returns an unmodifiable view of the filtered person list */
     ObservableList<Person> getFilteredPersonList();
 
+    /**
+     * Returns the academic class with the same module code and class name as the given class.
+     *
+     * @param academicClass the academic class to find
+     * @return an {@code Optional} containing the matching academic class, or
+     *         {@code Optional#empty()} if no matching class exists
+     * @throws NullPointerException if {@code academicClass} is null
+     */
     Optional<AcademicClass> findAcademicClass(AcademicClass academicClass);
 
     /**
