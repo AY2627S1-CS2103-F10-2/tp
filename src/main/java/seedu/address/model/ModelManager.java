@@ -10,6 +10,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
+import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.person.Person;
 
 /**
@@ -21,6 +22,7 @@ public class ModelManager implements Model {
     private final AddressBook addressBook;
     private final UserPrefs userPrefs;
     private final FilteredList<Person> filteredPersons;
+    private final FilteredList<AcademicClass> filteredAcademicClasses;
 
     /**
      * Initializes a ModelManager with the given addressBook and userPrefs.
@@ -33,6 +35,7 @@ public class ModelManager implements Model {
         this.addressBook = new AddressBook(addressBook);
         this.userPrefs = new UserPrefs(userPrefs);
         filteredPersons = new FilteredList<>(this.addressBook.getPersonList());
+        filteredAcademicClasses = new FilteredList<>(this.addressBook.getAcademicClassList());
     }
 
     public ModelManager() {
@@ -110,6 +113,22 @@ public class ModelManager implements Model {
         filteredPersons.setPredicate(predicate);
     }
 
+    //=========== Filtered Academic-Class List Accessors ====================================================
+
+    /**
+     * Returns an unmodifiable view of the list of {@code AcademicClass} backed by the address book.
+     */
+    @Override
+    public ObservableList<AcademicClass> getFilteredAcademicClassList() {
+        return filteredAcademicClasses;
+    }
+
+    @Override
+    public void updateFilteredAcademicClassList(Predicate<AcademicClass> predicate) {
+        requireNonNull(predicate);
+        filteredAcademicClasses.setPredicate(predicate);
+    }
+
     @Override
     public boolean equals(Object other) {
         if (other == this) {
@@ -123,7 +142,8 @@ public class ModelManager implements Model {
 
         return addressBook.equals(otherModelManager.addressBook)
                 && userPrefs.equals(otherModelManager.userPrefs)
-                && filteredPersons.equals(otherModelManager.filteredPersons);
+                && filteredPersons.equals(otherModelManager.filteredPersons)
+                && filteredAcademicClasses.equals(otherModelManager.filteredAcademicClasses);
     }
 
 }

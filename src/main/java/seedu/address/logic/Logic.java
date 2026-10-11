@@ -27,6 +27,9 @@ public interface Logic {
     /** Returns an unmodifiable view of all academic classes in insertion order. */
     ObservableList<AcademicClass> getAcademicClassList();
 
+    /** Returns an unmodifiable view of the filtered academic-class list. */
+    ObservableList<AcademicClass> getFilteredAcademicClassList();
+
     /**
      * Returns the user prefs' GUI settings.
      */

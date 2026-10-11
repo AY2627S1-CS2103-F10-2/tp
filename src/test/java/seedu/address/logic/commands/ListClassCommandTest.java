@@ -1,6 +1,7 @@
 package seedu.address.logic.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static seedu.address.model.Model.PREDICATE_SHOW_ALL_ACADEMIC_CLASSES;
 
 import java.util.List;
 
@@ -24,11 +25,14 @@ public class ListClassCommandTest {
         AddressBook addressBook = new AddressBook();
         addressBook.setAcademicClasses(List.of(first, second));
         Model model = new ModelManager(addressBook, new UserPrefs());
+        model.updateFilteredAcademicClassList(academicClass -> academicClass.equals(second));
 
         CommandResult result = new ListClassCommand().execute(model);
 
         assertEquals(ListClassCommand.MESSAGE_SUCCESS, result.getFeedbackToUser());
+        assertEquals(List.of(first, second), model.getFilteredAcademicClassList());
         assertEquals(List.of(first, second), model.getAddressBook().getAcademicClassList());
+        model.updateFilteredAcademicClassList(PREDICATE_SHOW_ALL_ACADEMIC_CLASSES);
     }
 
 }

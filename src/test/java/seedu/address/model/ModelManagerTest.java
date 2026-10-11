@@ -13,6 +13,9 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import seedu.address.commons.core.GuiSettings;
+import seedu.address.model.academicclass.AcademicClass;
+import seedu.address.model.academicclass.ClassName;
+import seedu.address.model.academicclass.ModuleCode;
 import seedu.address.model.person.NameContainsKeywordsPredicate;
 import seedu.address.testutil.AddressBookBuilder;
 
@@ -71,6 +74,27 @@ public class ModelManagerTest {
     @Test
     public void getFilteredPersonList_modifyList_throwsUnsupportedOperationException() {
         assertThrows(UnsupportedOperationException.class, () -> modelManager.getFilteredPersonList().remove(0));
+    }
+
+    @Test
+    public void getFilteredAcademicClassList_filtersAndPreservesInsertionOrder() {
+        AcademicClass first = new AcademicClass(new ModuleCode("CS2100"), new ClassName("L03"));
+        AcademicClass second = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("T01"));
+        AddressBook addressBook = new AddressBook();
+        addressBook.setAcademicClasses(List.of(first, second));
+        modelManager = new ModelManager(addressBook, new UserPrefs());
+
+        modelManager.updateFilteredAcademicClassList(academicClass -> academicClass.equals(second));
+        assertEquals(List.of(second), modelManager.getFilteredAcademicClassList());
+
+        modelManager.updateFilteredAcademicClassList(Model.PREDICATE_SHOW_ALL_ACADEMIC_CLASSES);
+        assertEquals(List.of(first, second), modelManager.getFilteredAcademicClassList());
+    }
+
+    @Test
+    public void getFilteredAcademicClassList_modifyList_throwsUnsupportedOperationException() {
+        assertThrows(UnsupportedOperationException.class, () ->
+                modelManager.getFilteredAcademicClassList().remove(0));
     }
 
     @Test

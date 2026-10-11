@@ -92,6 +92,11 @@ public class LogicManagerTest {
         assertEquals(model.getAddressBook().getAcademicClassList(), logic.getAcademicClassList());
     }
 
+    @Test
+    public void getFilteredAcademicClassList_returnsModelFilteredAcademicClasses() {
+        assertEquals(model.getFilteredAcademicClassList(), logic.getFilteredAcademicClassList());
+    }
+
     /**
      * Executes the command and confirms that
      * - no exceptions are thrown <br>
