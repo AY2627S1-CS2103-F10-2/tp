@@ -13,12 +13,13 @@ import seedu.address.model.tag.Tag;
 
 /**
  * Represents a Person in the address book.
- * Guarantees: details are present and not null (except the optional Telegram), field values are validated,
+ * Guarantees: details are present and not null (except the optional Telegram),
+ * field values are validated,
  * immutable.
  */
 public class Person {
 
-    // Identity fields
+    // Identity fields. Each uniquely identify a person.
     private final StudentNumber studentNumber;
     private final Name name;
     private final Email email;
@@ -28,7 +29,8 @@ public class Person {
     private final Set<Tag> tags = new HashSet<>();
 
     /**
-     * Every field must be present and not null, except {@code telegram} which is optional.
+     * Every field must be present and not null, except {@code telegram} which is
+     * optional.
      */
     public Person(StudentNumber studentNumber, Name name, Email email, Telegram telegram, Set<Tag> tags) {
         requireAllNonNull(studentNumber, name, email, tags);
@@ -56,7 +58,8 @@ public class Person {
     }
 
     /**
-     * Returns an immutable tag set, which throws {@code UnsupportedOperationException}
+     * Returns an immutable tag set, which throws
+     * {@code UnsupportedOperationException}
      * if modification is attempted.
      */
     public Set<Tag> getTags() {
@@ -85,7 +88,8 @@ public class Person {
     }
 
     /**
-     * Returns true if both persons have a Telegram username and the usernames are the same, ignoring case.
+     * Returns true if both persons have a Telegram username and the usernames are
+     * the same, ignoring case.
      */
     public boolean hasSameTelegram(Person otherPerson) {
         return otherPerson != null
