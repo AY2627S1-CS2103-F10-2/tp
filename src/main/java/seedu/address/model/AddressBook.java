@@ -174,11 +174,11 @@ public class AddressBook implements ReadOnlyAddressBook {
     }
 
     /**
-     * Assigns the stored student to the stored class with the given identities.
+     * Assigns the given student to the given class.
+     * Both arguments must be the actual objects stored in this address book.
      * Returns true if membership was added, or false if already assigned.
      *
      * @throws NullPointerException     if either argument is null.
-     * @throws IllegalArgumentException if the student or class does not exist.
      */
     public boolean assignStudentToClass(Person person, AcademicClass academicClass) {
         requireAllNonNull(person, academicClass);

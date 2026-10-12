@@ -86,11 +86,11 @@ public interface Model {
     void addAcademicClass(AcademicClass academicClass);
 
     /**
-     * Assigns the stored student to the stored class with the given identities.
+     * Assigns the given student to the given class.
+     * Both arguments must be the actual objects stored in this address book.
      * Returns true if membership was added, or false if already assigned.
      * Does not change the current person filter or displayed order.
      * @throws NullPointerException if either argument is null.
-     * @throws IllegalArgumentException if the student or class does not exist.
      */
     boolean assignStudentToClass(Person person, AcademicClass academicClass);
 
