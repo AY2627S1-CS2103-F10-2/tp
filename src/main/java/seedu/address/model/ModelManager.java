@@ -82,7 +82,7 @@ public class ModelManager implements Model {
     public Optional<Person> findPersonByStudentNumber(StudentNumber studentNumber) {
         requireNonNull(studentNumber);
         return addressBook.getPersonList().stream()
-                .filter(person -> person.getStudentNumber().equals(studentNumber))
+                .filter(person -> person.hasStudentNumber(studentNumber))
                 .findFirst();
     }
 

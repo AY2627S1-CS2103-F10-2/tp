@@ -1,5 +1,6 @@
 package seedu.address.model.person;
 
+import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
 import java.util.Collections;
@@ -43,6 +44,15 @@ public class Person {
 
     public StudentNumber getStudentNumber() {
         return studentNumber;
+    }
+
+    /**
+     * Returns true if this person has the given student number, ignoring case.
+     * @throws NullPointerException if {@code studentNumber} is null.
+     */
+    public boolean hasStudentNumber(StudentNumber studentNumber) {
+        requireNonNull(studentNumber);
+        return this.studentNumber.equals(studentNumber);
     }
 
     public Name getName() {
