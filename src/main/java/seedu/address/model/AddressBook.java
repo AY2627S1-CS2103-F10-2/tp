@@ -30,10 +30,12 @@ public class AddressBook implements ReadOnlyAddressBook {
     /**
      * Creates an empty AddressBook.
      */
-    public AddressBook() {}
+    public AddressBook() {
+    }
 
     /**
-     * Creates an AddressBook using the persons and academic classes in {@code toBeCopied}.
+     * Creates an AddressBook using the persons and academic classes in
+     * {@code toBeCopied}.
      */
     public AddressBook(ReadOnlyAddressBook toBeCopied) {
         this();
@@ -77,7 +79,8 @@ public class AddressBook implements ReadOnlyAddressBook {
     //// person-level operations
 
     /**
-     * Returns true if a person with the same identity as {@code person} exists in the address book.
+     * Returns true if a person with the same identity as {@code person} exists in
+     * the address book.
      */
     public boolean hasPerson(Person person) {
         requireNonNull(person);
@@ -85,7 +88,8 @@ public class AddressBook implements ReadOnlyAddressBook {
     }
 
     /**
-     * Returns true if a person with the same email (ignoring case) as {@code person} exists in the address book.
+     * Returns true if a person with the same email (ignoring case) as
+     * {@code person} exists in the address book.
      */
     public boolean hasEmail(Person person) {
         requireNonNull(person);
@@ -93,7 +97,8 @@ public class AddressBook implements ReadOnlyAddressBook {
     }
 
     /**
-     * Returns true if a person with the same Telegram username (ignoring case) as {@code person} exists in the
+     * Returns true if a person with the same Telegram username (ignoring case) as
+     * {@code person} exists in the
      * address book.
      */
     public boolean hasTelegram(Person person) {
@@ -126,9 +131,11 @@ public class AddressBook implements ReadOnlyAddressBook {
     }
 
     /**
-     * Replaces the given person {@code target} in the list with {@code editedPerson}.
+     * Replaces the given person {@code target} in the list with
+     * {@code editedPerson}.
      * {@code target} must exist in the address book.
-     * The person identity of {@code editedPerson} must not be the same as another existing person in the address book.
+     * The person identity of {@code editedPerson} must not be the same as another
+     * existing person in the address book.
      */
     public void setPerson(Person target, Person editedPerson) {
         requireNonNull(editedPerson);
@@ -147,7 +154,8 @@ public class AddressBook implements ReadOnlyAddressBook {
     //// academic class-level operations
 
     /**
-     * Returns true if an academic class with the same module code and class name exists in the address book.
+     * Returns true if an academic class with the same module code and class name
+     * exists in the address book.
      */
     public boolean hasAcademicClass(AcademicClass academicClass) {
         requireNonNull(academicClass);
@@ -168,16 +176,13 @@ public class AddressBook implements ReadOnlyAddressBook {
     /**
      * Assigns the stored student to the stored class with the given identities.
      * Returns true if membership was added, or false if already assigned.
-     * @throws NullPointerException if either argument is null.
+     *
+     * @throws NullPointerException     if either argument is null.
      * @throws IllegalArgumentException if the student or class does not exist.
      */
     public boolean assignStudentToClass(Person person, AcademicClass academicClass) {
         requireAllNonNull(person, academicClass);
-        Person storedPerson = findPersonByStudentNumber(person.getStudentNumber())
-                .orElseThrow(() -> new IllegalArgumentException("Student does not exist."));
-        AcademicClass storedClass = findAcademicClass(academicClass.getModuleCode(), academicClass.getClassName())
-                .orElseThrow(() -> new IllegalArgumentException("Academic class does not exist."));
-        return storedClass.assignStudent(storedPerson);
+        return academicClass.assignStudent(person);
     }
 
     //// util methods
