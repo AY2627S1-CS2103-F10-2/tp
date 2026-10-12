@@ -23,12 +23,12 @@ public class AssignCommand extends Command {
     public static final String MESSAGE_STUDENT_NOT_FOUND = "Student (%1$s) cannot be found in the address book.";
     public static final String MESSAGE_CLASS_NOT_FOUND = "Class (%1$s-%2$s) cannot be found in the address book.";
 
-    private final String studentNumber;
-    private final String moduleCode;
-    private final String className;
+    private final StudentNumber studentNumber;
+    private final ModuleCode moduleCode;
+    private final ClassName className;
 
-    /** Creates a command with search values already trimmed by the parser. */
-    public AssignCommand(String studentNumber, String moduleCode, String className) {
+    /** Creates a command with identifiers validated by the parser. */
+    public AssignCommand(StudentNumber studentNumber, ModuleCode moduleCode, ClassName className) {
         requireAllNonNull(studentNumber, moduleCode, className);
         this.studentNumber = studentNumber;
         this.moduleCode = moduleCode;
@@ -39,16 +39,10 @@ public class AssignCommand extends Command {
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
         ReadOnlyAddressBook addressBook = model.getAddressBook();
-        if (!StudentNumber.isValidStudentNumber(studentNumber)) {
-            throw new CommandException(String.format(MESSAGE_STUDENT_NOT_FOUND, studentNumber));
-        }
-        Person person = addressBook.findPersonByStudentNumber(new StudentNumber(studentNumber))
+        Person person = addressBook.findPersonByStudentNumber(studentNumber)
                 .orElseThrow(() -> new CommandException(String.format(MESSAGE_STUDENT_NOT_FOUND, studentNumber)));
-        if (!ModuleCode.isValidModuleCode(moduleCode) || !ClassName.isValidClassName(className)) {
-            throw new CommandException(String.format(MESSAGE_CLASS_NOT_FOUND, moduleCode, className));
-        }
         AcademicClass academicClass = addressBook
-                .findAcademicClass(new ModuleCode(moduleCode), new ClassName(className))
+                .findAcademicClass(moduleCode, className)
                 .orElseThrow(() -> new CommandException(String.format(MESSAGE_CLASS_NOT_FOUND, moduleCode, className)));
         model.assignStudentToClass(person, academicClass);
         return new CommandResult(String.format(MESSAGE_SUCCESS, person.getStudentNumber(), academicClass));

@@ -11,8 +11,11 @@ import java.util.regex.Pattern;
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.AssignCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.academicclass.ClassName;
+import seedu.address.model.academicclass.ModuleCode;
+import seedu.address.model.person.StudentNumber;
 
-/** Parses assignment syntax without enforcing identifier formats. */
+/** Parses assignment arguments and validates their identifiers. */
 public class AssignCommandParser implements Parser<AssignCommand> {
     public static final String MESSAGE_MISSING_PARAMETERS = "You're missing some parameters. The correct format is "
             + "assign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME";
@@ -40,8 +43,10 @@ public class AssignCommandParser implements Parser<AssignCommand> {
                 throw new ParseException(MESSAGE_MISSING_PARAMETERS);
             }
         }
-        return new AssignCommand(arguments.getValue(PREFIX_STUDENT_NUMBER).orElseThrow(),
-                arguments.getValue(PREFIX_MODULE_CODE).orElseThrow(),
-                arguments.getValue(PREFIX_CLASS_NAME).orElseThrow());
+        StudentNumber studentNumber = ParserUtil.parseStudentNumber(
+                arguments.getValue(PREFIX_STUDENT_NUMBER).orElseThrow());
+        ModuleCode moduleCode = ParserUtil.parseModuleCode(arguments.getValue(PREFIX_MODULE_CODE).orElseThrow());
+        ClassName className = ParserUtil.parseClassName(arguments.getValue(PREFIX_CLASS_NAME).orElseThrow());
+        return new AssignCommand(studentNumber, moduleCode, className);
     }
 }

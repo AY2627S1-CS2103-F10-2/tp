@@ -12,6 +12,9 @@ import org.junit.jupiter.api.Test;
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.AssignCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.academicclass.ClassName;
+import seedu.address.model.academicclass.ModuleCode;
+import seedu.address.model.person.StudentNumber;
 
 public class AssignCommandParserTest {
     private final AssignCommandParser parser = new AssignCommandParser();
@@ -35,7 +38,8 @@ public class AssignCommandParserTest {
 
     @Test
     public void parse_anyParameterOrderAndWhitespace_success() {
-        AssignCommand expected = new AssignCommand("A1111111H", "CS2103", "F10");
+        AssignCommand expected = new AssignCommand(new StudentNumber("A1111111H"),
+                new ModuleCode("CS2103"), new ClassName("F10"));
         for (String args : List.of(" sn/A1111111H m/CS2103 c/F10", " sn/A1111111H c/F10 m/CS2103",
                 " m/CS2103 sn/A1111111H c/F10", " m/CS2103 c/F10 sn/A1111111H",
                 " c/F10 sn/A1111111H m/CS2103", " c/F10 m/CS2103 sn/A1111111H",
@@ -45,9 +49,16 @@ public class AssignCommandParserTest {
     }
 
     @Test
-    public void parse_invalidIdentifiers_acceptsSearchText() {
-        assertParseSuccess(parser, " sn/random-numbers m/fake-module c/fake",
-                new AssignCommand("random-numbers", "fake-module", "fake"));
+    public void parse_invalidIdentifiers_reportsValidationErrors() {
+        for (String number : List.of("random-numbers", "1234", "A012 3456X")) {
+            assertParseFailure(parser, " sn/" + number + " m/CS2103 c/F10", StudentNumber.MESSAGE_CONSTRAINTS);
+        }
+        for (String module : List.of("fake-module", "1234", "CS 2103")) {
+            assertParseFailure(parser, " sn/A1111111H m/" + module + " c/F10", ModuleCode.MESSAGE_CONSTRAINTS);
+        }
+        for (String name : List.of("---", "F/10", "F 10")) {
+            assertParseFailure(parser, " sn/A1111111H m/CS2103 c/" + name, ClassName.MESSAGE_CONSTRAINTS);
+        }
     }
 
     @Test
@@ -78,7 +89,7 @@ public class AssignCommandParserTest {
 
     @Test
     public void parseCommand_assign_routesToParser() throws Exception {
-        assertEquals(new AssignCommand("A1111111H", "CS2103", "F10"),
+        assertEquals(new AssignCommand(new StudentNumber("A1111111H"), new ModuleCode("CS2103"), new ClassName("F10")),
                 new AddressBookParser().parseCommand("assign sn/A1111111H m/CS2103 c/F10"));
         assertThrows(ParseException.class, () -> new AddressBookParser().parseCommand("assign"));
     }

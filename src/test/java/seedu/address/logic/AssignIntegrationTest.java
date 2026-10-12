@@ -65,14 +65,17 @@ public class AssignIntegrationTest {
         logic.execute("assign sn/" + ALICE.getStudentNumber() + " m/CS2103T c/F10-2");
         String saved = Files.readString(storage.getAddressBookFilePath());
 
-        for (String input : List.of("assign sn/random-numbers m/CS2103T c/F10-2",
-                "assign sn/" + BENSON.getStudentNumber() + " m/fake-module c/F10-2",
+        for (String input : List.of("assign sn/A9999999Z m/CS2103T c/F10-2",
+                "assign sn/" + BENSON.getStudentNumber() + " m/CS9999 c/F10-2",
                 "assign sn/" + BENSON.getStudentNumber() + " m/CS2103T c/F10")) {
             assertThrows(CommandException.class, () -> logic.execute(input));
             assertEquals(Set.of(ALICE), academicClass.getStudents());
             assertEquals(saved, Files.readString(storage.getAddressBookFilePath()));
         }
         for (String input : List.of("assign sn/ m/CS2103T c/F10-2",
+                "assign sn/random-numbers m/CS2103T c/F10-2",
+                "assign sn/A0123456X m/fake-module c/F10-2",
+                "assign sn/A0123456X m/CS2103T c/---",
                 "assign sn/A0123456X m/CS2103T c/F10-2 x/extra",
                 "assign sn/A0123456X sn/A0234567Y m/CS2103T c/F10-2")) {
             assertThrows(ParseException.class, () -> logic.execute(input));
