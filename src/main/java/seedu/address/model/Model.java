@@ -6,6 +6,8 @@ import java.util.function.Predicate;
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.model.academicclass.AcademicClass;
+import seedu.address.model.academicclass.ClassName;
+import seedu.address.model.academicclass.ModuleCode;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.StudentNumber;
 
@@ -99,6 +101,17 @@ public interface Model {
 
     /** Returns an unmodifiable observable view of persons in their displayed order. */
     ObservableList<Person> getFilteredPersonList();
+
+    /**
+     * Returns the academic class with the given module code and class name.
+     *
+     * @param moduleCode the module code of the academic class to find
+     * @param className the class name of the academic class to find
+     * @return an {@code Optional} containing the matching academic class, or
+     *         {@code Optional#empty()} if no matching class exists
+     * @throws NullPointerException if {@code moduleCode} or {@code className} is null
+     */
+    Optional<AcademicClass> findAcademicClass(ModuleCode moduleCode, ClassName className);
 
     /**
      * Updates the person filter and restores the matching persons' insertion order.

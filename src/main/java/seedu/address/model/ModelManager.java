@@ -14,6 +14,8 @@ import javafx.collections.transformation.SortedList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.model.academicclass.AcademicClass;
+import seedu.address.model.academicclass.ClassName;
+import seedu.address.model.academicclass.ModuleCode;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.PersonNameComparator;
 import seedu.address.model.person.StudentNumber;
@@ -147,6 +149,14 @@ public class ModelManager implements Model {
     @Override
     public ObservableList<Person> getFilteredPersonList() {
         return displayedPersons;
+    }
+
+    @Override
+    public Optional<AcademicClass> findAcademicClass(ModuleCode moduleCode, ClassName className) {
+        requireNonNull(moduleCode);
+        requireNonNull(className);
+        return addressBook.getAcademicClassList().stream().filter(
+                c -> c.hasIdentity(moduleCode, className)).findFirst();
     }
 
     @Override
