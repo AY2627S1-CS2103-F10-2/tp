@@ -2,7 +2,6 @@ package seedu.address.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.model.Model.PREDICATE_SHOW_ALL_PERSONS;
 import static seedu.address.testutil.Assert.assertThrows;
@@ -74,46 +73,6 @@ public class ModelManagerTest {
         assertTrue(modelManager.hasPerson(ALICE));
     }
 
-    @Test
-    public void findPersonByStudentNumber_nullStudentNumber_throwsNullPointerException() {
-        assertThrows(NullPointerException.class, () -> modelManager.findPersonByStudentNumber(null));
-    }
-
-    @Test
-    public void findPersonByStudentNumber_personNotInAddressBook_returnsEmpty() {
-        assertEquals(Optional.empty(), modelManager.findPersonByStudentNumber(ALICE.getStudentNumber()));
-        modelManager.addPerson(BENSON);
-        assertEquals(Optional.empty(), modelManager.findPersonByStudentNumber(ALICE.getStudentNumber()));
-    }
-
-    @Test
-    public void findPersonByStudentNumber_matchingStudentNumber_returnsPerson() {
-        modelManager.addPerson(BENSON);
-        modelManager.addPerson(ALICE);
-        assertEquals(Optional.of(ALICE), modelManager.findPersonByStudentNumber(ALICE.getStudentNumber()));
-        assertEquals(Optional.of(ALICE),
-                modelManager.findPersonByStudentNumber(new StudentNumber("a0123456x")));
-        assertEquals(Optional.empty(), modelManager.findPersonByStudentNumber(new StudentNumber("A0123456")));
-    }
-
-    @Test
-    public void findPersonByStudentNumber_personHiddenByFilter_returnsPersonWithoutChangingFilter() {
-        modelManager.addPerson(ALICE);
-        modelManager.addPerson(BENSON);
-        modelManager.updateFilteredPersonList(new NameContainsKeywordsPredicate(List.of("Benson")));
-
-        assertEquals(Optional.of(ALICE), modelManager.findPersonByStudentNumber(ALICE.getStudentNumber()));
-        assertEquals(Optional.empty(), modelManager.findPersonByStudentNumber(new StudentNumber("A9999999Z")));
-        assertEquals(List.of(BENSON), modelManager.getFilteredPersonList());
-        assertEquals(List.of(ALICE, BENSON), modelManager.getAddressBook().getPersonList());
-    }
-
-    @Test
-    public void findPersonByStudentNumber_personDeleted_returnsEmpty() {
-        modelManager.addPerson(ALICE);
-        modelManager.deletePerson(ALICE);
-        assertEquals(Optional.empty(), modelManager.findPersonByStudentNumber(ALICE.getStudentNumber()));
-    }
 
     @Test
     public void hasEmail_nullPerson_throwsNullPointerException() {
@@ -162,35 +121,6 @@ public class ModelManagerTest {
         assertEquals(List.of(academicClass), modelManager.getAcademicClassList());
     }
 
-    @Test
-    public void findAcademicClass_classExists_returnsStoredClass() {
-        AcademicClass storedClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
-        modelManager.addAcademicClass(storedClass);
-
-        Optional<AcademicClass> result = modelManager.findAcademicClass(
-                new ModuleCode("CS2103T"), new ClassName("F10-2"));
-
-        assertTrue(result.isPresent());
-        assertSame(storedClass, result.get());
-    }
-
-    @Test
-    public void findAcademicClass_classDoesNotExist_returnsEmpty() {
-        assertTrue(modelManager.findAcademicClass(
-                new ModuleCode("CS2103T"), new ClassName("F10-2")).isEmpty());
-    }
-
-    @Test
-    public void findAcademicClass_nullModuleCode_throwsNullPointerException() {
-        assertThrows(NullPointerException.class, () -> modelManager.findAcademicClass(
-                null, new ClassName("F10-2")));
-    }
-
-    @Test
-    public void findAcademicClass_nullClassName_throwsNullPointerException() {
-        assertThrows(NullPointerException.class, () -> modelManager.findAcademicClass(
-                new ModuleCode("CS2103T"), null));
-    }
 
     @Test
     public void getAcademicClassList_modifyList_throwsUnsupportedOperationException() {
@@ -200,6 +130,21 @@ public class ModelManagerTest {
     @Test
     public void getFilteredPersonList_modifyList_throwsUnsupportedOperationException() {
         assertThrows(UnsupportedOperationException.class, () -> modelManager.getFilteredPersonList().remove(0));
+    }
+
+
+    @Test
+    public void findPersonByStudentNumber_personHiddenByFilter_returnsPersonWithoutChangingFilter() {
+        modelManager.addPerson(ALICE);
+        modelManager.addPerson(BENSON);
+        modelManager.updateFilteredPersonList(new NameContainsKeywordsPredicate(List.of("Benson")));
+
+        assertEquals(Optional.of(ALICE), modelManager.getAddressBook()
+                .findPersonByStudentNumber(ALICE.getStudentNumber()));
+        assertEquals(Optional.empty(), modelManager.getAddressBook()
+                .findPersonByStudentNumber(new StudentNumber("A9999999Z")));
+        assertEquals(List.of(BENSON), modelManager.getFilteredPersonList());
+        assertEquals(List.of(ALICE, BENSON), modelManager.getAddressBook().getPersonList());
     }
 
     @Test

@@ -3,7 +3,6 @@ package seedu.address.model;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
-import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
@@ -14,11 +13,8 @@ import javafx.collections.transformation.SortedList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.model.academicclass.AcademicClass;
-import seedu.address.model.academicclass.ClassName;
-import seedu.address.model.academicclass.ModuleCode;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.PersonNameComparator;
-import seedu.address.model.person.StudentNumber;
 
 /**
  * Represents the in-memory model of the address book data.
@@ -87,13 +83,6 @@ public class ModelManager implements Model {
         return addressBook.hasPerson(person);
     }
 
-    @Override
-    public Optional<Person> findPersonByStudentNumber(StudentNumber studentNumber) {
-        requireNonNull(studentNumber);
-        return addressBook.getPersonList().stream()
-                .filter(person -> person.hasStudentNumber(studentNumber))
-                .findFirst();
-    }
 
     @Override
     public boolean hasEmail(Person person) {
@@ -151,13 +140,6 @@ public class ModelManager implements Model {
         return displayedPersons;
     }
 
-    @Override
-    public Optional<AcademicClass> findAcademicClass(ModuleCode moduleCode, ClassName className) {
-        requireNonNull(moduleCode);
-        requireNonNull(className);
-        return addressBook.getAcademicClassList().stream().filter(
-                c -> c.hasIdentity(moduleCode, className)).findFirst();
-    }
 
     @Override
     public void updateFilteredPersonList(Predicate<Person> predicate) {

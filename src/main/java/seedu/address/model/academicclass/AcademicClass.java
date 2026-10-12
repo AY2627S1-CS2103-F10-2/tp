@@ -97,5 +97,4 @@ public class AcademicClass {
     public boolean hasIdentity(ModuleCode moduleCode, ClassName className) {
         return this.className.equals(className) && this.moduleCode.equals(moduleCode);
     }
-
 }
