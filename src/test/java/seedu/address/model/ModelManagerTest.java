@@ -19,6 +19,7 @@ import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
 import seedu.address.model.person.NameContainsKeywordsPredicate;
+import seedu.address.model.person.StudentNumber;
 import seedu.address.testutil.AddressBookBuilder;
 
 public class ModelManagerTest {
@@ -71,6 +72,47 @@ public class ModelManagerTest {
     public void hasPerson_personInAddressBook_returnsTrue() {
         modelManager.addPerson(ALICE);
         assertTrue(modelManager.hasPerson(ALICE));
+    }
+
+    @Test
+    public void findPersonByStudentNumber_nullStudentNumber_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> modelManager.findPersonByStudentNumber(null));
+    }
+
+    @Test
+    public void findPersonByStudentNumber_personNotInAddressBook_returnsEmpty() {
+        assertEquals(Optional.empty(), modelManager.findPersonByStudentNumber(ALICE.getStudentNumber()));
+        modelManager.addPerson(BENSON);
+        assertEquals(Optional.empty(), modelManager.findPersonByStudentNumber(ALICE.getStudentNumber()));
+    }
+
+    @Test
+    public void findPersonByStudentNumber_matchingStudentNumber_returnsPerson() {
+        modelManager.addPerson(BENSON);
+        modelManager.addPerson(ALICE);
+        assertEquals(Optional.of(ALICE), modelManager.findPersonByStudentNumber(ALICE.getStudentNumber()));
+        assertEquals(Optional.of(ALICE),
+                modelManager.findPersonByStudentNumber(new StudentNumber("a0123456x")));
+        assertEquals(Optional.empty(), modelManager.findPersonByStudentNumber(new StudentNumber("A0123456")));
+    }
+
+    @Test
+    public void findPersonByStudentNumber_personHiddenByFilter_returnsPersonWithoutChangingFilter() {
+        modelManager.addPerson(ALICE);
+        modelManager.addPerson(BENSON);
+        modelManager.updateFilteredPersonList(new NameContainsKeywordsPredicate(List.of("Benson")));
+
+        assertEquals(Optional.of(ALICE), modelManager.findPersonByStudentNumber(ALICE.getStudentNumber()));
+        assertEquals(Optional.empty(), modelManager.findPersonByStudentNumber(new StudentNumber("A9999999Z")));
+        assertEquals(List.of(BENSON), modelManager.getFilteredPersonList());
+        assertEquals(List.of(ALICE, BENSON), modelManager.getAddressBook().getPersonList());
+    }
+
+    @Test
+    public void findPersonByStudentNumber_personDeleted_returnsEmpty() {
+        modelManager.addPerson(ALICE);
+        modelManager.deletePerson(ALICE);
+        assertEquals(Optional.empty(), modelManager.findPersonByStudentNumber(ALICE.getStudentNumber()));
     }
 
     @Test

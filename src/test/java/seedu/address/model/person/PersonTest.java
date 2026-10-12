@@ -59,6 +59,19 @@ public class PersonTest {
     }
 
     @Test
+    public void hasStudentNumber_nullStudentNumber_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> ALICE.hasStudentNumber(null));
+    }
+
+    @Test
+    public void hasStudentNumber() {
+        assertTrue(ALICE.hasStudentNumber(ALICE.getStudentNumber()));
+        assertTrue(ALICE.hasStudentNumber(new StudentNumber("a0123456x")));
+        assertFalse(ALICE.hasStudentNumber(BOB.getStudentNumber()));
+        assertFalse(ALICE.hasStudentNumber(new StudentNumber("A0123456")));
+    }
+
+    @Test
     public void isSamePerson() {
         // same object -> returns true
         assertTrue(ALICE.isSamePerson(ALICE));

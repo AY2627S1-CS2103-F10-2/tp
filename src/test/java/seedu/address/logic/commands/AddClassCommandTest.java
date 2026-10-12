@@ -24,6 +24,7 @@ import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.StudentNumber;
 
 public class AddClassCommandTest {
 
@@ -114,6 +115,11 @@ public class AddClassCommandTest {
         }
 
         @Override
+        public Optional<Person> findPersonByStudentNumber(StudentNumber studentNumber) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
         public boolean hasPerson(Person person) {
             throw new AssertionError("This method should not be called.");
         }
@@ -170,6 +176,11 @@ public class AddClassCommandTest {
 
         @Override
         public void updateFilteredPersonList(Predicate<Person> predicate) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public void updateFilteredPersonListAlphabetically(Predicate<Person> predicate) {
             throw new AssertionError("This method should not be called.");
         }
     }
