@@ -1,11 +1,13 @@
 package seedu.address.model;
 
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.StudentNumber;
 
 /**
  * The API of the Model component.
@@ -41,6 +43,13 @@ public interface Model {
      * Returns true if a person with the same identity as {@code person} exists in the address book.
      */
     boolean hasPerson(Person person);
+
+    /**
+     * Finds a person by their exact student number in the full address book, regardless of the current filter.
+     * Returns an empty Optional if no matching person exists. Does not change the current filter.
+     * @throws NullPointerException if {@code studentNumber} is null.
+     */
+    Optional<Person> findPersonByStudentNumber(StudentNumber studentNumber);
 
     /**
      * Returns true if a person with the same email (ignoring case) as {@code person} exists in the address book.

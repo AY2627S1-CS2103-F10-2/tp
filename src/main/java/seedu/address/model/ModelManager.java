@@ -3,6 +3,7 @@ package seedu.address.model;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
@@ -15,6 +16,7 @@ import seedu.address.commons.core.LogsCenter;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.PersonNameComparator;
+import seedu.address.model.person.StudentNumber;
 
 /**
  * Represents the in-memory model of the address book data.
@@ -81,6 +83,14 @@ public class ModelManager implements Model {
     public boolean hasPerson(Person person) {
         requireNonNull(person);
         return addressBook.hasPerson(person);
+    }
+
+    @Override
+    public Optional<Person> findPersonByStudentNumber(StudentNumber studentNumber) {
+        requireNonNull(studentNumber);
+        return addressBook.getPersonList().stream()
+                .filter(person -> person.hasStudentNumber(studentNumber))
+                .findFirst();
     }
 
     @Override
