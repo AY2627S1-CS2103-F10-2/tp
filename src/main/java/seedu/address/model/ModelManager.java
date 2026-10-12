@@ -12,6 +12,8 @@ import javafx.collections.transformation.FilteredList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.model.academicclass.AcademicClass;
+import seedu.address.model.academicclass.ClassName;
+import seedu.address.model.academicclass.ModuleCode;
 import seedu.address.model.person.Person;
 
 /**
@@ -135,9 +137,10 @@ public class ModelManager implements Model {
     }
 
     @Override
-    public Optional<AcademicClass> findAcademicClass(AcademicClass academicClass) {
-        requireNonNull(academicClass);
-        return addressBook.getAcademicClassList().stream().filter(academicClass::equals).findFirst();
+    public Optional<AcademicClass> findAcademicClass(ModuleCode moduleCode, ClassName className) {
+        requireNonNull(moduleCode);
+        requireNonNull(className);
+        return addressBook.getAcademicClassList().stream().filter(c -> c.hasIdentity(moduleCode, className)).findFirst();
     }
 
     @Override

@@ -123,10 +123,10 @@ public class ModelManagerTest {
     @Test
     public void findAcademicClass_classExists_returnsStoredClass() {
         AcademicClass storedClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
-        AcademicClass queryClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
         modelManager.addAcademicClass(storedClass);
 
-        Optional<AcademicClass> result = modelManager.findAcademicClass(queryClass);
+        Optional<AcademicClass> result = modelManager.findAcademicClass(
+                new ModuleCode("CS2103T"), new ClassName("F10-2"));
 
         assertTrue(result.isPresent());
         assertSame(storedClass, result.get());
@@ -134,14 +134,20 @@ public class ModelManagerTest {
 
     @Test
     public void findAcademicClass_classDoesNotExist_returnsEmpty() {
-        AcademicClass queryClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
-
-        assertTrue(modelManager.findAcademicClass(queryClass).isEmpty());
+        assertTrue(modelManager.findAcademicClass(
+                new ModuleCode("CS2103T"), new ClassName("F10-2")).isEmpty());
     }
 
     @Test
-    public void findAcademicClass_nullAcademicClass_throwsNullPointerException() {
-        assertThrows(NullPointerException.class, () -> modelManager.findAcademicClass(null));
+    public void findAcademicClass_nullModuleCode_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> modelManager.findAcademicClass(
+                null, new ClassName("F10-2")));
+    }
+
+    @Test
+    public void findAcademicClass_nullClassName_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> modelManager.findAcademicClass(
+                new ModuleCode("CS2103T"), null));
     }
 
     @Test

@@ -164,7 +164,7 @@ public class AddClassCommandTest {
         }
 
         @Override
-        public Optional<AcademicClass> findAcademicClass(AcademicClass academicClass) {
+        public Optional<AcademicClass> findAcademicClass(ModuleCode moduleCode, ClassName className) {
             throw new AssertionError("This method should not be called.");
         }
 
