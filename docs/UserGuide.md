@@ -1,12 +1,12 @@
 ---
   layout: default.md
-  title: "User Guide"
+  title: "TAssist User Guide"
   pageNav: 3
 ---
 
-# ClassConnect User Guide
+# TAssist User Guide
 
-ClassConnect is a **desktop application for managing students and academic classes, optimized for use through a Command Line Interface (CLI)** while retaining the benefits of a Graphical User Interface (GUI). If you type quickly, ClassConnect can help you manage students and create class records faster than traditional GUI applications.
+TAssist is a **desktop application for NUS Teaching Assistants who need to manage the students they tutor, optimized for use through a Command Line Interface (CLI)** while retaining the benefits of a Graphical User Interface (GUI). It gives TAs quick access to student contacts and information, helping them manage student learning outcomes from a central application.
 
 <!-- * Table of Contents -->
 <page-nav-print />
@@ -20,7 +20,7 @@ ClassConnect is a **desktop application for managing students and academic class
 
 1. Download the latest `.jar` file from [here](https://github.com/AY2627S1-CS2103-F10-2/tp/releases).
 
-1. Copy the file to the folder you want to use as the _home folder_ for ClassConnect.
+1. Copy the file to the folder you want to use as the _home folder_ for TAssist.
 
 1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar addressbook.jar`.<br>
    A GUI similar to the one below should appear in a few seconds. The app shows students and classes in separate sections.<br>
@@ -86,7 +86,7 @@ Format: `help`
 
 ### Adding a student: `add`
 
-Adds a student to ClassConnect.
+Adds a student to TAssist.
 
 Format: `add sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM] [t/TAG]... `
 
@@ -119,7 +119,7 @@ Common errors:
 
 ### Listing all students: `list`
 
-Shows a list of all students in ClassConnect.
+Shows a list of all students in TAssist.
 
 Format: `list`
 
@@ -161,7 +161,7 @@ Common errors:
 
 ### Editing a student: `edit`
 
-Edits an existing student in ClassConnect.
+Edits an existing student in TAssist.
 
 Format: `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]... `
 
@@ -195,7 +195,7 @@ Examples:
 
 ### Deleting a student: `delete`
 
-Deletes the specified student from ClassConnect.
+Deletes the specified student from TAssist.
 
 Format: `delete INDEX`
 
@@ -204,7 +204,7 @@ Format: `delete INDEX`
 * The index **must be a positive integer** 1, 2, 3, ...
 
 Examples:
-* `list` followed by `delete 2` deletes the 2nd student in ClassConnect.
+* `list` followed by `delete 2` deletes the 2nd student in TAssist.
 * `find Betsy` followed by `delete 1` deletes the 1st student in the results of the `find` command.
 
 Expected output:
@@ -217,7 +217,7 @@ The current build deletes students by displayed list index, not by student numbe
 
 ### Clearing all entries: `clear`
 
-Clears all students and classes from ClassConnect.
+Clears all students and classes from TAssist.
 
 Format: `clear`
 
@@ -231,19 +231,19 @@ Format: `exit`
 
 ### Saving the data
 
-ClassConnect automatically saves data after every successful command. You do not need to save manually.
+TAssist automatically saves data after every successful command. You do not need to save manually.
 
-Data is saved to `[JAR file location]/data/addressbook.json`. If ClassConnect cannot save the data, it displays an error such as `Could not save data due to the following error: ...` or `Could not save data to file ... due to insufficient permissions to write to the file or the folder.`
+Data is saved to `[JAR file location]/data/addressbook.json`. If TAssist cannot save the data, it displays an error such as `Could not save data due to the following error: ...` or `Could not save data to file ... due to insufficient permissions to write to the file or the folder.`
 
 ### Editing the data file
 
-ClassConnect data is saved automatically as a JSON file `[JAR file location]/data/addressbook.json`. Advanced users are welcome to update data directly by editing that data file.
+TAssist data is saved automatically as a JSON file `[JAR file location]/data/addressbook.json`. Advanced users are welcome to update data directly by editing that data file.
 
 <box type="warning" seamless>
 
 **Caution:**
-If your changes make the data file invalid, ClassConnect starts with an empty address book at the next run. The invalid file remains on disk until you run a command (ClassConnect saves after every command). Still, we recommend backing up the file before editing it.<br>
-Furthermore, certain edits can cause ClassConnect to behave in unexpected ways (e.g., if a value entered is outside of the acceptable range). Therefore, edit the data file only if you are confident that you can update it correctly.
+If your changes make the data file invalid, TAssist starts with an empty address book at the next run. The invalid file remains on disk until you run a command (TAssist saves after every command). Still, we recommend backing up the file before editing it.<br>
+Furthermore, certain edits can cause TAssist to behave in unexpected ways (e.g., if a value entered is outside of the acceptable range). Therefore, edit the data file only if you are confident that you can update it correctly.
 </box>
 
 ### Archiving data files `[coming in v2.0]`
@@ -263,14 +263,14 @@ The following MVP commands are planned or specified, but are not currently accep
 * `unassign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME`
 * `listbyclass c/CLASS_NAME m/MODULE_CODE`
 
-If any of these command words are entered, ClassConnect displays `Unknown command.`
+If any of these command words are entered, TAssist displays `Unknown command.`
 
 --------------------------------------------------------------------------------------------------------------------
 
 ## FAQ
 
 **Q**: How do I transfer my data to another computer?<br>
-**A**: Install the app on the other computer and overwrite the data file it creates with the data file from your previous ClassConnect home folder.
+**A**: Install the app on the other computer and overwrite the data file it creates with the data file from your previous TAssist home folder.
 
 --------------------------------------------------------------------------------------------------------------------
 
