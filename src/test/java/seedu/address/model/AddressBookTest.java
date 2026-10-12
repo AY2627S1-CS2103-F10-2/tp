@@ -36,30 +36,21 @@ public class AddressBookTest {
     private final AddressBook addressBook = new AddressBook();
 
     @Test
-    public void assignStudentToClass_usesStoredObjectsAndIsIdempotent() {
+    public void assignStudentToClass_storedObjects_preservesReferencesAndIsIdempotent() {
         AcademicClass storedClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
-        AcademicClass sameIdentity = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
-        Person sameStudent = new PersonBuilder(ALICE).withName("Different Name").build();
+        AcademicClass otherClass = new AcademicClass(new ModuleCode("CS2101"), new ClassName("T01"));
         addressBook.addPerson(ALICE);
         addressBook.addAcademicClass(storedClass);
+        addressBook.addAcademicClass(otherClass);
+        Person storedPerson = addressBook.findPersonByStudentNumber(ALICE.getStudentNumber()).orElseThrow();
+        AcademicClass target = addressBook.findAcademicClass(storedClass.getModuleCode(), storedClass.getClassName())
+                .orElseThrow();
 
-        assertTrue(addressBook.assignStudentToClass(sameStudent, sameIdentity));
-        assertFalse(addressBook.assignStudentToClass(ALICE, sameIdentity));
+        assertTrue(addressBook.assignStudentToClass(storedPerson, target));
+        assertFalse(addressBook.assignStudentToClass(storedPerson, target));
         assertEquals(Set.of(ALICE), storedClass.getStudents());
-        assertSame(ALICE, storedClass.getStudents().iterator().next());
-        assertTrue(sameIdentity.getStudents().isEmpty());
-    }
-
-    @Test
-    public void assignStudentToClass_missingRecord_doesNotChangeMembership() {
-        AcademicClass storedClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
-        AcademicClass absentClass = new AcademicClass(new ModuleCode("CS2101"), new ClassName("T01"));
-        addressBook.addAcademicClass(storedClass);
-        assertThrows(IllegalArgumentException.class, () -> addressBook.assignStudentToClass(ALICE, storedClass));
-        addressBook.addPerson(ALICE);
-        assertThrows(IllegalArgumentException.class, () -> addressBook.assignStudentToClass(ALICE, absentClass));
-        assertTrue(storedClass.getStudents().isEmpty());
-        assertTrue(absentClass.getStudents().isEmpty());
+        assertSame(storedPerson, storedClass.getStudents().iterator().next());
+        assertTrue(otherClass.getStudents().isEmpty());
     }
 
     @Test

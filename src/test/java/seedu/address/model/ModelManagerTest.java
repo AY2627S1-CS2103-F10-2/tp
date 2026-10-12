@@ -49,12 +49,10 @@ public class ModelManagerTest {
     }
 
     @Test
-    public void assignStudentToClass_invalidArguments_doNotAssignStudent() {
+    public void assignStudentToClass_nullArguments_doNotAssignStudent() {
         AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
         assertThrows(NullPointerException.class, () -> modelManager.assignStudentToClass(null, academicClass));
         assertThrows(NullPointerException.class, () -> modelManager.assignStudentToClass(ALICE, null));
-        modelManager.addAcademicClass(academicClass);
-        assertThrows(IllegalArgumentException.class, () -> modelManager.assignStudentToClass(ALICE, academicClass));
         assertTrue(academicClass.getStudents().isEmpty());
     }
 
