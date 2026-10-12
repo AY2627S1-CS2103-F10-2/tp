@@ -7,6 +7,7 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_CLASS_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_MODULE_CODE;
 
 import java.util.Locale;
+import java.util.Optional;
 
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.commands.exceptions.CommandException;
@@ -53,10 +54,13 @@ public class DeleteClassCommand extends Command {
     @Override
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
-        AcademicClass classToDelete = model.getAddressBook().getAcademicClassList().stream()
-                .filter(academicClass -> academicClass.getModuleCode().value.equals(moduleCode)
-                        && academicClass.getClassName().value.equals(className))
-                .findFirst()
+        // Nonempty lookup values outside the creation format cannot match a stored class.
+        Optional<AcademicClass> matchingClass = Optional.empty();
+        if (ModuleCode.isValidModuleCode(moduleCode) && ClassName.isValidClassName(className)) {
+            matchingClass = model.getAddressBook().findAcademicClass(
+                    new ModuleCode(moduleCode), new ClassName(className));
+        }
+        AcademicClass classToDelete = matchingClass
                 .orElseThrow(() -> new CommandException(
                         String.format(MESSAGE_CLASS_NOT_FOUND, moduleCode, className)));
 

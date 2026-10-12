@@ -104,6 +104,14 @@ public class DeleteClassCommandTest {
 
         assertCommandFailure(new DeleteClassCommand("2103", "---"), model,
                 String.format(DeleteClassCommand.MESSAGE_CLASS_NOT_FOUND, "2103", "---"));
+        assertCommandFailure(new DeleteClassCommand("2103", "F10-2"), model,
+                String.format(DeleteClassCommand.MESSAGE_CLASS_NOT_FOUND, "2103", "F10-2"));
+        assertCommandFailure(new DeleteClassCommand("CS2103", "---"), model,
+                String.format(DeleteClassCommand.MESSAGE_CLASS_NOT_FOUND, "CS2103", "---"));
+        assertCommandFailure(new DeleteClassCommand("CS 2103", "F10-2"), model,
+                String.format(DeleteClassCommand.MESSAGE_CLASS_NOT_FOUND, "CS 2103", "F10-2"));
+        assertCommandFailure(new DeleteClassCommand("CS2103", "F10 2"), model,
+                String.format(DeleteClassCommand.MESSAGE_CLASS_NOT_FOUND, "CS2103", "F10 2"));
     }
 
     @Test
