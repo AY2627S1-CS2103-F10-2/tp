@@ -20,6 +20,7 @@ public class AssignCommand extends Command {
             + "Parameters: sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME\n"
             + "Example: assign sn/A1111111H m/CS2103 c/F10";
     public static final String MESSAGE_SUCCESS = "Student (%1$s) has been assigned to %2$s.";
+    public static final String MESSAGE_ALREADY_ASSIGNED = "Student (%1$s) is already assigned to class %2$s.";
     public static final String MESSAGE_STUDENT_NOT_FOUND = "Student (%1$s) cannot be found in the address book.";
     public static final String MESSAGE_CLASS_NOT_FOUND = "Class (%1$s-%2$s) cannot be found in the address book.";
 
@@ -44,7 +45,10 @@ public class AssignCommand extends Command {
         AcademicClass academicClass = addressBook
                 .findAcademicClass(moduleCode, className)
                 .orElseThrow(() -> new CommandException(String.format(MESSAGE_CLASS_NOT_FOUND, moduleCode, className)));
-        model.assignStudentToClass(person, academicClass);
+        if (!model.assignStudentToClass(person, academicClass)) {
+            throw new CommandException(String.format(MESSAGE_ALREADY_ASSIGNED,
+                    person.getStudentNumber(), academicClass));
+        }
         return new CommandResult(String.format(MESSAGE_SUCCESS, person.getStudentNumber(), academicClass));
     }
 

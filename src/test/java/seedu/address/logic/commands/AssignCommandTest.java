@@ -50,7 +50,9 @@ public class AssignCommandTest {
                 new ModuleCode("cs2103t"), new ClassName("f10-2"));
         String expected = String.format(AssignCommand.MESSAGE_SUCCESS, ALICE.getStudentNumber(), academicClass);
         assertEquals(expected, command.execute(model).getFeedbackToUser());
-        assertEquals(expected, command.execute(model).getFeedbackToUser());
+        assertThrows(CommandException.class,
+                String.format(AssignCommand.MESSAGE_ALREADY_ASSIGNED, ALICE.getStudentNumber(), academicClass), ()
+                -> command.execute(model));
         assertEquals(Set.of(ALICE), academicClass.getStudents());
         assertEquals(List.of(BENSON), model.getFilteredPersonList());
     }

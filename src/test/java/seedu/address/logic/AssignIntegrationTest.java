@@ -44,15 +44,17 @@ public class AssignIntegrationTest {
         logic.execute("find Nobody");
         String expected = "Student (A1111111H) has been assigned to CS2103-F-10.";
         assertEquals(expected, logic.execute("assign c/  f-10 m/  cs2103 sn/  a1111111h ").getFeedbackToUser());
-        assertEquals(expected, logic.execute("assign sn/A1111111H m/CS2103 c/F-10").getFeedbackToUser());
+        String duplicate = "Student (A1111111H) is already assigned to class CS2103-F-10.";
+        assertThrows(CommandException.class, duplicate, ()
+                -> logic.execute("assign sn/A1111111H m/CS2103 c/F-10"));
         assertTrue(model.getFilteredPersonList().isEmpty());
 
         ModelManager restarted = new ModelManager(storage.readAddressBook().orElseThrow(), new UserPrefs());
         AcademicClass restoredClass = restarted.getAcademicClassList().get(0);
         assertEquals(1, restoredClass.getStudents().size());
         assertSame(restarted.getAddressBook().getPersonList().get(0), restoredClass.getStudents().iterator().next());
-        assertEquals(expected, createLogic(restarted, storage)
-                .execute("assign sn/A1111111H m/CS2103 c/F-10").getFeedbackToUser());
+        assertThrows(CommandException.class, duplicate, ()
+                -> createLogic(restarted, storage).execute("assign sn/A1111111H m/CS2103 c/F-10"));
         assertEquals(1, restoredClass.getStudents().size());
     }
 
@@ -105,7 +107,7 @@ public class AssignIntegrationTest {
             // LogicManager retains the in-memory change when saving fails.
             assertEquals(Set.of(ALICE), academicClass.getStudents());
             JsonAddressBookStorage workingStorage = new JsonAddressBookStorage(file);
-            createLogic(model, workingStorage).execute(command);
+            createLogic(model, workingStorage).execute("list");
             assertEquals(Set.of(ALICE), workingStorage.readAddressBook().orElseThrow()
                     .getAcademicClassList().get(0).getStudents());
         }
