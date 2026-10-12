@@ -62,11 +62,19 @@ public class AssignCommandParserTest {
     }
 
     @Test
-    public void parse_missingOrEmptyParameter_failure() {
+    public void parse_missingParameter_failure() {
         for (String args : List.of("", " m/CS2103 c/F10", " sn/A1111111H c/F10",
-                " sn/A1111111H m/CS2103", " sn/ m/CS2103 c/F10", " sn/A1111111H m/ c/F10",
-                " sn/A1111111H m/CS2103 c/   ")) {
+                " sn/A1111111H m/CS2103")) {
             assertParseFailure(parser, args, AssignCommandParser.MESSAGE_MISSING_PARAMETERS);
+        }
+    }
+
+    @Test
+    public void parse_emptyParameter_reportsIdentifierEmptyError() {
+        for (String value : List.of("", "   ", " \t ")) {
+            assertParseFailure(parser, " sn/" + value + " m/CS2103 c/F10", StudentNumber.MESSAGE_EMPTY);
+            assertParseFailure(parser, " sn/A1111111H m/" + value + " c/F10", ModuleCode.MESSAGE_EMPTY);
+            assertParseFailure(parser, " sn/A1111111H m/CS2103 c/" + value, ClassName.MESSAGE_EMPTY);
         }
     }
 

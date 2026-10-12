@@ -38,8 +38,8 @@ public class AssignCommandParser implements Parser<AssignCommand> {
                     AssignCommand.MESSAGE_USAGE));
         }
         arguments.verifyNoDuplicatePrefixesFor(PREFIX_STUDENT_NUMBER, PREFIX_MODULE_CODE, PREFIX_CLASS_NAME);
-        for (Prefix prefix : new Prefix[] {PREFIX_STUDENT_NUMBER, PREFIX_MODULE_CODE, PREFIX_CLASS_NAME}) {
-            if (arguments.getValue(prefix).orElse("").isEmpty()) {
+        for (Prefix prefix : new Prefix[] { PREFIX_STUDENT_NUMBER, PREFIX_MODULE_CODE, PREFIX_CLASS_NAME }) {
+            if (arguments.getValue(prefix).isEmpty()) {
                 throw new ParseException(MESSAGE_MISSING_PARAMETERS);
             }
         }
