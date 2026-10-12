@@ -22,7 +22,7 @@ public class AcademicClassCard extends UiPart<Region> {
     @FXML
     private Label className;
     @FXML
-    private Label moduleCode;
+    private Label studentCount;
 
     /**
      * Creates an {@code AcademicClassCard} with the given {@code AcademicClass} and index to display.
@@ -31,7 +31,7 @@ public class AcademicClassCard extends UiPart<Region> {
         super(FXML);
         this.academicClass = academicClass;
         id.setText(displayedIndex + ". ");
-        className.setText(academicClass.getClassName().value);
-        moduleCode.setText("Module: " + academicClass.getModuleCode().value);
+        className.setText(academicClass.getModuleCode().value + " " + academicClass.getClassName().value);
+        studentCount.setText("Students: " + academicClass.getStudents().size());
     }
 }
