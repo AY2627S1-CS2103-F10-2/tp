@@ -15,6 +15,8 @@ import seedu.address.model.AddressBook;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
+import seedu.address.model.person.Person;
+import seedu.address.testutil.PersonBuilder;
 import seedu.address.testutil.TypicalPersons;
 
 public class JsonSerializableAddressBookTest {
@@ -46,6 +48,30 @@ public class JsonSerializableAddressBookTest {
                 JsonSerializableAddressBook.class).get();
         assertThrows(IllegalValueException.class, JsonSerializableAddressBook.MESSAGE_DUPLICATE_PERSON,
                 dataFromFile::toModelType);
+    }
+
+    @Test
+    public void toModelType_duplicateEmailsIgnoringCase_throwsIllegalValueException() {
+        Person first = new PersonBuilder().withStudentNumber("A1111111X").withEmail("alice@example.com").build();
+        Person second = new PersonBuilder().withStudentNumber("A2222222X").withEmail("ALICE@example.com").build();
+        JsonSerializableAddressBook data = new JsonSerializableAddressBook(
+                List.of(new JsonAdaptedPerson(first), new JsonAdaptedPerson(second)), List.of());
+
+        assertThrows(IllegalValueException.class, JsonSerializableAddressBook.MESSAGE_DUPLICATE_PERSON,
+                data::toModelType);
+    }
+
+    @Test
+    public void toModelType_duplicateTelegramIgnoringCase_throwsIllegalValueException() {
+        Person first = new PersonBuilder().withStudentNumber("A1111111X").withEmail("alice@example.com")
+                .withTelegram("alice_tan").build();
+        Person second = new PersonBuilder().withStudentNumber("A2222222X").withEmail("bob@example.com")
+                .withTelegram("@ALICE_TAN").build();
+        JsonSerializableAddressBook data = new JsonSerializableAddressBook(
+                List.of(new JsonAdaptedPerson(first), new JsonAdaptedPerson(second)), List.of());
+
+        assertThrows(IllegalValueException.class, JsonSerializableAddressBook.MESSAGE_DUPLICATE_PERSON,
+                data::toModelType);
     }
 
     @Test

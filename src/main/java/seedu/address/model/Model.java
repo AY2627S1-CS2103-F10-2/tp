@@ -7,6 +7,7 @@ import seedu.address.commons.core.GuiSettings;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.person.Person;
 
+
 /**
  * The API of the Model component.
  */
@@ -41,6 +42,18 @@ public interface Model {
      * Returns true if a person with the same identity as {@code person} exists in the address book.
      */
     boolean hasPerson(Person person);
+
+
+    /**
+     * Returns true if a person with the same email (ignoring case) as {@code person} exists in the address book.
+     */
+    boolean hasEmail(Person person);
+
+    /**
+     * Returns true if a person with the same Telegram username (ignoring case) as {@code person} exists in the
+     * address book.
+     */
+    boolean hasTelegram(Person person);
 
     /**
      * Deletes the given person.
@@ -83,12 +96,19 @@ public interface Model {
      */
     ObservableList<AcademicClass> getAcademicClassList();
 
-    /** Returns an unmodifiable view of the filtered person list */
+    /** Returns an unmodifiable observable view of persons in their displayed order. */
     ObservableList<Person> getFilteredPersonList();
 
     /**
-     * Updates the filter of the filtered person list to filter by the given {@code predicate}.
+     * Updates the person filter and restores the matching persons' insertion order.
      * @throws NullPointerException if {@code predicate} is null.
      */
     void updateFilteredPersonList(Predicate<Person> predicate);
+
+    /**
+     * Updates the person filter and displays matching persons alphabetically by name.
+     * Leaves the stored person records and their order unchanged.
+     * @throws NullPointerException if {@code predicate} is null.
+     */
+    void updateFilteredPersonListAlphabetically(Predicate<Person> predicate);
 }

@@ -5,12 +5,16 @@ import static java.util.Objects.requireNonNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import javafx.collections.ObservableList;
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.model.academicclass.AcademicClass;
+import seedu.address.model.academicclass.ClassName;
+import seedu.address.model.academicclass.ModuleCode;
 import seedu.address.model.academicclass.UniqueAcademicClassList;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.StudentNumber;
 import seedu.address.model.person.UniquePersonList;
 
 /**
@@ -80,11 +84,44 @@ public class AddressBook implements ReadOnlyAddressBook {
     }
 
     /**
+     * Returns true if a person with the same email (ignoring case) as {@code person} exists in the address book.
+     */
+    public boolean hasEmail(Person person) {
+        requireNonNull(person);
+        return persons.containsEmail(person);
+    }
+
+    /**
+     * Returns true if a person with the same Telegram username (ignoring case) as {@code person} exists in the
+     * address book.
+     */
+    public boolean hasTelegram(Person person) {
+        requireNonNull(person);
+        return persons.containsTelegram(person);
+    }
+
+    /**
      * Adds a person to the address book.
      * The person must not already exist in the address book.
      */
     public void addPerson(Person p) {
         persons.add(p);
+    }
+
+    @Override
+    public Optional<AcademicClass> findAcademicClass(ModuleCode moduleCode, ClassName className) {
+        requireNonNull(moduleCode);
+        requireNonNull(className);
+        return this.getAcademicClassList().stream().filter(
+                c -> c.hasIdentity(moduleCode, className)).findFirst();
+    }
+
+    @Override
+    public Optional<Person> findPersonByStudentNumber(StudentNumber studentNumber) {
+        requireNonNull(studentNumber);
+        return this.getPersonList().stream()
+                .filter(person -> person.hasStudentNumber(studentNumber))
+                .findFirst();
     }
 
     /**

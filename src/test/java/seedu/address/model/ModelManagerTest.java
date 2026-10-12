@@ -9,6 +9,7 @@ import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.BENSON;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
@@ -17,6 +18,7 @@ import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
 import seedu.address.model.person.NameContainsKeywordsPredicate;
+import seedu.address.model.person.StudentNumber;
 import seedu.address.testutil.AddressBookBuilder;
 
 public class ModelManagerTest {
@@ -71,6 +73,35 @@ public class ModelManagerTest {
         assertTrue(modelManager.hasPerson(ALICE));
     }
 
+
+    @Test
+    public void hasEmail_nullPerson_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> modelManager.hasEmail(null));
+    }
+
+    @Test
+    public void hasEmail() {
+        assertFalse(modelManager.hasEmail(ALICE));
+
+        modelManager.addPerson(ALICE);
+        assertTrue(modelManager.hasEmail(ALICE));
+        assertFalse(modelManager.hasEmail(BENSON));
+    }
+
+    @Test
+    public void hasTelegram_nullPerson_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> modelManager.hasTelegram(null));
+    }
+
+    @Test
+    public void hasTelegram() {
+        assertFalse(modelManager.hasTelegram(ALICE));
+
+        modelManager.addPerson(ALICE);
+        assertTrue(modelManager.hasTelegram(ALICE));
+        assertFalse(modelManager.hasTelegram(BENSON));
+    }
+
     @Test
     public void hasAcademicClass_nullAcademicClass_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> modelManager.hasAcademicClass(null));
@@ -89,6 +120,7 @@ public class ModelManagerTest {
         assertTrue(modelManager.hasAcademicClass(academicClass));
         assertEquals(List.of(academicClass), modelManager.getAcademicClassList());
     }
+
 
     @Test
     public void deleteAcademicClass_existingClass_updatesViewAndPreservesPersons() {
@@ -112,6 +144,21 @@ public class ModelManagerTest {
     @Test
     public void getFilteredPersonList_modifyList_throwsUnsupportedOperationException() {
         assertThrows(UnsupportedOperationException.class, () -> modelManager.getFilteredPersonList().remove(0));
+    }
+
+
+    @Test
+    public void findPersonByStudentNumber_personHiddenByFilter_returnsPersonWithoutChangingFilter() {
+        modelManager.addPerson(ALICE);
+        modelManager.addPerson(BENSON);
+        modelManager.updateFilteredPersonList(new NameContainsKeywordsPredicate(List.of("Benson")));
+
+        assertEquals(Optional.of(ALICE), modelManager.getAddressBook()
+                .findPersonByStudentNumber(ALICE.getStudentNumber()));
+        assertEquals(Optional.empty(), modelManager.getAddressBook()
+                .findPersonByStudentNumber(new StudentNumber("A9999999Z")));
+        assertEquals(List.of(BENSON), modelManager.getFilteredPersonList());
+        assertEquals(List.of(ALICE, BENSON), modelManager.getAddressBook().getPersonList());
     }
 
     @Test

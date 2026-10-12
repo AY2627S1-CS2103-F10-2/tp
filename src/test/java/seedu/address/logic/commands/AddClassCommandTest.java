@@ -24,6 +24,7 @@ import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
 import seedu.address.model.person.Person;
 
+
 public class AddClassCommandTest {
 
     private static final AcademicClass CS2103_F10 = new AcademicClass(new ModuleCode("CS2103"),
@@ -118,6 +119,16 @@ public class AddClassCommandTest {
         }
 
         @Override
+        public boolean hasEmail(Person person) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public boolean hasTelegram(Person person) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
         public void deletePerson(Person target) {
             throw new AssertionError("This method should not be called.");
         }
@@ -157,8 +168,14 @@ public class AddClassCommandTest {
             throw new AssertionError("This method should not be called.");
         }
 
+
         @Override
         public void updateFilteredPersonList(Predicate<Person> predicate) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public void updateFilteredPersonListAlphabetically(Predicate<Person> predicate) {
             throw new AssertionError("This method should not be called.");
         }
     }

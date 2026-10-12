@@ -65,4 +65,25 @@ public class AcademicClassTest {
         String expected = academicClass.getModuleCode() + "-" + academicClass.getClassName();
         assertEquals(expected, academicClass.toString());
     }
+
+    @Test
+    public void hasIdentity_sameModuleCodeAndClassName_returnsTrue() {
+        AcademicClass academicClass = new AcademicClass(CS2103T, F10_2);
+
+        assertTrue(academicClass.hasIdentity(CS2103T, F10_2));
+    }
+
+    @Test
+    public void hasIdentity_differentClassName_returnsFalse() {
+        AcademicClass academicClass = new AcademicClass(CS2103T, F10_2);
+
+        assertFalse(academicClass.hasIdentity(CS2103T, T24));
+    }
+
+    @Test
+    public void hasIdentity_differentModuleCode_returnsFalse() {
+        AcademicClass academicClass = new AcademicClass(CS2103T, F10_2);
+
+        assertFalse(academicClass.hasIdentity(ST2334, F10_2));
+    }
 }
