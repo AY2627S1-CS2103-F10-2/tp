@@ -1,5 +1,6 @@
 package seedu.address.model.academicclass;
 
+import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
 import java.util.Collections;
@@ -11,7 +12,7 @@ import seedu.address.model.person.Person;
 
 /**
  * Represents a Class in the address book.
- * Guarantees: details are present and not null, field values are validated, immutable.
+ * Guarantees: identity fields are immutable and validated; student membership can be updated.
  */
 public class AcademicClass {
 
@@ -45,6 +46,16 @@ public class AcademicClass {
      */
     public Set<Person> getStudents() {
         return Collections.unmodifiableSet(students);
+    }
+
+    /**
+     * Assigns the given student to this class.
+     * Returns true if membership was added, or false if the student was already assigned.
+     * @throws NullPointerException if {@code person} is null.
+     */
+    public boolean assignStudent(Person person) {
+        requireNonNull(person);
+        return students.add(person);
     }
 
     /**
