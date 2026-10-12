@@ -23,7 +23,7 @@ public class UnassignCommand extends Command {
     public static final String MESSAGE_SUCCESS = "Student (%1$s) has been unassigned from %2$s.";
     public static final String MESSAGE_STUDENT_NOT_FOUND = "Student (%1$s) cannot be found in the address book.";
     public static final String MESSAGE_CLASS_NOT_FOUND = "Class (%1$s-%2$s) cannot be found in the address book.";
-
+    public static final String MESSAGE_STUDENT_NOT_IN_CLASS = "Student (%1$s) is not assigned to class %2$s.";
     private final StudentNumber studentNumber;
     private final ModuleCode moduleCode;
     private final ClassName className;
@@ -49,7 +49,8 @@ public class UnassignCommand extends Command {
                 .orElseThrow(() -> new CommandException(String.format(MESSAGE_CLASS_NOT_FOUND, moduleCode, className)));
 
         if (!model.unassignStudentFromClass(person, academicClass)) {
-            throw new CommandException("Student is not assigned to this class.");
+            throw new CommandException(String.format(MESSAGE_STUDENT_NOT_IN_CLASS,
+                    person.getStudentNumber(), academicClass));
         }
 
         return new CommandResult(String.format(MESSAGE_SUCCESS, person.getStudentNumber(), academicClass));

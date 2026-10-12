@@ -101,7 +101,8 @@ public class UnassignCommandTest {
         model.addPerson(ALICE);
         model.addAcademicClass(targetClass);
 
-        assertThrows(CommandException.class, "Student is not assigned to this class.", () ->
+        assertThrows(CommandException.class, String.format(UnassignCommand.MESSAGE_STUDENT_NOT_IN_CLASS,
+                ALICE.getStudentNumber(), targetClass), () ->
                 commandFor(ALICE).execute(model));
 
         assertTrue(targetClass.getStudents().isEmpty());
@@ -116,7 +117,9 @@ public class UnassignCommandTest {
         UnassignCommand command = commandFor(ALICE);
 
         command.execute(model);
-        assertThrows(CommandException.class, "Student is not assigned to this class.", () -> command.execute(model));
+        assertThrows(CommandException.class, String.format(UnassignCommand.MESSAGE_STUDENT_NOT_IN_CLASS,
+                ALICE.getStudentNumber(), targetClass), () ->
+                command.execute(model));
 
         assertFalse(targetClass.getStudents().contains(ALICE));
     }
