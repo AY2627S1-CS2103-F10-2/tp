@@ -172,6 +172,11 @@ public class AddCommandTest {
         }
 
         @Override
+        public boolean assignStudentToClass(Person person, AcademicClass academicClass) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
         public void addAcademicClass(AcademicClass academicClass) {
             throw new AssertionError("This method should not be called.");
         }

@@ -1,6 +1,7 @@
 package seedu.address.model;
 
 import static java.util.Objects.requireNonNull;
+import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -162,6 +163,21 @@ public class AddressBook implements ReadOnlyAddressBook {
         List<AcademicClass> updatedAcademicClasses = new ArrayList<>(academicClasses.asUnmodifiableObservableList());
         updatedAcademicClasses.add(academicClass);
         academicClasses.setAcademicClasses(updatedAcademicClasses);
+    }
+
+    /**
+     * Assigns the stored student to the stored class with the given identities.
+     * Returns true if membership was added, or false if already assigned.
+     * @throws NullPointerException if either argument is null.
+     * @throws IllegalArgumentException if the student or class does not exist.
+     */
+    public boolean assignStudentToClass(Person person, AcademicClass academicClass) {
+        requireAllNonNull(person, academicClass);
+        Person storedPerson = findPersonByStudentNumber(person.getStudentNumber())
+                .orElseThrow(() -> new IllegalArgumentException("Student does not exist."));
+        AcademicClass storedClass = findAcademicClass(academicClass.getModuleCode(), academicClass.getClassName())
+                .orElseThrow(() -> new IllegalArgumentException("Academic class does not exist."));
+        return storedClass.assignStudent(storedPerson);
     }
 
     //// util methods

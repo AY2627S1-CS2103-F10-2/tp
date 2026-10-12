@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
@@ -33,6 +34,40 @@ import seedu.address.testutil.PersonBuilder;
 public class AddressBookTest {
 
     private final AddressBook addressBook = new AddressBook();
+
+    @Test
+    public void assignStudentToClass_usesStoredObjectsAndIsIdempotent() {
+        AcademicClass storedClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+        AcademicClass sameIdentity = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+        Person sameStudent = new PersonBuilder(ALICE).withName("Different Name").build();
+        addressBook.addPerson(ALICE);
+        addressBook.addAcademicClass(storedClass);
+
+        assertTrue(addressBook.assignStudentToClass(sameStudent, sameIdentity));
+        assertFalse(addressBook.assignStudentToClass(ALICE, sameIdentity));
+        assertEquals(Set.of(ALICE), storedClass.getStudents());
+        assertSame(ALICE, storedClass.getStudents().iterator().next());
+        assertTrue(sameIdentity.getStudents().isEmpty());
+    }
+
+    @Test
+    public void assignStudentToClass_missingRecord_doesNotChangeMembership() {
+        AcademicClass storedClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+        AcademicClass absentClass = new AcademicClass(new ModuleCode("CS2101"), new ClassName("T01"));
+        addressBook.addAcademicClass(storedClass);
+        assertThrows(IllegalArgumentException.class, () -> addressBook.assignStudentToClass(ALICE, storedClass));
+        addressBook.addPerson(ALICE);
+        assertThrows(IllegalArgumentException.class, () -> addressBook.assignStudentToClass(ALICE, absentClass));
+        assertTrue(storedClass.getStudents().isEmpty());
+        assertTrue(absentClass.getStudents().isEmpty());
+    }
+
+    @Test
+    public void assignStudentToClass_nullArgument_throwsNullPointerException() {
+        AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+        assertThrows(NullPointerException.class, () -> addressBook.assignStudentToClass(null, academicClass));
+        assertThrows(NullPointerException.class, () -> addressBook.assignStudentToClass(ALICE, null));
+    }
 
     @Test
     public void constructor() {
