@@ -154,6 +154,11 @@ public class AddClassCommandTest {
         }
 
         @Override
+        public boolean unassignStudentFromClass(Person person, AcademicClass academicClass) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
         public ObservableList<AcademicClass> getAcademicClassList() {
             throw new AssertionError("This method should not be called.");
         }

@@ -155,6 +155,11 @@ public class ModelManager implements Model {
     }
 
     @Override
+    public boolean unassignStudentFromClass(Person person, AcademicClass academicClass) {
+        return addressBook.unassignStudentFromClass(person, academicClass);
+    }
+
+    @Override
     public boolean equals(Object other) {
         if (other == this) {
             return true;
