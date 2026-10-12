@@ -99,7 +99,7 @@ public interface Model {
      */
     ObservableList<AcademicClass> getAcademicClassList();
 
-    /** Returns an unmodifiable view of the filtered person list */
+    /** Returns an unmodifiable observable view of persons in their displayed order. */
     ObservableList<Person> getFilteredPersonList();
 
     /**
@@ -114,7 +114,7 @@ public interface Model {
     Optional<AcademicClass> findAcademicClass(ModuleCode moduleCode, ClassName className);
 
     /**
-     * Updates the filter of the filtered person list to filter by the given {@code predicate}.
+     * Updates the person filter and restores the matching persons' insertion order.
      * @throws NullPointerException if {@code predicate} is null.
      */
     void updateFilteredPersonList(Predicate<Person> predicate);
