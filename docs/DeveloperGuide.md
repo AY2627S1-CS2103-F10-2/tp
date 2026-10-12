@@ -284,14 +284,44 @@ _{Explain here how the data archiving feature will be implemented}_
 
 Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unlikely to have) - `*`
 
-| Priority | As a …                                    | I want to …                 | So that I can…                                                        |
-|----------|--------------------------------------------|------------------------------|------------------------------------------------------------------------|
-| `* * *`  | new user                                   | see usage instructions       | refer to instructions when I forget how to use the App                 |
-| `* * *`  | user                                       | add a new person             |                                                                        |
-| `* * *`  | user                                       | delete a person              | remove entries that I no longer need                                   |
-| `* * *`  | user                                       | find a person by name        | locate details of persons without having to go through the entire list |
-| `* *`    | user                                       | hide private contact details | minimize chance of someone else seeing them by accident                |
-| `*`      | user with many persons in the address book | sort persons by name         | locate a person easily                                                 |
+| Priority | As a … | I want to … | So that I can… |
+|---|---|---|---|
+| `* * *` | TA | create student profiles with their contact information | maintain an up-to-date record of the students I teach |
+| `* * *` | TA | edit a student’s information | correct inaccurate or outdated records without recreating their profile |
+| `* * *` | TA | remove a student from a specific module without affecting their records in other modules | stop tracking students who have dropped that module |
+| `* * *` | TA | search for students by name across all modules or within a selected module | quickly locate the correct student during a class |
+| `* * *` | TA | filter students by module and tutorial or lab group identifier | quickly view the students in a particular class |
+| `* * *` | TA | create assignments with deadlines under a specific module | track the work expected from students in that module |
+| `* * *` | TA | record whether an individual student has submitted an assignment | distinguish submitted work from outstanding submissions |
+| `* * *` | TA | record whether each submission has been marked and view those still awaiting marking | resume grading where I left off |
+| `* * *` | TA | receive clear feedback when I enter an invalid command or perform an invalid action | understand the problem and correct it |
+| `* *` | new user | access an in-app guide explaining its features, commands and usage examples | understand its capabilities and learn to use it without external assistance |
+| `* *` | TA managing several modules | create modules and their tutorial or lab groups | organise the different classes I teach |
+| `* *` | TA managing several modules | assign students to their respective modules and tutorial or lab groups | keep different cohorts clearly organised |
+| `* *` | TA | assign custom tags to students | record relevant learning needs and tailor my teaching approach |
+| `* *` | TA | view a student’s communication handles, such as NUS email or Telegram | contact them without searching other platforms |
+| `* *` | TA | copy the email addresses of students in a selected module or class group to my clipboard | send announcements or lesson materials through my email client |
+| `* *` | TA | view a student’s assignment records alongside the relevant module information | review their progress within the correct module |
+| `* *` | TA | filter students within a selected module by their submission status for a specific assignment | identify students with outstanding submissions |
+| `* *` | TA | record grades for each student’s assignments | review their performance and identify areas where they may need additional support |
+| `* *` | TA | view upcoming assignment deadlines across my modules | remind students about approaching deadlines |
+| `* *` | TA | record each student’s attendance for weekly tutorial or lab sessions | maintain participation records for grading and follow-up |
+| `* *` | experienced user | define shortcuts for frequently used commands | perform repetitive tasks with less typing |
+| `* *` | TA | view and recall previously entered commands | reuse them without retyping them |
+| `* *` | returning TA | archive a completed module and its associated student and assignment records | keep my active workspace focused on the current semester while preserving historical records |
+| `*` | first-time user | explore sample student records and assignments across multiple modules and clear the sample data when ready | understand the application before entering real records |
+| `*` | TA | import a CSV student roster into a specified module and tutorial or lab group | populate my classes without entering each student individually |
+| `*` | TA | bulk-delete unwanted student records after confirmation | clear records efficiently without deleting students individually |
+| `*` | TA who is also a student | distinguish between modules I teach and modules I take | keep my teaching and learning contacts separate |
+| `*` | TA | view the contact details of the professor in charge of each module | conveniently raise teaching-related queries |
+| `*` | TA | batch-update an assignment’s submission status for an entire tutorial or lab group | perform routine submission checks efficiently |
+| `*` | TA | import assignment submission records from a CSV file into the relevant module and assignment | avoid updating every student’s status manually |
+| `*` | TA | export a selected module’s student grades and submission records as a CSV file | share them with the module coordinator without manually copying the data |
+| `*` | TA | receive an end-of-day notification listing students recorded as absent from my lab sessions | follow up with them about their absence |
+| `*` | TA arranging consultations | use my calendar to automatically share available consultation times with students | reduce scheduling conflicts and back-and-forth communication |
+| `*` | TA who prefers typing | navigate and operate the application using only the keyboard | complete tasks without switching to the mouse |
+| `*` | TA who frequently enters commands | use command autocompletion | enter commands more quickly and with fewer typing errors |
+| `*` | TA | switch between light and dark modes | use the application comfortably in different lighting conditions |                                         |
 
 *{More to be added}*
 
@@ -374,18 +404,145 @@ Use case ends.
   - 1b1. TAssist displays an empty student list and informs TA that no students were found.
   - Use case ends.
 
+#### **Assign Student to Class**
+
+**System:** TAssist  
+**Actor:** Teaching Assistant (TA)  
+**Guarantee:** A student is assigned to the same class at most once.
+
+**Main Success Scenario (MSS):**
+
+1. TA requests to assign a student to a class, providing the student number,
+   module code and class name.
+2. TAssist assigns the student to the specified class and automatically saves the assignment.
+3. TAssist returns a confirmation of the successful assignment, identifying the student and the class.
+
+Use case ends.
+
+**Extensions:**
+
+- **1a. Required details are missing, or unrecognised or extra details are supplied.**
+  - 1a1. TAssist informs TA of the error and the required details, without changing any assignments.
+  - Use case ends.
+
+- **1b. No student matches the supplied student number.**
+  - 1b1. TAssist informs TA that the student does not exist, identifying the supplied student number.
+  - 1b2. TAssist rejects the request without changing any assignments.
+  - Use case ends.
+
+- **1c. No class matches the supplied module code and class name.**
+  - 1c1. TAssist informs TA that the class does not exist, identifying the supplied module code and class name.
+  - 1c2. TAssist rejects the request without changing any assignments.
+  - Use case ends.
+
+- **1d. The student is already assigned to the specified class.**
+  - 1d1. TAssist keeps the existing assignment without creating a duplicate.
+  - Use case resumes from step 3.
+
+- **2a. TAssist is unable to save the assignment.**
+  - 2a1. TAssist informs TA that the assignment could not be saved.
+  - Use case ends.
+
+#### **Unassign Student from Class**
+
+**System:** TAssist  
+**Actor:** Teaching Assistant (TA)  
+**Guarantee:** The student profile, class and all other class assignments remain unchanged.
+
+**Main Success Scenario (MSS):**
+
+1. TA requests to unassign a student from a class, providing the student number,
+   module code and class name.
+2. TAssist removes the student's assignment to the specified class and automatically saves the change.
+3. TAssist returns a confirmation that the student is no longer assigned to the class, identifying the student and the class.
+
+Use case ends.
+
+**Extensions:**
+
+- **1a. Required details are missing, or unrecognised or extra details are supplied.**
+  - 1a1. TAssist informs TA of the error and the required details, without changing any assignments.
+  - Use case ends.
+
+- **1b. No student matches the supplied student number.**
+  - 1b1. TAssist informs TA that the student does not exist, identifying the supplied student number.
+  - 1b2. TAssist rejects the request without changing any assignments.
+  - Use case ends.
+
+- **1c. No class matches the supplied module code and class name.**
+  - 1c1. TAssist informs TA that the class does not exist, identifying the supplied module code and class name.
+  - 1c2. TAssist rejects the request without changing any assignments.
+  - Use case ends.
+
+- **1d. The student is not assigned to the specified class.**
+  - 1d1. TAssist leaves the student unassigned to the class without changing any data.
+  - Use case resumes from step 3.
+
+- **2a. TAssist is unable to save the change.**
+  - 2a1. TAssist informs TA that the removal of the assignment could not be saved.
+  - Use case ends.
+
+#### **List Students by Class**
+
+**System:** TAssist  
+**Actor:** Teaching Assistant (TA)  
+**Guarantee:** Student profiles, classes and class assignments remain unchanged.
+
+**Main Success Scenario (MSS):**
+
+1. TA requests to list the students assigned to a class, providing its module code and class name.
+2. TAssist displays the names of all students assigned to the specified class in alphabetical order,
+   identifying the module code and class name.
+
+Use case ends.
+
+**Extensions:**
+
+- **1a. Required details are missing or blank, or the request is invalid.**
+  - 1a1. TAssist informs TA of the error and the required details.
+  - Use case ends.
+
+- **1b. No class matches the supplied module code and class name.**
+  - 1b1. TAssist informs TA that the class does not exist and asks TA to create the class or specify an existing class.
+  - Use case ends.
+
+- **1c. The specified class exists but has no assigned students.**
+  - 1c1. TAssist displays an empty student list for the specified module code and class name.
+  - Use case ends.
+
 ### Non-Functional Requirements
 
-1.  Should work on any _mainstream OS_ as long as it has Java `25` or above installed.
-2.  Should be able to hold up to 1000 persons without noticeable sluggishness in performance for typical usage.
-3.  A user with above average typing speed for regular English text (i.e. not code, not system admin commands) should be able to accomplish most of the tasks faster using commands than using the mouse.
-
-*{More to be added}*
+| ID | Category | Non-Functional Requirement |
+| --- | --- | --- |
+| NFR01 | Usability | TAssist should be optimised for users who are comfortable with typing, with typed commands as the primary means of interacting with the application. |
+| NFR02 | Performance | TAssist should respond to normal user commands within 2 seconds under typical usage conditions. |
+| NFR03 | Capacity | TAssist should support at least 500 students across 20 classes and 10 modules while maintaining normal command response times. |
+| NFR04 | Data Persistence | Every successful operation that modifies application data should be automatically saved to local storage so that the latest data remains available after the application is restarted. |
+| NFR05 | Data Integrity | A failed or invalid operation should not result in partially modified or inconsistent application data. Existing valid data should remain unchanged if the operation cannot be completed successfully. |
+| NFR06 | Error Handling | When an invalid command or input is entered, TAssist should provide a clear error message that identifies the problem and, where appropriate, indicates the expected command format. |
+| NFR07 | Single-User Operation | TAssist should operate as a single-user application and should not support multiple users accessing the same application data during normal operation. |
+| NFR08 | Data Storage | TAssist data should be stored locally in a human-editable text file and should not rely on a database management system. |
+| NFR09 | Platform Compatibility | TAssist should work on Windows, Linux, and macOS without relying on operating-system-specific functionality. |
+| NFR10 | Runtime Compatibility | TAssist should be compatible with Java 25. |
+| NFR11 | Portability | TAssist should run without requiring an installer and should be distributed as a single JAR file, or a single ZIP file if additional files are unavoidable. |
+| NFR12 | Offline Availability | Core TAssist functionality should not depend on the team's own remote server and should remain usable without an Internet connection. |
+| NFR13 | Display Compatibility | The GUI should work without resolution-related inconvenience at 1920×1080 or above at 100%/125% scaling, and all functionality should remain usable at 1280×720 or above at 150% scaling. |
 
 ### Glossary
 
-* **Mainstream OS**: Windows, Linux, Unix, or macOS
-* **Private contact detail**: A contact detail that is not meant to be shared with others
+| Term | Definition |
+| --- | --- |
+| TAssist | The application developed to help teaching assistants manage student contacts and information across the classes they teach. |
+| TA | Teaching Assistant. The primary target user of TAssist. |
+| Student | A person whose contact and class information is managed by a TA using TAssist. |
+| Student Number | The unique institutional identifier used by TAssist to identify a student. |
+| Module | An academic course taught by the TA, identified by its module code, such as `CS2103`. A module may contain one or more classes. |
+| Class | A tutorial or lab group belonging to a module, identified by a class name such as `F10-2`. A class is uniquely identified by its combination of module and class name. |
+| Student Profile | The information stored about a student, such as their student number, name, email address, Telegram username, and class associations. |
+| Communication Handle | Contact information used to communicate with a student, such as their email address or Telegram username. |
+| CLI | Command-Line Interface. The text-based interface through which the user enters commands in TAssist. |
+| Command | A textual instruction entered into TAssist to perform an operation, such as `addstudent`, `find`, or `assign`. |
+| Command Prefix | A prefix used to specify a parameter in a command, such as `sn/` for student number, `m/` for module, or `c/` for class. |
 
 --------------------------------------------------------------------------------------------------------------------
 

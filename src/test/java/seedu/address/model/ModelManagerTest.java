@@ -2,6 +2,7 @@ package seedu.address.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.model.Model.PREDICATE_SHOW_ALL_PERSONS;
 import static seedu.address.testutil.Assert.assertThrows;
@@ -9,11 +10,16 @@ import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.BENSON;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
 import seedu.address.commons.core.GuiSettings;
+import seedu.address.model.academicclass.AcademicClass;
+import seedu.address.model.academicclass.ClassName;
+import seedu.address.model.academicclass.ModuleCode;
 import seedu.address.model.person.NameContainsKeywordsPredicate;
+import seedu.address.model.person.StudentNumber;
 import seedu.address.testutil.AddressBookBuilder;
 
 public class ModelManagerTest {
@@ -66,6 +72,129 @@ public class ModelManagerTest {
     public void hasPerson_personInAddressBook_returnsTrue() {
         modelManager.addPerson(ALICE);
         assertTrue(modelManager.hasPerson(ALICE));
+    }
+
+    @Test
+    public void findPersonByStudentNumber_nullStudentNumber_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> modelManager.findPersonByStudentNumber(null));
+    }
+
+    @Test
+    public void findPersonByStudentNumber_personNotInAddressBook_returnsEmpty() {
+        assertEquals(Optional.empty(), modelManager.findPersonByStudentNumber(ALICE.getStudentNumber()));
+        modelManager.addPerson(BENSON);
+        assertEquals(Optional.empty(), modelManager.findPersonByStudentNumber(ALICE.getStudentNumber()));
+    }
+
+    @Test
+    public void findPersonByStudentNumber_matchingStudentNumber_returnsPerson() {
+        modelManager.addPerson(BENSON);
+        modelManager.addPerson(ALICE);
+        assertEquals(Optional.of(ALICE), modelManager.findPersonByStudentNumber(ALICE.getStudentNumber()));
+        assertEquals(Optional.of(ALICE),
+                modelManager.findPersonByStudentNumber(new StudentNumber("a0123456x")));
+        assertEquals(Optional.empty(), modelManager.findPersonByStudentNumber(new StudentNumber("A0123456")));
+    }
+
+    @Test
+    public void findPersonByStudentNumber_personHiddenByFilter_returnsPersonWithoutChangingFilter() {
+        modelManager.addPerson(ALICE);
+        modelManager.addPerson(BENSON);
+        modelManager.updateFilteredPersonList(new NameContainsKeywordsPredicate(List.of("Benson")));
+
+        assertEquals(Optional.of(ALICE), modelManager.findPersonByStudentNumber(ALICE.getStudentNumber()));
+        assertEquals(Optional.empty(), modelManager.findPersonByStudentNumber(new StudentNumber("A9999999Z")));
+        assertEquals(List.of(BENSON), modelManager.getFilteredPersonList());
+        assertEquals(List.of(ALICE, BENSON), modelManager.getAddressBook().getPersonList());
+    }
+
+    @Test
+    public void findPersonByStudentNumber_personDeleted_returnsEmpty() {
+        modelManager.addPerson(ALICE);
+        modelManager.deletePerson(ALICE);
+        assertEquals(Optional.empty(), modelManager.findPersonByStudentNumber(ALICE.getStudentNumber()));
+    }
+
+    @Test
+    public void hasEmail_nullPerson_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> modelManager.hasEmail(null));
+    }
+
+    @Test
+    public void hasEmail() {
+        assertFalse(modelManager.hasEmail(ALICE));
+
+        modelManager.addPerson(ALICE);
+        assertTrue(modelManager.hasEmail(ALICE));
+        assertFalse(modelManager.hasEmail(BENSON));
+    }
+
+    @Test
+    public void hasTelegram_nullPerson_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> modelManager.hasTelegram(null));
+    }
+
+    @Test
+    public void hasTelegram() {
+        assertFalse(modelManager.hasTelegram(ALICE));
+
+        modelManager.addPerson(ALICE);
+        assertTrue(modelManager.hasTelegram(ALICE));
+        assertFalse(modelManager.hasTelegram(BENSON));
+    }
+
+    @Test
+    public void hasAcademicClass_nullAcademicClass_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> modelManager.hasAcademicClass(null));
+    }
+
+    @Test
+    public void hasAcademicClass_academicClassNotInAddressBook_returnsFalse() {
+        AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+        assertFalse(modelManager.hasAcademicClass(academicClass));
+    }
+
+    @Test
+    public void hasAcademicClass_academicClassInAddressBook_returnsTrue() {
+        AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+        modelManager.addAcademicClass(academicClass);
+        assertTrue(modelManager.hasAcademicClass(academicClass));
+        assertEquals(List.of(academicClass), modelManager.getAcademicClassList());
+    }
+
+    @Test
+    public void findAcademicClass_classExists_returnsStoredClass() {
+        AcademicClass storedClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+        modelManager.addAcademicClass(storedClass);
+
+        Optional<AcademicClass> result = modelManager.findAcademicClass(
+                new ModuleCode("CS2103T"), new ClassName("F10-2"));
+
+        assertTrue(result.isPresent());
+        assertSame(storedClass, result.get());
+    }
+
+    @Test
+    public void findAcademicClass_classDoesNotExist_returnsEmpty() {
+        assertTrue(modelManager.findAcademicClass(
+                new ModuleCode("CS2103T"), new ClassName("F10-2")).isEmpty());
+    }
+
+    @Test
+    public void findAcademicClass_nullModuleCode_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> modelManager.findAcademicClass(
+                null, new ClassName("F10-2")));
+    }
+
+    @Test
+    public void findAcademicClass_nullClassName_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> modelManager.findAcademicClass(
+                new ModuleCode("CS2103T"), null));
+    }
+
+    @Test
+    public void getAcademicClassList_modifyList_throwsUnsupportedOperationException() {
+        assertThrows(UnsupportedOperationException.class, () -> modelManager.getAcademicClassList().remove(0));
     }
 
     @Test

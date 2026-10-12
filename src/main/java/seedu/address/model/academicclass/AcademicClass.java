@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.model.person.Person;
 
 /**
@@ -74,11 +73,29 @@ public class AcademicClass {
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
-                .add("moduleCode", moduleCode)
-                .add("className", className)
-                .add("students", students)
-                .toString();
+        return moduleCode + "-" + className;
+    }
+
+    /**
+     * Unassigns the specified person from this academic class.
+     *
+     * @param person The person to unassign from the class.
+     * @return true if the person was successfully removed, false if the person
+     *         was not assigned to the class.
+     */
+    public boolean unassignStudent(Person person) {
+
+        if (students.contains(person)) {
+            students.remove(person);
+
+            return true; // can output if removal success or not
+        }
+
+        return false;
+    }
+
+    public boolean hasIdentity(ModuleCode moduleCode, ClassName className) {
+        return this.className.equals(className) && this.moduleCode.equals(moduleCode);
     }
 
     public void unAssignStudent(Person person) {

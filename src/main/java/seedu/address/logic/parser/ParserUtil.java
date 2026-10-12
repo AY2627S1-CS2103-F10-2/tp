@@ -9,10 +9,12 @@ import java.util.Set;
 import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.StringUtil;
 import seedu.address.logic.parser.exceptions.ParseException;
-import seedu.address.model.person.Address;
+import seedu.address.model.academicclass.ClassName;
+import seedu.address.model.academicclass.ModuleCode;
 import seedu.address.model.person.Email;
 import seedu.address.model.person.Name;
-import seedu.address.model.person.Phone;
+import seedu.address.model.person.StudentNumber;
+import seedu.address.model.person.Telegram;
 import seedu.address.model.tag.Tag;
 
 /**
@@ -51,33 +53,36 @@ public class ParserUtil {
     }
 
     /**
-     * Parses a {@code String phone} into a {@code Phone}.
+     * Parses a {@code String studentNumber} into a {@code StudentNumber}.
      * Leading and trailing whitespaces will be trimmed.
      *
-     * @throws ParseException if the given {@code phone} is invalid.
+     * @throws ParseException if the given {@code studentNumber} is empty or invalid.
      */
-    public static Phone parsePhone(String phone) throws ParseException {
-        requireNonNull(phone);
-        String trimmedPhone = phone.trim();
-        if (!Phone.isValidPhone(trimmedPhone)) {
-            throw new ParseException(Phone.MESSAGE_CONSTRAINTS);
+    public static StudentNumber parseStudentNumber(String studentNumber) throws ParseException {
+        requireNonNull(studentNumber);
+        String trimmedStudentNumber = studentNumber.trim();
+        if (trimmedStudentNumber.isEmpty()) {
+            throw new ParseException(StudentNumber.MESSAGE_EMPTY);
         }
-        return new Phone(trimmedPhone);
+        if (!StudentNumber.isValidStudentNumber(trimmedStudentNumber)) {
+            throw new ParseException(StudentNumber.MESSAGE_CONSTRAINTS);
+        }
+        return new StudentNumber(trimmedStudentNumber);
     }
 
     /**
-     * Parses a {@code String address} into an {@code Address}.
-     * Leading and trailing whitespaces will be trimmed.
+     * Parses a {@code String telegram} into a {@code Telegram}.
+     * Leading and trailing whitespaces will be trimmed. A leading '@' is accepted and removed.
      *
-     * @throws ParseException if the given {@code address} is invalid.
+     * @throws ParseException if the given {@code telegram} is invalid.
      */
-    public static Address parseAddress(String address) throws ParseException {
-        requireNonNull(address);
-        String trimmedAddress = address.trim();
-        if (!Address.isValidAddress(trimmedAddress)) {
-            throw new ParseException(Address.MESSAGE_CONSTRAINTS);
+    public static Telegram parseTelegram(String telegram) throws ParseException {
+        requireNonNull(telegram);
+        String trimmedTelegram = telegram.trim();
+        if (!Telegram.isValidTelegram(trimmedTelegram)) {
+            throw new ParseException(Telegram.MESSAGE_CONSTRAINTS);
         }
-        return new Address(trimmedAddress);
+        return new Telegram(trimmedTelegram);
     }
 
     /**
@@ -120,5 +125,41 @@ public class ParserUtil {
             tagSet.add(parseTag(tagName));
         }
         return tagSet;
+    }
+
+    /**
+     * Parses a {@code String moduleCode} into a {@code ModuleCode}.
+     * Leading and trailing whitespaces will be trimmed.
+     *
+     * @throws ParseException if the given {@code moduleCode} is invalid.
+     */
+    public static ModuleCode parseModuleCode(String moduleCode) throws ParseException {
+        requireNonNull(moduleCode);
+        String trimmedModuleCode = moduleCode.trim();
+        if (trimmedModuleCode.isEmpty()) {
+            throw new ParseException(ModuleCode.MESSAGE_EMPTY);
+        }
+        if (!ModuleCode.isValidModuleCode(trimmedModuleCode)) {
+            throw new ParseException(ModuleCode.MESSAGE_CONSTRAINTS);
+        }
+        return new ModuleCode(trimmedModuleCode);
+    }
+
+    /**
+     * Parses a {@code String className} into a {@code ClassName}.
+     * Leading and trailing whitespaces will be trimmed.
+     *
+     * @throws ParseException if the given {@code className} is invalid.
+     */
+    public static ClassName parseClassName(String className) throws ParseException {
+        requireNonNull(className);
+        String trimmedClassName = className.trim();
+        if (trimmedClassName.isEmpty()) {
+            throw new ParseException(ClassName.MESSAGE_EMPTY);
+        }
+        if (!ClassName.isValidClassName(trimmedClassName)) {
+            throw new ParseException(ClassName.MESSAGE_CONSTRAINTS);
+        }
+        return new ClassName(trimmedClassName);
     }
 }
