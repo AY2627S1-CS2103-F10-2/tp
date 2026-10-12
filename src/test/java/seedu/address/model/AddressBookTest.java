@@ -2,17 +2,20 @@ package seedu.address.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_NAME_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_TAG_HUSBAND;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.ALICE;
+import static seedu.address.testutil.TypicalPersons.BENSON;
 import static seedu.address.testutil.TypicalPersons.BOB;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
@@ -23,6 +26,7 @@ import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
 import seedu.address.model.academicclass.exceptions.DuplicateAcademicClassException;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.StudentNumber;
 import seedu.address.model.person.exceptions.DuplicatePersonException;
 import seedu.address.testutil.PersonBuilder;
 
@@ -231,6 +235,65 @@ public class AddressBookTest {
     }
 
     @Test
+    public void findAcademicClass_classExists_returnsStoredClass() {
+        AcademicClass storedClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+        addressBook.addAcademicClass(storedClass);
+
+        Optional<AcademicClass> result = addressBook.findAcademicClass(
+                new ModuleCode("CS2103T"), new ClassName("F10-2"));
+
+        assertTrue(result.isPresent());
+        assertSame(storedClass, result.get());
+    }
+
+    @Test
+    public void findAcademicClass_classDoesNotExist_returnsEmpty() {
+        assertTrue(addressBook.findAcademicClass(
+                new ModuleCode("CS2103T"), new ClassName("F10-2")).isEmpty());
+    }
+
+    @Test
+    public void findAcademicClass_nullModuleCode_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> addressBook.findAcademicClass(
+                null, new ClassName("F10-2")));
+    }
+
+    @Test
+    public void findAcademicClass_nullClassName_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> addressBook.findAcademicClass(
+                new ModuleCode("CS2103T"), null));
+    }
+
+    @Test
+    public void findPersonByStudentNumber_nullStudentNumber_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> addressBook.findPersonByStudentNumber(null));
+    }
+
+    @Test
+    public void findPersonByStudentNumber_personNotInAddressBook_returnsEmpty() {
+        assertEquals(Optional.empty(), addressBook.findPersonByStudentNumber(ALICE.getStudentNumber()));
+        addressBook.addPerson(BENSON);
+        assertEquals(Optional.empty(), addressBook.findPersonByStudentNumber(ALICE.getStudentNumber()));
+    }
+
+    @Test
+    public void findPersonByStudentNumber_matchingStudentNumber_returnsPerson() {
+        addressBook.addPerson(BENSON);
+        addressBook.addPerson(ALICE);
+        assertEquals(Optional.of(ALICE), addressBook.findPersonByStudentNumber(ALICE.getStudentNumber()));
+        assertEquals(Optional.of(ALICE),
+                addressBook.findPersonByStudentNumber(new StudentNumber("a0123456x")));
+        assertEquals(Optional.empty(), addressBook.findPersonByStudentNumber(new StudentNumber("A0123456")));
+    }
+
+    @Test
+    public void findPersonByStudentNumber_personDeleted_returnsEmpty() {
+        addressBook.addPerson(ALICE);
+        addressBook.removePerson(ALICE);
+        assertEquals(Optional.empty(), addressBook.findPersonByStudentNumber(ALICE.getStudentNumber()));
+    }
+
+    @Test
     public void equals() {
         // same object -> returns true
         assertTrue(addressBook.equals(addressBook));
@@ -274,6 +337,16 @@ public class AddressBookTest {
         @Override
         public ObservableList<AcademicClass> getAcademicClassList() {
             return academicClasses;
+        }
+
+        @Override
+        public Optional<AcademicClass> findAcademicClass(ModuleCode moduleCode, ClassName className) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public Optional<Person> findPersonByStudentNumber(StudentNumber studentNumber) {
+            throw new AssertionError("This method should not be called.");
         }
     }
 

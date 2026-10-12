@@ -8,7 +8,6 @@ import static seedu.address.testutil.Assert.assertThrows;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Test;
@@ -24,7 +23,7 @@ import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
 import seedu.address.model.person.Person;
-import seedu.address.model.person.StudentNumber;
+
 
 public class AddClassCommandTest {
 
@@ -115,11 +114,6 @@ public class AddClassCommandTest {
         }
 
         @Override
-        public Optional<Person> findPersonByStudentNumber(StudentNumber studentNumber) {
-            throw new AssertionError("This method should not be called.");
-        }
-
-        @Override
         public boolean hasPerson(Person person) {
             throw new AssertionError("This method should not be called.");
         }
@@ -169,10 +163,6 @@ public class AddClassCommandTest {
             throw new AssertionError("This method should not be called.");
         }
 
-        @Override
-        public Optional<AcademicClass> findAcademicClass(ModuleCode moduleCode, ClassName className) {
-            throw new AssertionError("This method should not be called.");
-        }
 
         @Override
         public void updateFilteredPersonList(Predicate<Person> predicate) {
