@@ -17,6 +17,23 @@ public class AssignCommandParserTest {
     private final AssignCommandParser parser = new AssignCommandParser();
 
     @Test
+    public void parse_repeatedIdenticalOrEmptyPrefixes_failure() {
+        for (String duplicate : List.of("sn/A1111111H", "sn/", "m/CS2103", "m/", "c/F10", "c/")) {
+            Prefix prefix = new Prefix(duplicate.substring(0, duplicate.indexOf('/') + 1));
+            assertParseFailure(parser, " sn/A1111111H m/CS2103 c/F10 " + duplicate,
+                    Messages.getErrorMessageForDuplicatePrefixes(prefix));
+        }
+    }
+
+    @Test
+    public void parse_extraKnownButUnsupportedPrefixes_failure() {
+        for (String prefix : List.of("n/", "e/", "tg/", "t/")) {
+            assertParseFailure(parser, " sn/A1111111H m/CS2103 c/F10 " + prefix + "value",
+                    String.format(AssignCommandParser.MESSAGE_UNKNOWN_PARAMETER, prefix));
+        }
+    }
+
+    @Test
     public void parse_anyParameterOrderAndWhitespace_success() {
         AssignCommand expected = new AssignCommand("A1111111H", "CS2103", "F10");
         for (String args : List.of(" sn/A1111111H m/CS2103 c/F10", " sn/A1111111H c/F10 m/CS2103",

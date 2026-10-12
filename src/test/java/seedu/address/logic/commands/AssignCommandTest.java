@@ -24,6 +24,23 @@ public class AssignCommandTest {
     private final AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
 
     @Test
+    public void execute_sameClassNameAcrossModules_assignsOnlyTargetClass() throws Exception {
+        model.addPerson(ALICE);
+        model.addPerson(BENSON);
+        AcademicClass otherModule = new AcademicClass(new ModuleCode("CS2101"), new ClassName("F10-2"));
+        model.addAcademicClass(otherModule);
+        model.addAcademicClass(academicClass);
+        model.assignStudentToClass(BENSON, academicClass);
+
+        new AssignCommand(ALICE.getStudentNumber().value, "CS2103T", "F10-2").execute(model);
+        assertEquals(Set.of(ALICE, BENSON), academicClass.getStudents());
+        assertTrue(otherModule.getStudents().isEmpty());
+        new AssignCommand(ALICE.getStudentNumber().value, "CS2101", "F10-2").execute(model);
+        assertEquals(Set.of(ALICE), otherModule.getStudents());
+        assertEquals(Set.of(ALICE, BENSON), academicClass.getStudents());
+    }
+
+    @Test
     public void execute_existingStudentAndClass_assignsIdempotentlyWithoutChangingFilter() throws Exception {
         model.addPerson(ALICE);
         model.addPerson(BENSON);
