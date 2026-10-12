@@ -174,38 +174,8 @@ public class AddressBook implements ReadOnlyAddressBook {
      */
     public boolean unassignStudentFromClass(Person person, AcademicClass academicClass) {
         requireAllNonNull(person, academicClass);
-        Person storedPerson = requireStoredPerson(person);
-        AcademicClass storedClass = requireStoredClass(academicClass);
-        return storedClass.unassignStudent(storedPerson);
+        return academicClass.unassignStudent(person);
     }
-
-    /**
-     * Returns the stored person with the same student number as {@code person}.
-     *
-     * @throws NullPointerException if {@code person} is null
-     * @throws IllegalArgumentException if no matching person exists
-     */
-    public Person requireStoredPerson(Person person) {
-        requireNonNull(person);
-        return findPersonByStudentNumber(person.getStudentNumber())
-                .orElseThrow(() -> new IllegalArgumentException("Student does not exist."));
-    }
-
-
-    /**
-     * Returns the stored academic class with the same module code and class name
-     * as {@code academicClass}.
-     *
-     * @throws NullPointerException if {@code academicClass} is null
-     * @throws IllegalArgumentException if no matching academic class exists
-     */
-    public AcademicClass requireStoredClass(AcademicClass academicClass) {
-        requireNonNull(academicClass);
-        return findAcademicClass(academicClass.getModuleCode(), academicClass.getClassName())
-                .orElseThrow(() -> new IllegalArgumentException("Academic class does not exist."));
-    }
-
-
 
     //// util methods
 
