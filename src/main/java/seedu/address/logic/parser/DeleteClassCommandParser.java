@@ -19,7 +19,6 @@ import seedu.address.model.academicclass.ModuleCode;
 public class DeleteClassCommandParser implements Parser<DeleteClassCommand> {
 
     public static final String MESSAGE_UNKNOWN_PARAMETER = "Unknown parameter: %1$s";
-    public static final String MESSAGE_DUPLICATE_PARAMETER = "Parameter %1$s was specified more than once.";
 
     private static final Set<String> VALID_PREFIXES = Set.of(PREFIX_MODULE_CODE.toString(),
             PREFIX_CLASS_NAME.toString());
@@ -40,8 +39,7 @@ public class DeleteClassCommandParser implements Parser<DeleteClassCommand> {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteClassCommand.MESSAGE_USAGE));
         }
 
-        rejectDuplicatePrefix(argMultimap, PREFIX_MODULE_CODE);
-        rejectDuplicatePrefix(argMultimap, PREFIX_CLASS_NAME);
+        argMultimap.verifyNoDuplicatePrefixesFor(PREFIX_MODULE_CODE, PREFIX_CLASS_NAME);
 
         String moduleCode = argMultimap.getValue(PREFIX_MODULE_CODE).get().trim();
         String className = argMultimap.getValue(PREFIX_CLASS_NAME).get().trim();
@@ -62,12 +60,6 @@ public class DeleteClassCommandParser implements Parser<DeleteClassCommand> {
             if (!VALID_PREFIXES.contains(prefix)) {
                 throw new ParseException(String.format(MESSAGE_UNKNOWN_PARAMETER, prefix));
             }
-        }
-    }
-
-    private void rejectDuplicatePrefix(ArgumentMultimap argMultimap, Prefix prefix) throws ParseException {
-        if (argMultimap.getAllValues(prefix).size() > 1) {
-            throw new ParseException(String.format(MESSAGE_DUPLICATE_PARAMETER, prefix));
         }
     }
 }

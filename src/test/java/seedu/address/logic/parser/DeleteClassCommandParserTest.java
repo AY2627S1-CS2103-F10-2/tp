@@ -1,11 +1,11 @@
 package seedu.address.logic.parser;
 
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
+import static seedu.address.logic.Messages.getErrorMessageForDuplicatePrefixes;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_CLASS_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_MODULE_CODE;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseFailure;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseSuccess;
-import static seedu.address.logic.parser.DeleteClassCommandParser.MESSAGE_DUPLICATE_PARAMETER;
 import static seedu.address.logic.parser.DeleteClassCommandParser.MESSAGE_UNKNOWN_PARAMETER;
 
 import org.junit.jupiter.api.Test;
@@ -46,13 +46,15 @@ public class DeleteClassCommandParserTest {
     @Test
     public void parse_repeatedParameter_failure() {
         assertParseFailure(parser, " m/CS2103 m/CS2101 c/F10-2",
-                String.format(MESSAGE_DUPLICATE_PARAMETER, PREFIX_MODULE_CODE));
+                getErrorMessageForDuplicatePrefixes(PREFIX_MODULE_CODE));
         assertParseFailure(parser, " m/CS2103 m/CS2103 c/F10-2",
-                String.format(MESSAGE_DUPLICATE_PARAMETER, PREFIX_MODULE_CODE));
+                getErrorMessageForDuplicatePrefixes(PREFIX_MODULE_CODE));
         assertParseFailure(parser, " m/CS2103 c/F10-2 c/F11-2",
-                String.format(MESSAGE_DUPLICATE_PARAMETER, PREFIX_CLASS_NAME));
+                getErrorMessageForDuplicatePrefixes(PREFIX_CLASS_NAME));
         assertParseFailure(parser, " m/CS2103 c/F10-2 c/F10-2",
-                String.format(MESSAGE_DUPLICATE_PARAMETER, PREFIX_CLASS_NAME));
+                getErrorMessageForDuplicatePrefixes(PREFIX_CLASS_NAME));
+        assertParseFailure(parser, " m/CS2103 c/F10-2 m/CS2101 c/F11-2",
+                getErrorMessageForDuplicatePrefixes(PREFIX_MODULE_CODE, PREFIX_CLASS_NAME));
     }
 
     @Test
