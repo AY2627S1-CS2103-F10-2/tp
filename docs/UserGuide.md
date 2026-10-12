@@ -97,6 +97,30 @@ Shows a list of all persons in the address book.
 
 Format: `list`
 
+### Listing students by class: `listbyclass`
+
+Shows only students assigned to the specified module and class, alphabetically by name using the existing student cards.
+
+Format: `listbyclass m/MODULE_CODE c/CLASS_NAME`
+
+* Both parameters are required exactly once and can appear in either order. Unknown parameters are rejected.
+* Surrounding spaces are ignored. Module and class names must match an existing pair, ignoring case.
+* Names are sorted ignoring case, with original spelling used to break ties.
+* An existing class with no students shows an empty student list and a count of zero.
+* A nonexistent class produces an error without changing the current student list.
+* This command changes only the displayed student list, not student records, class memberships, or the class list.
+* Use `list` to show all students again. `list` and `find` display results in their original insertion order.
+
+Examples:
+
+* `listbyclass m/CS2103 c/F10-2`
+* `listbyclass c/f10-2 m/cs2103`
+
+The result message includes the student count and class, for example: `Listed 2 students taking CS2103 (F10-2).`
+
+**Current integration limitation:** Class assignment support is being integrated separately. Classes created with
+`addclass` currently start empty; this command does not assign students or persist memberships across restarts.
+
 ### Editing a person: `edit`
 
 Edits an existing person in the address book.
@@ -201,4 +225,5 @@ Action     | Format, Examples
 **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **List**   | `list`
+**List students by class** | `listbyclass m/MODULE_CODE c/CLASS_NAME`<br> e.g., `listbyclass m/CS2103 c/F10-2`
 **Help**   | `help`
