@@ -155,7 +155,8 @@ public class ModelManager implements Model {
     public Optional<AcademicClass> findAcademicClass(ModuleCode moduleCode, ClassName className) {
         requireNonNull(moduleCode);
         requireNonNull(className);
-        return addressBook.getAcademicClassList().stream().filter(c -> c.hasIdentity(moduleCode, className)).findFirst();
+        return addressBook.getAcademicClassList().stream().filter(
+                c -> c.hasIdentity(moduleCode, className)).findFirst();
     }
 
     @Override
