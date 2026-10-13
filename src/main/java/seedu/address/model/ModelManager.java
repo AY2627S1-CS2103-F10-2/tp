@@ -126,6 +126,11 @@ public class ModelManager implements Model {
     }
 
     @Override
+    public boolean assignStudentToClass(Person person, AcademicClass academicClass) {
+        return addressBook.assignStudentToClass(person, academicClass);
+    }
+
+    @Override
     public ObservableList<AcademicClass> getAcademicClassList() {
         return addressBook.getAcademicClassList();
     }

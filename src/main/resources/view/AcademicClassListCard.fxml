@@ -25,7 +25,7 @@
         </Label>
         <Label fx:id="className" text="\$className" styleClass="cell_big_label" />
       </HBox>
-      <Label fx:id="moduleCode" styleClass="cell_small_label" text="\$moduleCode" />
+      <Label fx:id="studentCount" styleClass="cell_small_label" text="\$studentCount" />
     </VBox>
   </GridPane>
 </HBox>
