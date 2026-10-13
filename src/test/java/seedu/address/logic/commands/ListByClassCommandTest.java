@@ -32,10 +32,10 @@ public class ListByClassCommandTest {
 
     @Test
     public void execute_matchingClass_displaysOnlyMembersAlphabetically() throws CommandException {
-        AcademicClass academicClass = new AcademicClassWithMembers("CS2103", "F10-2", Set.of(BENSON, ALICE));
+        AcademicClass academicClass = createClassWithMembers("CS2103", "F10-2", Set.of(BENSON, ALICE));
         model.addAcademicClass(academicClass);
-        model.addAcademicClass(new AcademicClassWithMembers("CS2100", "F10-2", Set.of(DANIEL)));
-        model.addAcademicClass(new AcademicClassWithMembers("CS2103", "F11-2", Set.of(DANIEL)));
+        model.addAcademicClass(createClassWithMembers("CS2100", "F10-2", Set.of(DANIEL)));
+        model.addAcademicClass(createClassWithMembers("CS2103", "F11-2", Set.of(DANIEL)));
 
         CommandResult result = new ListByClassCommand("CS2103", "F10-2").execute(model);
 
@@ -48,7 +48,7 @@ public class ListByClassCommandTest {
 
     @Test
     public void execute_previousFilter_doesNotRestrictClassMembers() throws CommandException {
-        model.addAcademicClass(new AcademicClassWithMembers("CS2103", "F10-2", Set.of(ALICE, BENSON)));
+        model.addAcademicClass(createClassWithMembers("CS2103", "F10-2", Set.of(ALICE, BENSON)));
         model.updateFilteredPersonList(person -> person.isSamePerson(DANIEL));
 
         new ListByClassCommand("CS2103", "F10-2").execute(model);
@@ -58,7 +58,7 @@ public class ListByClassCommandTest {
 
     @Test
     public void execute_caseAndWhitespaceVariations_matchesExactPair() throws CommandException {
-        model.addAcademicClass(new AcademicClassWithMembers("CS2103", "F10-2", Set.of(ALICE)));
+        model.addAcademicClass(createClassWithMembers("CS2103", "F10-2", Set.of(ALICE)));
 
         new ListByClassCommand(" cs2103 ", " f10-2 ").execute(model);
 
@@ -77,7 +77,7 @@ public class ListByClassCommandTest {
 
     @Test
     public void execute_missingClass_preservesPreviousView() {
-        model.addAcademicClass(new AcademicClassWithMembers("CS2100", "F10-2", Set.of(ALICE)));
+        model.addAcademicClass(createClassWithMembers("CS2100", "F10-2", Set.of(ALICE)));
         model.updateFilteredPersonListAlphabetically(person -> person.isSamePerson(BENSON));
 
         assertThrows(CommandException.class, ListByClassCommand.MESSAGE_CLASS_NOT_FOUND, () ->
@@ -89,7 +89,7 @@ public class ListByClassCommandTest {
 
     @Test
     public void execute_sameModuleDifferentClass_throwsCommandException() {
-        model.addAcademicClass(new AcademicClassWithMembers("CS2103", "F11-2", Set.of(ALICE)));
+        model.addAcademicClass(createClassWithMembers("CS2103", "F11-2", Set.of(ALICE)));
 
         assertThrows(CommandException.class, ListByClassCommand.MESSAGE_CLASS_NOT_FOUND, () ->
                 new ListByClassCommand("CS2103", "F10-2").execute(model));
@@ -132,7 +132,7 @@ public class ListByClassCommandTest {
 
     @Test
     public void execute_updatedStudentDetails_matchesByStudentNumber() throws CommandException {
-        model.addAcademicClass(new AcademicClassWithMembers("CS2103", "F10-2", Set.of(ALICE)));
+        model.addAcademicClass(createClassWithMembers("CS2103", "F10-2", Set.of(ALICE)));
         Person renamedAlice = new PersonBuilder(ALICE).withName("Zoe Pauline").build();
         model.setPerson(ALICE, renamedAlice);
 
@@ -143,7 +143,7 @@ public class ListByClassCommandTest {
 
     @Test
     public void execute_deletedStudent_doesNotDisplayStaleMembershipRecord() throws CommandException {
-        model.addAcademicClass(new AcademicClassWithMembers("CS2103", "F10-2", Set.of(ALICE, BENSON)));
+        model.addAcademicClass(createClassWithMembers("CS2103", "F10-2", Set.of(ALICE, BENSON)));
         model.deletePerson(ALICE);
 
         new ListByClassCommand("CS2103", "F10-2").execute(model);
@@ -182,20 +182,11 @@ public class ListByClassCommandTest {
     }
 
     /**
-     * Supplies membership fixtures through the public read contract until assignment support is integrated.
-     * This does not exercise the assignment command or membership persistence.
+     * Creates a real academic class populated through the public membership API.
      */
-    private static class AcademicClassWithMembers extends AcademicClass {
-        private final Set<Person> members;
-
-        AcademicClassWithMembers(String moduleCode, String className, Set<Person> members) {
-            super(new ModuleCode(moduleCode), new ClassName(className));
-            this.members = Set.copyOf(members);
-        }
-
-        @Override
-        public Set<Person> getStudents() {
-            return members;
-        }
+    private static AcademicClass createClassWithMembers(String moduleCode, String className, Set<Person> members) {
+        AcademicClass academicClass = new AcademicClass(new ModuleCode(moduleCode), new ClassName(className));
+        members.forEach(academicClass::assignStudent);
+        return academicClass;
     }
 }
