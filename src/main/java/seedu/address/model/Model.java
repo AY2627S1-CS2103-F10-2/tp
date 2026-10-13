@@ -1,10 +1,13 @@
 package seedu.address.model;
 
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.model.academicclass.AcademicClass;
+import seedu.address.model.academicclass.ClassName;
+import seedu.address.model.academicclass.ModuleCode;
 import seedu.address.model.person.Person;
 
 
@@ -78,6 +81,12 @@ public interface Model {
      * Returns true if an academic class with the same module code and class name exists in the address book.
      */
     boolean hasAcademicClass(AcademicClass academicClass);
+
+    /**
+     * Returns the class matching both identifiers, or an empty optional if no class matches.
+     * @throws NullPointerException if either identifier is null.
+     */
+    Optional<AcademicClass> findAcademicClass(ModuleCode moduleCode, ClassName className);
 
     /**
      * Adds the given academic class.

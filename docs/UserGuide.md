@@ -127,6 +127,53 @@ Expected output: `Listed all persons.`
 
 The student list displays each student's name, student number, email, optional Telegram username, and tags.
 
+### Listing students by class: `listbyclass`
+
+Shows only students assigned to the specified module and class, alphabetically by name using the existing student cards.
+
+Format: `listbyclass m/MODULE_CODE c/CLASS_NAME`
+
+* Both parameters are required exactly once and can appear in either order. Unknown parameters are rejected.
+* Surrounding spaces are ignored. Module and class names must match an existing pair, ignoring case.
+* Module codes must start with an ASCII letter and contain only ASCII letters or digits.
+* Class names must contain at least one ASCII letter or digit, and may contain only ASCII letters, digits, or hyphens.
+* Empty or invalid values produce the same validation errors as `addclass` and `assign`, without changing the student list.
+* Names are sorted ignoring case, with original spelling used to break ties.
+* An existing class with no students shows an empty student list and a count of zero.
+* A nonexistent class produces an error without changing the current student list.
+* This command changes only the displayed student list, not student records, class memberships, or the class list.
+* Use `list` to show all students again. `list` and `find` display results in their original insertion order.
+
+Examples:
+
+* `listbyclass m/CS2103 c/F10-2`
+* `listbyclass c/f10-2 m/cs2103`
+
+The result message includes the student count and class, for example: `Listed 2 students taking CS2103 (F10-2).`
+
+Classes created with `addclass` start empty. Use `assign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME`
+to assign an existing student before listing the class. Memberships are saved across restarts.
+
+Example walkthrough (use unused student numbers, email addresses, and a new class):
+
+```text
+add sn/A0999901X n/Zoe Test e/zoe.test@example.com
+add sn/A0999902Y n/Amy Test e/amy.test@example.com
+addclass m/CS2103 c/TEST-103
+assign sn/A0999901X m/CS2103 c/TEST-103
+assign sn/A0999902Y m/CS2103 c/TEST-103
+listbyclass m/CS2103 c/TEST-103
+```
+
+The student list shows only Amy Test followed by Zoe Test, with the message
+`Listed 2 students taking CS2103 (TEST-103).` Other students and the class list are unchanged.
+After closing and reopening TAssist, run `listbyclass m/CS2103 c/TEST-103` again to display the saved
+memberships alphabetically. The filtered view itself is not saved. Run `list` to return to all students.
+
+**Known limitation:** Updating class memberships when assigned students are edited or deleted is deferred to v1.4.
+Avoid editing student numbers or deleting assigned students for now: stale membership references can prevent
+the saved data from loading on restart. Back up your data before experimenting with these operations.
+
 ### Creating a class: `addclass`
 
 Creates an academic class. Created classes appear in the class list section of the UI.
@@ -377,6 +424,7 @@ Action     | Format, Examples
 **Edit**   | `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **List**   | `list`
+**List students by class** | `listbyclass m/MODULE_CODE c/CLASS_NAME`<br> e.g., `listbyclass m/CS2103 c/F10-2`
 **Help**   | `help`
 **Exit**   | `exit`
 **Unassign** | `unassign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME`<br> e.g., `unassign sn/A1111111H m/CS2103 c/F10`
