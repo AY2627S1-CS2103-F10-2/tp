@@ -3,11 +3,11 @@ package seedu.address.model.academicclass;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableSet;
 import seedu.address.model.person.Person;
 
 /**
@@ -21,7 +21,9 @@ public class AcademicClass {
     private final ClassName className;
 
     // Data fields
-    private final Set<Person> students = new HashSet<>();
+    private final ObservableSet<Person> students = FXCollections.observableSet(new HashSet<>());
+    // Cached read-only view of students; reflects membership changes and forwards change notifications.
+    private final ObservableSet<Person> unmodifiableStudents = FXCollections.unmodifiableObservableSet(students);
 
     /**
      * Every field must be present and not null.
@@ -41,11 +43,11 @@ public class AcademicClass {
     }
 
     /**
-     * Returns an immutable student set, which throws {@code UnsupportedOperationException}
-     * if modification is attempted.
+     * Returns an unmodifiable observable student set, which throws {@code UnsupportedOperationException}
+     * if modification is attempted. Membership changes are reflected in this view.
      */
-    public Set<Person> getStudents() {
-        return Collections.unmodifiableSet(students);
+    public ObservableSet<Person> getStudents() {
+        return unmodifiableStudents;
     }
 
     /**
