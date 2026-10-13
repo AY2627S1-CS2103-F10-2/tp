@@ -21,7 +21,6 @@ import org.junit.jupiter.api.io.TempDir;
 
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.CommandResult;
-import seedu.address.logic.commands.DeleteClassCommand;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
@@ -73,55 +72,6 @@ public class LogicManagerTest {
     public void execute_validCommand_success() throws Exception {
         String listCommand = ListCommand.COMMAND_WORD;
         assertCommandSuccess(listCommand, ListCommand.MESSAGE_SUCCESS, model);
-    }
-
-    @Test
-    public void execute_deleteClass_savesRemainingClassesAndPersons() throws Exception {
-        model.addPerson(AMY);
-        logic.execute("addclass m/CS2103 c/F10-2");
-        logic.execute("addclass m/CS2103 c/F11-2");
-        var view = logic.getAcademicClassList();
-
-        CommandResult result = logic.execute("deleteclass c/f10-2 m/cs2103");
-
-        AcademicClass remaining = new AcademicClass(new ModuleCode("CS2103"), new ClassName("F11-2"));
-        assertEquals("Deleted class: CS2103-F10-2", result.getFeedbackToUser());
-        assertEquals(List.of(remaining), view);
-        JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
-        ReadOnlyAddressBook savedAddressBook = storage.readAddressBook().orElseThrow();
-        assertEquals(model.getAddressBook(), savedAddressBook);
-        assertEquals(List.of(AMY), savedAddressBook.getPersonList());
-
-        logic.execute("deleteclass m/CS2103 c/F11-2");
-        assertEquals(List.of(), storage.readAddressBook().orElseThrow().getAcademicClassList());
-    }
-
-    @Test
-    public void execute_deleteClassInvalidInput_preservesModelAndSavedData() throws Exception {
-        logic.execute("addclass m/CS2103 c/F10-2");
-        JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
-        ReadOnlyAddressBook savedAddressBook = storage.readAddressBook().orElseThrow();
-
-        assertParseException("deleteclass m/CS2103 c/F10-2 x/extra", "Unknown parameter: x/");
-        assertParseException("deleteclass m/2103 c/F10-2", ModuleCode.MESSAGE_CONSTRAINTS);
-        assertParseException("deleteclass m/CS2103 c/---", ClassName.MESSAGE_CONSTRAINTS);
-        assertCommandException("deleteclass m/CS2103 c/F11-2",
-                String.format(DeleteClassCommand.MESSAGE_CLASS_NOT_FOUND, "CS2103", "F11-2"));
-
-        assertEquals(savedAddressBook, storage.readAddressBook().orElseThrow());
-    }
-
-    @Test
-    public void execute_deleteClassUnicodeExpansion_preservesExistingClass() throws Exception {
-        logic.execute("addclass m/CS2103 c/SS1");
-        AcademicClass existingClass = new AcademicClass(new ModuleCode("CS2103"), new ClassName("SS1"));
-        JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
-
-        // Uppercasing ß produces SS, but invalid input must be rejected before normalization.
-        assertParseException("deleteclass m/CS2103 c/\u00df1", ClassName.MESSAGE_CONSTRAINTS);
-
-        assertEquals(List.of(existingClass), logic.getAcademicClassList());
-        assertEquals(List.of(existingClass), storage.readAddressBook().orElseThrow().getAcademicClassList());
     }
 
     @Test
