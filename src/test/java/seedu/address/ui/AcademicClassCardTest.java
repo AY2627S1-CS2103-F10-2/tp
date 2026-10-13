@@ -2,6 +2,8 @@ package seedu.address.ui;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static seedu.address.testutil.TypicalPersons.ALICE;
+import static seedu.address.testutil.TypicalPersons.BENSON;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
@@ -39,6 +41,27 @@ public class AcademicClassCardTest {
             assertLabelTextExists(academicClassCard.getRoot(), "1. ");
             assertLabelTextExists(academicClassCard.getRoot(), "CS2103T F10-2");
             assertLabelTextExists(academicClassCard.getRoot(), "Students: 0");
+        });
+    }
+
+    @Test
+    public void studentCount_membershipChanges_updatesExistingCard() {
+        runOnFxThreadAndWait(() -> {
+            AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+            academicClass.assignStudent(ALICE);
+            AcademicClassCard card = new AcademicClassCard(academicClass, 1);
+            assertLabelTextExists(card.getRoot(), "Students: 1");
+
+            academicClass.assignStudent(BENSON);
+            assertLabelTextExists(card.getRoot(), "Students: 2");
+            academicClass.assignStudent(BENSON);
+            assertLabelTextExists(card.getRoot(), "Students: 2");
+            academicClass.unassignStudent(ALICE);
+            assertLabelTextExists(card.getRoot(), "Students: 1");
+            academicClass.unassignStudent(ALICE);
+            assertLabelTextExists(card.getRoot(), "Students: 1");
+            academicClass.unassignStudent(BENSON);
+            assertLabelTextExists(card.getRoot(), "Students: 0");
         });
     }
 
