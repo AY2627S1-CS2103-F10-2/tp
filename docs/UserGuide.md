@@ -425,6 +425,6 @@ Action     | Format, Examples
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **List**   | `list`
 **List students by class** | `listbyclass m/MODULE_CODE c/CLASS_NAME`<br> e.g., `listbyclass m/CS2103 c/F10-2`
+**Unassign** | `unassign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME`<br> e.g., `unassign sn/A1111111H m/CS2103 c/F10`
 **Help**   | `help`
 **Exit**   | `exit`
-**Unassign** | `unassign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME`<br> e.g., `unassign sn/A1111111H m/CS2103 c/F10`
