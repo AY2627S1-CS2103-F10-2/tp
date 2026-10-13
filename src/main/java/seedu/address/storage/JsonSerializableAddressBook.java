@@ -70,6 +70,7 @@ class JsonSerializableAddressBook {
             if (addressBook.hasAcademicClass(academicClass)) {
                 throw new IllegalValueException(MESSAGE_DUPLICATE_ACADEMIC_CLASS);
             }
+            jsonAdaptedAcademicClass.restoreStudents(academicClass, addressBook);
             addressBook.addAcademicClass(academicClass);
         }
         return addressBook;
