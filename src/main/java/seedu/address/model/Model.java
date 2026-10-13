@@ -92,6 +92,15 @@ public interface Model {
     void deleteAcademicClass(AcademicClass target);
 
     /**
+     * Assigns the given student to the given class.
+     * Both arguments must be the actual objects stored in this address book.
+     * Returns true if membership was added, or false if already assigned.
+     * Does not change the current person filter or displayed order.
+     * @throws NullPointerException if either argument is null.
+     */
+    boolean assignStudentToClass(Person person, AcademicClass academicClass);
+
+    /**
      * Returns an unmodifiable view of the academic class list.
      */
     ObservableList<AcademicClass> getAcademicClassList();

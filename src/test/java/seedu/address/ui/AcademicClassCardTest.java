@@ -37,8 +37,8 @@ public class AcademicClassCardTest {
 
             assertNotNull(academicClassCard.getRoot());
             assertLabelTextExists(academicClassCard.getRoot(), "1. ");
-            assertLabelTextExists(academicClassCard.getRoot(), "F10-2");
-            assertLabelTextExists(academicClassCard.getRoot(), "Module: CS2103T");
+            assertLabelTextExists(academicClassCard.getRoot(), "CS2103T F10-2");
+            assertLabelTextExists(academicClassCard.getRoot(), "Students: 0");
         });
     }
 

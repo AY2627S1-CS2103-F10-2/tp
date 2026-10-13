@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
@@ -34,6 +35,31 @@ import seedu.address.testutil.PersonBuilder;
 public class AddressBookTest {
 
     private final AddressBook addressBook = new AddressBook();
+
+    @Test
+    public void assignStudentToClass_storedObjects_preservesReferencesAndIsIdempotent() {
+        AcademicClass storedClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+        AcademicClass otherClass = new AcademicClass(new ModuleCode("CS2101"), new ClassName("T01"));
+        addressBook.addPerson(ALICE);
+        addressBook.addAcademicClass(storedClass);
+        addressBook.addAcademicClass(otherClass);
+        Person storedPerson = addressBook.findPersonByStudentNumber(ALICE.getStudentNumber()).orElseThrow();
+        AcademicClass target = addressBook.findAcademicClass(storedClass.getModuleCode(), storedClass.getClassName())
+                .orElseThrow();
+
+        assertTrue(addressBook.assignStudentToClass(storedPerson, target));
+        assertFalse(addressBook.assignStudentToClass(storedPerson, target));
+        assertEquals(Set.of(ALICE), storedClass.getStudents());
+        assertSame(storedPerson, storedClass.getStudents().iterator().next());
+        assertTrue(otherClass.getStudents().isEmpty());
+    }
+
+    @Test
+    public void assignStudentToClass_nullArgument_throwsNullPointerException() {
+        AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+        assertThrows(NullPointerException.class, () -> addressBook.assignStudentToClass(null, academicClass));
+        assertThrows(NullPointerException.class, () -> addressBook.assignStudentToClass(ALICE, null));
+    }
 
     @Test
     public void constructor() {

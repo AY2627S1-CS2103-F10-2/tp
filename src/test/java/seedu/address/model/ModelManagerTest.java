@@ -10,6 +10,7 @@ import static seedu.address.testutil.TypicalPersons.BENSON;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
@@ -24,6 +25,36 @@ import seedu.address.testutil.AddressBookBuilder;
 public class ModelManagerTest {
 
     private ModelManager modelManager = new ModelManager();
+
+    @Test
+    public void assignStudentToClass_addsMembershipWithoutChangingFilterOrOtherClasses() {
+        AcademicClass first = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+        AcademicClass second = new AcademicClass(new ModuleCode("CS2101"), new ClassName("T01"));
+        modelManager.addPerson(ALICE);
+        modelManager.addPerson(BENSON);
+        modelManager.addAcademicClass(first);
+        modelManager.addAcademicClass(second);
+        modelManager.updateFilteredPersonList(new NameContainsKeywordsPredicate(List.of("Benson")));
+
+        assertTrue(modelManager.assignStudentToClass(ALICE, first));
+        assertFalse(modelManager.assignStudentToClass(ALICE, first));
+        assertEquals(Set.of(ALICE), first.getStudents());
+        assertTrue(second.getStudents().isEmpty());
+        assertTrue(modelManager.assignStudentToClass(BENSON, first));
+        assertTrue(modelManager.assignStudentToClass(ALICE, second));
+        assertEquals(Set.of(ALICE, BENSON), first.getStudents());
+        assertEquals(Set.of(ALICE), second.getStudents());
+        assertEquals(List.of(BENSON), modelManager.getFilteredPersonList());
+        assertEquals(List.of(ALICE, BENSON), modelManager.getAddressBook().getPersonList());
+    }
+
+    @Test
+    public void assignStudentToClass_nullArguments_doNotAssignStudent() {
+        AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+        assertThrows(NullPointerException.class, () -> modelManager.assignStudentToClass(null, academicClass));
+        assertThrows(NullPointerException.class, () -> modelManager.assignStudentToClass(ALICE, null));
+        assertTrue(academicClass.getStudents().isEmpty());
+    }
 
     @Test
     public void constructor() {
