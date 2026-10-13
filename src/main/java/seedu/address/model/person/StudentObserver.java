@@ -15,5 +15,5 @@ public interface StudentObserver {
      */
     void onStudentUpdate(Person oldStudent, Person newStudent);
 
-    void onStudentListReplaced(List<Person> persons);
+    void onStudentListReplaced(List<Person> students);
 }
