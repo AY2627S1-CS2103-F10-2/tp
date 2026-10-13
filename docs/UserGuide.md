@@ -392,7 +392,6 @@ The following MVP commands are planned or specified, but are not currently accep
 * `liststudent`: use `list` instead.
 * `deleteclass m/MODULE_CODE c/CLASS_NAME`
 * `listclass`
-* `listbyclass c/CLASS_NAME m/MODULE_CODE`
 
 If any of these command words are entered, TAssist displays `Unknown command.`
 
