@@ -59,7 +59,7 @@ public class AddressBookParser {
             case ClearCommand.COMMAND_WORD -> new ClearCommand();
             case FindCommand.COMMAND_WORD -> new FindCommandParser().parse(arguments);
             case ListCommand.COMMAND_WORD -> new ListCommand();
-            case ListClassCommand.COMMAND_WORD -> parseListClass(arguments);
+            case ListClassCommand.COMMAND_WORD -> new ListClassCommandParser().parse(arguments);
             case ExitCommand.COMMAND_WORD -> new ExitCommand();
             case HelpCommand.COMMAND_WORD -> new HelpCommand();
             default -> {
@@ -67,17 +67,6 @@ public class AddressBookParser {
                 throw new ParseException(MESSAGE_UNKNOWN_COMMAND);
             }
         };
-    }
-
-    /**
-     * Parses the {@code listclass} command, which does not accept arguments.
-     */
-    private Command parseListClass(String arguments) throws ParseException {
-        if (!arguments.trim().isEmpty()) {
-            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT,
-                    ListClassCommand.MESSAGE_USAGE));
-        }
-        return new ListClassCommand();
     }
 
 }
