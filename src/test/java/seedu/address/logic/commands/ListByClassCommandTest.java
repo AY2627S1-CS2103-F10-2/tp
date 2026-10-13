@@ -98,6 +98,39 @@ public class ListByClassCommandTest {
     }
 
     @Test
+    public void execute_unicodeClassName_doesNotMatchAsciiClass() {
+        model.addAcademicClass(new AcademicClass(new ModuleCode("CS2103"), new ClassName("SS1")));
+        model.updateFilteredPersonListAlphabetically(person -> person.isSamePerson(BENSON));
+
+        assertThrows(CommandException.class, ListByClassCommand.MESSAGE_CLASS_NOT_FOUND, () ->
+                new ListByClassCommand("CS2103", "\u00df1").execute(model));
+
+        assertEquals(List.of(BENSON), model.getFilteredPersonList());
+    }
+
+    @Test
+    public void execute_unicodeModuleCode_doesNotMatchAsciiModule() {
+        model.addAcademicClass(new AcademicClass(new ModuleCode("SS2103"), new ClassName("F10-2")));
+
+        assertThrows(CommandException.class, ListByClassCommand.MESSAGE_CLASS_NOT_FOUND, () ->
+                new ListByClassCommand("\u00df2103", "F10-2").execute(model));
+
+        assertEquals(List.of(BENSON, ALICE, DANIEL), model.getFilteredPersonList());
+    }
+
+    @Test
+    public void execute_invalidCreationFormat_reportsClassNotFound() {
+        model.addAcademicClass(new AcademicClass(new ModuleCode("CS2103"), new ClassName("F10-2")));
+
+        assertThrows(CommandException.class, ListByClassCommand.MESSAGE_CLASS_NOT_FOUND, () ->
+                new ListByClassCommand("2103", "F10-2").execute(model));
+        assertThrows(CommandException.class, ListByClassCommand.MESSAGE_CLASS_NOT_FOUND, () ->
+                new ListByClassCommand("CS2103", "---").execute(model));
+
+        assertEquals(List.of(BENSON, ALICE, DANIEL), model.getFilteredPersonList());
+    }
+
+    @Test
     public void execute_updatedStudentDetails_matchesByStudentNumber() throws CommandException {
         model.addAcademicClass(new AcademicClassWithMembers("CS2103", "F10-2", Set.of(ALICE)));
         Person renamedAlice = new PersonBuilder(ALICE).withName("Zoe Pauline").build();

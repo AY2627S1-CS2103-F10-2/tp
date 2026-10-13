@@ -10,6 +10,8 @@ import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
 import seedu.address.model.academicclass.AcademicClass;
+import seedu.address.model.academicclass.ClassName;
+import seedu.address.model.academicclass.ModuleCode;
 
 /**
  * Lists students assigned to a specified academic class.
@@ -27,13 +29,19 @@ public class ListByClassCommand extends Command {
 
     /**
      * Creates a command to look up the specified module and class, ignoring case and surrounding spaces.
+     * Nonempty values outside the creation format are preserved and reported as a missing class on execution.
      */
     public ListByClassCommand(String moduleCode, String className) {
         requireAllNonNull(moduleCode, className);
         checkArgument(!moduleCode.trim().isEmpty(), "Module code must not be blank.");
         checkArgument(!className.trim().isEmpty(), "Class name must not be blank.");
-        this.moduleCode = moduleCode.trim().toUpperCase(Locale.ROOT);
-        this.className = className.trim().toUpperCase(Locale.ROOT);
+        String trimmedModuleCode = moduleCode.trim();
+        String trimmedClassName = className.trim();
+        // Validate before normalization: Unicode case conversion can turn invalid identifiers into valid ones.
+        this.moduleCode = ModuleCode.isValidModuleCode(trimmedModuleCode)
+                ? trimmedModuleCode.toUpperCase(Locale.ROOT) : trimmedModuleCode;
+        this.className = ClassName.isValidClassName(trimmedClassName)
+                ? trimmedClassName.toUpperCase(Locale.ROOT) : trimmedClassName;
     }
 
     @Override
@@ -47,10 +55,10 @@ public class ListByClassCommand extends Command {
     }
 
     private AcademicClass findAcademicClass(Model model) throws CommandException {
-        return model.getAcademicClassList().stream()
-                .filter(academicClass -> academicClass.getModuleCode().value.equalsIgnoreCase(moduleCode)
-                        && academicClass.getClassName().value.equalsIgnoreCase(className))
-                .findFirst()
+        if (!ModuleCode.isValidModuleCode(moduleCode) || !ClassName.isValidClassName(className)) {
+            throw new CommandException(MESSAGE_CLASS_NOT_FOUND);
+        }
+        return model.getAddressBook().findAcademicClass(new ModuleCode(moduleCode), new ClassName(className))
                 .orElseThrow(() -> new CommandException(MESSAGE_CLASS_NOT_FOUND));
     }
 
