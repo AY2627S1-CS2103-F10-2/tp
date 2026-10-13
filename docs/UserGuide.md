@@ -151,7 +151,25 @@ The result message includes the student count and class, for example: `Listed 2 
 Classes created with `addclass` start empty. Use `assign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME`
 to assign an existing student before listing the class. Memberships are saved across restarts.
 
+Example walkthrough (use unused student numbers, email addresses, and a new class):
+
+```text
+add sn/A0999901X n/Zoe Test e/zoe.test@example.com
+add sn/A0999902Y n/Amy Test e/amy.test@example.com
+addclass m/CS2103 c/TEST-103
+assign sn/A0999901X m/CS2103 c/TEST-103
+assign sn/A0999902Y m/CS2103 c/TEST-103
+listbyclass m/CS2103 c/TEST-103
+```
+
+The student list shows only Amy Test followed by Zoe Test, with the message
+`Listed 2 students taking CS2103 (TEST-103).` Other students and the class list are unchanged.
+After closing and reopening TAssist, run `listbyclass m/CS2103 c/TEST-103` again to display the saved
+memberships alphabetically. The filtered view itself is not saved. Run `list` to return to all students.
+
 **Known limitation:** Updating class memberships when assigned students are edited or deleted is deferred to v1.4.
+Avoid editing student numbers or deleting assigned students for now: stale membership references can prevent
+the saved data from loading on restart. Back up your data before experimenting with these operations.
 
 ### Creating a class: `addclass`
 
