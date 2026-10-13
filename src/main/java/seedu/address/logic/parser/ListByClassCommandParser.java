@@ -11,6 +11,8 @@ import java.util.regex.Pattern;
 
 import seedu.address.logic.commands.ListByClassCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.academicclass.ClassName;
+import seedu.address.model.academicclass.ModuleCode;
 
 /**
  * Parses input arguments for the listbyclass command.
@@ -24,7 +26,7 @@ public class ListByClassCommandParser implements Parser<ListByClassCommand> {
     private static final Pattern PREFIX_PATTERN = Pattern.compile("(?<=\\s)([^\\s/]+/)");
 
     /**
-     * Parses class lookup arguments without applying class creation constraints.
+     * Parses class lookup arguments using the shared module code and class name constraints.
      *
      * @throws ParseException if required values are missing or parameters are invalid.
      */
@@ -34,14 +36,15 @@ public class ListByClassCommandParser implements Parser<ListByClassCommand> {
         rejectUnknownPrefixes(args);
         ArgumentMultimap arguments = ArgumentTokenizer.tokenize(args, PREFIX_MODULE_CODE, PREFIX_CLASS_NAME);
         if (!arguments.getPreamble().isEmpty()
-                || arguments.getValue(PREFIX_MODULE_CODE).filter(value -> !value.trim().isEmpty()).isEmpty()
-                || arguments.getValue(PREFIX_CLASS_NAME).filter(value -> !value.trim().isEmpty()).isEmpty()) {
+                || arguments.getValue(PREFIX_MODULE_CODE).isEmpty()
+                || arguments.getValue(PREFIX_CLASS_NAME).isEmpty()) {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, ListByClassCommand.MESSAGE_USAGE));
         }
         rejectDuplicatePrefix(arguments, PREFIX_MODULE_CODE);
         rejectDuplicatePrefix(arguments, PREFIX_CLASS_NAME);
-        return new ListByClassCommand(arguments.getValue(PREFIX_MODULE_CODE).get(),
-                arguments.getValue(PREFIX_CLASS_NAME).get());
+        ModuleCode moduleCode = ParserUtil.parseModuleCode(arguments.getValue(PREFIX_MODULE_CODE).get());
+        ClassName className = ParserUtil.parseClassName(arguments.getValue(PREFIX_CLASS_NAME).get());
+        return new ListByClassCommand(moduleCode, className);
     }
 
     private void rejectUnknownPrefixes(String args) throws ParseException {

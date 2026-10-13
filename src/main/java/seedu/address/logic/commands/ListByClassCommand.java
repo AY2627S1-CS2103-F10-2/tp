@@ -1,10 +1,7 @@
 package seedu.address.logic.commands;
 
 import static java.util.Objects.requireNonNull;
-import static seedu.address.commons.util.AppUtil.checkArgument;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
-
-import java.util.Locale;
 
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.commands.exceptions.CommandException;
@@ -24,24 +21,16 @@ public class ListByClassCommand extends Command {
     public static final String MESSAGE_CLASS_NOT_FOUND = "The specified class does not exist.";
     public static final String MESSAGE_SUCCESS = "Listed %1$d students taking %2$s (%3$s).";
 
-    private final String moduleCode;
-    private final String className;
+    private final ModuleCode moduleCode;
+    private final ClassName className;
 
     /**
-     * Creates a command to look up the specified module and class, ignoring case and surrounding spaces.
-     * Nonempty values outside the creation format are preserved and reported as a missing class on execution.
+     * Creates a command to look up the specified validated module and class.
      */
-    public ListByClassCommand(String moduleCode, String className) {
+    public ListByClassCommand(ModuleCode moduleCode, ClassName className) {
         requireAllNonNull(moduleCode, className);
-        checkArgument(!moduleCode.trim().isEmpty(), "Module code must not be blank.");
-        checkArgument(!className.trim().isEmpty(), "Class name must not be blank.");
-        String trimmedModuleCode = moduleCode.trim();
-        String trimmedClassName = className.trim();
-        // Validate before normalization: Unicode case conversion can turn invalid identifiers into valid ones.
-        this.moduleCode = ModuleCode.isValidModuleCode(trimmedModuleCode)
-                ? trimmedModuleCode.toUpperCase(Locale.ROOT) : trimmedModuleCode;
-        this.className = ClassName.isValidClassName(trimmedClassName)
-                ? trimmedClassName.toUpperCase(Locale.ROOT) : trimmedClassName;
+        this.moduleCode = moduleCode;
+        this.className = className;
     }
 
     @Override
@@ -55,10 +44,7 @@ public class ListByClassCommand extends Command {
     }
 
     private AcademicClass findAcademicClass(Model model) throws CommandException {
-        if (!ModuleCode.isValidModuleCode(moduleCode) || !ClassName.isValidClassName(className)) {
-            throw new CommandException(MESSAGE_CLASS_NOT_FOUND);
-        }
-        return model.getAddressBook().findAcademicClass(new ModuleCode(moduleCode), new ClassName(className))
+        return model.findAcademicClass(moduleCode, className)
                 .orElseThrow(() -> new CommandException(MESSAGE_CLASS_NOT_FOUND));
     }
 

@@ -8,6 +8,8 @@ import static seedu.address.testutil.Assert.assertThrows;
 import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.commands.ListByClassCommand;
+import seedu.address.model.academicclass.ClassName;
+import seedu.address.model.academicclass.ModuleCode;
 
 public class ListByClassCommandParserTest {
 
@@ -15,7 +17,7 @@ public class ListByClassCommandParserTest {
 
     @Test
     public void parse_validParameters_acceptsEitherOrderAndTrimsValues() {
-        ListByClassCommand expected = new ListByClassCommand("CS2103", "F10-2");
+        ListByClassCommand expected = new ListByClassCommand(new ModuleCode("CS2103"), new ClassName("F10-2"));
         assertParseSuccess(parser, " m/CS2103 c/F10-2", expected);
         assertParseSuccess(parser, " c/F10-2 m/CS2103", expected);
         assertParseSuccess(parser, " m/  cs2103   c/  f10-2  ", expected);
@@ -28,8 +30,8 @@ public class ListByClassCommandParserTest {
         assertParseFailure(parser, "   ", message);
         assertParseFailure(parser, " m/CS2103", message);
         assertParseFailure(parser, " c/F10-2", message);
-        assertParseFailure(parser, " m/ c/F10-2", message);
-        assertParseFailure(parser, " m/CS2103 c/   ", message);
+        assertParseFailure(parser, " m/ c/F10-2", ModuleCode.MESSAGE_EMPTY);
+        assertParseFailure(parser, " m/CS2103 c/   ", ClassName.MESSAGE_EMPTY);
     }
 
     @Test
@@ -55,9 +57,17 @@ public class ListByClassCommandParserTest {
     }
 
     @Test
-    public void parse_lookupValues_doesNotApplyCreationValidation() {
-        assertParseSuccess(parser, " m/2103 c/---", new ListByClassCommand("2103", "---"));
-        assertParseSuccess(parser, " m/CS 2103 c/T 24", new ListByClassCommand("CS 2103", "T 24"));
+    public void parse_invalidModuleCode_failure() {
+        assertParseFailure(parser, " m/2103 c/F10-2", ModuleCode.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, " m/CS 2103 c/F10-2", ModuleCode.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, " m/\u00df2103 c/F10-2", ModuleCode.MESSAGE_CONSTRAINTS);
+    }
+
+    @Test
+    public void parse_invalidClassName_failure() {
+        assertParseFailure(parser, " m/CS2103 c/---", ClassName.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, " m/CS2103 c/T 24", ClassName.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, " m/CS2103 c/\u00df1", ClassName.MESSAGE_CONSTRAINTS);
     }
 
     @Test

@@ -39,7 +39,7 @@ public class AddressBookParserTest {
 
     @Test
     public void parseCommand_listByClass() throws Exception {
-        assertEquals(new ListByClassCommand("CS2103", "F10-2"),
+        assertEquals(new ListByClassCommand(new ModuleCode("CS2103"), new ClassName("F10-2")),
                 parser.parseCommand("listbyclass m/CS2103 c/F10-2"));
     }
 

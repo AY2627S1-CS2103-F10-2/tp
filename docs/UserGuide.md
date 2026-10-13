@@ -135,6 +135,9 @@ Format: `listbyclass m/MODULE_CODE c/CLASS_NAME`
 
 * Both parameters are required exactly once and can appear in either order. Unknown parameters are rejected.
 * Surrounding spaces are ignored. Module and class names must match an existing pair, ignoring case.
+* Module codes must start with an ASCII letter and contain only ASCII letters or digits.
+* Class names must contain at least one ASCII letter or digit, and may contain only ASCII letters, digits, or hyphens.
+* Empty or invalid values produce the same validation errors as `addclass` and `assign`, without changing the student list.
 * Names are sorted ignoring case, with original spelling used to break ties.
 * An existing class with no students shows an empty student list and a count of zero.
 * A nonexistent class produces an error without changing the current student list.
