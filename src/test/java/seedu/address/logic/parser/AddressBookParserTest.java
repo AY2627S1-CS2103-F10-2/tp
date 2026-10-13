@@ -21,6 +21,7 @@ import seedu.address.logic.commands.EditCommand.EditPersonDescriptor;
 import seedu.address.logic.commands.ExitCommand;
 import seedu.address.logic.commands.FindCommand;
 import seedu.address.logic.commands.HelpCommand;
+import seedu.address.logic.commands.ListByClassCommand;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.academicclass.AcademicClass;
@@ -35,6 +36,12 @@ import seedu.address.testutil.PersonUtil;
 public class AddressBookParserTest {
 
     private final AddressBookParser parser = new AddressBookParser();
+
+    @Test
+    public void parseCommand_listByClass() throws Exception {
+        assertEquals(new ListByClassCommand(new ModuleCode("CS2103"), new ClassName("F10-2")),
+                parser.parseCommand("listbyclass m/CS2103 c/F10-2"));
+    }
 
     @Test
     public void parseCommand_add() throws Exception {
