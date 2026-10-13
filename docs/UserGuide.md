@@ -224,6 +224,8 @@ Deletes the class identified by its module code and class name from TAssist.
 Format: `deleteclass m/MODULE_CODE c/CLASS_NAME`
 
 * Both parameters are required, must have nonempty values, and must each be supplied exactly once. They can be supplied in either order.
+* `MODULE_CODE` must begin with a letter and contain only letters or digits, as for `addclass`.
+* `CLASS_NAME` must contain at least one letter or digit, and may contain only letters, digits, or hyphens, as for `addclass`.
 * The module code and class name must match the same existing class. Matching ignores letter case and leading or trailing spaces.
 * Searches all classes, regardless of the current student list filter. No list index is required.
 * Removes the class from the class list and saves the change automatically.
@@ -244,12 +246,14 @@ Common errors:
 * Missing `m/` or `c/`, or extra text before the parameters: `Invalid command format!`, followed by the command usage.
 * Empty module code: `Module code cannot be empty`
 * Empty class name: `Class name cannot be empty`
+* Invalid module code, such as `2103` or `CS-2103`: `Module code must contain letters or digits`
+* Invalid class name, such as `T 24` or `---`: `Class names can only contain letters, digits, or '-'`
 * Repeated module code: `Multiple values specified for the following single-valued field(s): m/`
 * Repeated class name: `Multiple values specified for the following single-valued field(s): c/`
 * Unknown parameter, such as `x/`: `Unknown parameter: x/`
 * No matching class: `No class with module code CS2103T and class name F10-2 exists.`
 
-Nonempty lookup values that do not meet the class-creation format also result in a "no matching class" error.
+Invalid module codes and class names are rejected before searching for a class. Valid values that do not identify an existing class result in a "no matching class" error.
 
 ### Clearing all entries: `clear`
 

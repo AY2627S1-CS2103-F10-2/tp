@@ -20,7 +20,7 @@ public class DeleteClassCommandParserTest {
 
     @Test
     public void parse_allFieldsPresent_success() {
-        DeleteClassCommand expectedCommand = new DeleteClassCommand("CS2103", "F10-2");
+        DeleteClassCommand expectedCommand = new DeleteClassCommand(new ModuleCode("CS2103"), new ClassName("F10-2"));
         assertParseSuccess(parser, " m/CS2103 c/F10-2", expectedCommand);
         assertParseSuccess(parser, " c/f10-2 m/cs2103", expectedCommand);
         assertParseSuccess(parser, " m/   CS2103   c/   F10-2   ", expectedCommand);
@@ -72,9 +72,16 @@ public class DeleteClassCommandParserTest {
     }
 
     @Test
-    public void parse_invalidCreationFormat_acceptsNonemptyLookupValues() {
-        assertParseSuccess(parser, " m/2103 c/---", new DeleteClassCommand("2103", "---"));
-        assertParseSuccess(parser, " m/CS 2103 c/T 24", new DeleteClassCommand("CS 2103", "T 24"));
-        assertParseSuccess(parser, " m/CS-2103 c///", new DeleteClassCommand("CS-2103", "//"));
+    public void parse_invalidModuleCode_failure() {
+        assertParseFailure(parser, " m/2103 c/F10-2", ModuleCode.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, " m/CS 2103 c/F10-2", ModuleCode.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, " m/CS-2103 c/F10-2", ModuleCode.MESSAGE_CONSTRAINTS);
+    }
+
+    @Test
+    public void parse_invalidClassName_failure() {
+        assertParseFailure(parser, " m/CS2103 c/T 24", ClassName.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, " m/CS2103 c///", ClassName.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, " m/CS2103 c/---", ClassName.MESSAGE_CONSTRAINTS);
     }
 }

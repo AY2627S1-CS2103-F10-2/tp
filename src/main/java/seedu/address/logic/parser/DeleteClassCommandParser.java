@@ -41,15 +41,8 @@ public class DeleteClassCommandParser implements Parser<DeleteClassCommand> {
 
         argMultimap.verifyNoDuplicatePrefixesFor(PREFIX_MODULE_CODE, PREFIX_CLASS_NAME);
 
-        String moduleCode = argMultimap.getValue(PREFIX_MODULE_CODE).get().trim();
-        String className = argMultimap.getValue(PREFIX_CLASS_NAME).get().trim();
-        if (moduleCode.isEmpty()) {
-            throw new ParseException(ModuleCode.MESSAGE_EMPTY);
-        }
-        if (className.isEmpty()) {
-            throw new ParseException(ClassName.MESSAGE_EMPTY);
-        }
-
+        ModuleCode moduleCode = ParserUtil.parseModuleCode(argMultimap.getValue(PREFIX_MODULE_CODE).get());
+        ClassName className = ParserUtil.parseClassName(argMultimap.getValue(PREFIX_CLASS_NAME).get());
         return new DeleteClassCommand(moduleCode, className);
     }
 

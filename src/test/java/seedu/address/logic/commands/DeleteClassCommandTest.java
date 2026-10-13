@@ -35,19 +35,14 @@ public class DeleteClassCommandTest {
 
     @Test
     public void constructor_nullLookupValue_throwsNullPointerException() {
-        assertThrows(NullPointerException.class, () -> new DeleteClassCommand(null, "F10-2"));
-        assertThrows(NullPointerException.class, () -> new DeleteClassCommand("CS2103", null));
-    }
-
-    @Test
-    public void constructor_emptyLookupValue_throwsIllegalArgumentException() {
-        assertThrows(IllegalArgumentException.class, () -> new DeleteClassCommand("  ", "F10-2"));
-        assertThrows(IllegalArgumentException.class, () -> new DeleteClassCommand("CS2103", "  "));
+        assertThrows(NullPointerException.class, () -> new DeleteClassCommand(null, new ClassName("F10-2")));
+        assertThrows(NullPointerException.class, () -> new DeleteClassCommand(new ModuleCode("CS2103"), null));
     }
 
     @Test
     public void execute_nullModel_throwsNullPointerException() {
-        assertThrows(NullPointerException.class, () -> new DeleteClassCommand("CS2103", "F10-2").execute(null));
+        DeleteClassCommand command = new DeleteClassCommand(new ModuleCode("CS2103"), new ClassName("F10-2"));
+        assertThrows(NullPointerException.class, () -> command.execute(null));
     }
 
     @Test
@@ -62,7 +57,7 @@ public class DeleteClassCommandTest {
         expectedModel.addAcademicClass(CS2101_F10);
         expectedModel.addPerson(ALICE);
 
-        assertCommandSuccess(new DeleteClassCommand("cs2103", "f10-2"), model,
+        assertCommandSuccess(new DeleteClassCommand(new ModuleCode("cs2103"), new ClassName("f10-2")), model,
                 String.format(DeleteClassCommand.MESSAGE_DELETE_CLASS_SUCCESS, CS2103_F10), expectedModel);
     }
 
@@ -75,7 +70,7 @@ public class DeleteClassCommandTest {
         expectedModel.deleteAcademicClass(CS2103_F10);
         expectedModel.updateFilteredPersonList(person -> false);
 
-        assertCommandSuccess(new DeleteClassCommand(" CS2103 ", " F10-2 "), model,
+        assertCommandSuccess(new DeleteClassCommand(new ModuleCode(" CS2103 "), new ClassName(" F10-2 ")), model,
                 String.format(DeleteClassCommand.MESSAGE_DELETE_CLASS_SUCCESS, CS2103_F10), expectedModel);
         assertEquals(List.of(ALICE), model.getAddressBook().getPersonList());
         assertTrue(model.getFilteredPersonList().isEmpty());
@@ -83,7 +78,7 @@ public class DeleteClassCommandTest {
 
     @Test
     public void execute_emptyClassList_throwsCommandException() {
-        assertCommandFailure(new DeleteClassCommand("CS2103", "F10-2"), model,
+        assertCommandFailure(new DeleteClassCommand(new ModuleCode("CS2103"), new ClassName("F10-2")), model,
                 String.format(DeleteClassCommand.MESSAGE_CLASS_NOT_FOUND, "CS2103", "F10-2"));
     }
 
@@ -92,32 +87,16 @@ public class DeleteClassCommandTest {
         model.addAcademicClass(CS2103_F10);
         model.addPerson(ALICE);
 
-        assertCommandFailure(new DeleteClassCommand("CS2103", "F11-2"), model,
+        assertCommandFailure(new DeleteClassCommand(new ModuleCode("CS2103"), new ClassName("F11-2")), model,
                 String.format(DeleteClassCommand.MESSAGE_CLASS_NOT_FOUND, "CS2103", "F11-2"));
-        assertCommandFailure(new DeleteClassCommand("CS2101", "F10-2"), model,
+        assertCommandFailure(new DeleteClassCommand(new ModuleCode("CS2101"), new ClassName("F10-2")), model,
                 String.format(DeleteClassCommand.MESSAGE_CLASS_NOT_FOUND, "CS2101", "F10-2"));
-    }
-
-    @Test
-    public void execute_invalidCreationFormat_reportsClassNotFound() {
-        model.addAcademicClass(CS2103_F10);
-
-        assertCommandFailure(new DeleteClassCommand("2103", "---"), model,
-                String.format(DeleteClassCommand.MESSAGE_CLASS_NOT_FOUND, "2103", "---"));
-        assertCommandFailure(new DeleteClassCommand("2103", "F10-2"), model,
-                String.format(DeleteClassCommand.MESSAGE_CLASS_NOT_FOUND, "2103", "F10-2"));
-        assertCommandFailure(new DeleteClassCommand("CS2103", "---"), model,
-                String.format(DeleteClassCommand.MESSAGE_CLASS_NOT_FOUND, "CS2103", "---"));
-        assertCommandFailure(new DeleteClassCommand("CS 2103", "F10-2"), model,
-                String.format(DeleteClassCommand.MESSAGE_CLASS_NOT_FOUND, "CS 2103", "F10-2"));
-        assertCommandFailure(new DeleteClassCommand("CS2103", "F10 2"), model,
-                String.format(DeleteClassCommand.MESSAGE_CLASS_NOT_FOUND, "CS2103", "F10 2"));
     }
 
     @Test
     public void execute_deleteTwice_secondCommandFails() throws Exception {
         model.addAcademicClass(CS2103_F10);
-        DeleteClassCommand command = new DeleteClassCommand("CS2103", "F10-2");
+        DeleteClassCommand command = new DeleteClassCommand(new ModuleCode("CS2103"), new ClassName("F10-2"));
         command.execute(model);
 
         assertTrue(model.getAcademicClassList().isEmpty());
@@ -127,20 +106,20 @@ public class DeleteClassCommandTest {
 
     @Test
     public void equals() {
-        DeleteClassCommand command = new DeleteClassCommand("CS2103", "F10-2");
+        DeleteClassCommand command = new DeleteClassCommand(new ModuleCode("CS2103"), new ClassName("F10-2"));
 
         assertTrue(command.equals(command));
-        assertTrue(command.equals(new DeleteClassCommand("CS2103", "F10-2")));
-        assertTrue(command.equals(new DeleteClassCommand(" cs2103 ", " f10-2 ")));
+        assertTrue(command.equals(new DeleteClassCommand(new ModuleCode("CS2103"), new ClassName("F10-2"))));
+        assertTrue(command.equals(new DeleteClassCommand(new ModuleCode(" cs2103 "), new ClassName(" f10-2 "))));
         assertFalse(command.equals(null));
         assertFalse(command.equals(1));
-        assertFalse(command.equals(new DeleteClassCommand("CS2101", "F10-2")));
-        assertFalse(command.equals(new DeleteClassCommand("CS2103", "F11-2")));
+        assertFalse(command.equals(new DeleteClassCommand(new ModuleCode("CS2101"), new ClassName("F10-2"))));
+        assertFalse(command.equals(new DeleteClassCommand(new ModuleCode("CS2103"), new ClassName("F11-2"))));
     }
 
     @Test
     public void toStringMethod() {
-        DeleteClassCommand command = new DeleteClassCommand("CS2103", "F10-2");
+        DeleteClassCommand command = new DeleteClassCommand(new ModuleCode("CS2103"), new ClassName("F10-2"));
         String expected = DeleteClassCommand.class.getCanonicalName() + "{moduleCode=CS2103, className=F10-2}";
         assertEquals(expected, command.toString());
     }

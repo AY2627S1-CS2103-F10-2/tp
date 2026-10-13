@@ -103,10 +103,25 @@ public class LogicManagerTest {
         ReadOnlyAddressBook savedAddressBook = storage.readAddressBook().orElseThrow();
 
         assertParseException("deleteclass m/CS2103 c/F10-2 x/extra", "Unknown parameter: x/");
+        assertParseException("deleteclass m/2103 c/F10-2", ModuleCode.MESSAGE_CONSTRAINTS);
+        assertParseException("deleteclass m/CS2103 c/---", ClassName.MESSAGE_CONSTRAINTS);
         assertCommandException("deleteclass m/CS2103 c/F11-2",
                 String.format(DeleteClassCommand.MESSAGE_CLASS_NOT_FOUND, "CS2103", "F11-2"));
 
         assertEquals(savedAddressBook, storage.readAddressBook().orElseThrow());
+    }
+
+    @Test
+    public void execute_deleteClassUnicodeExpansion_preservesExistingClass() throws Exception {
+        logic.execute("addclass m/CS2103 c/SS1");
+        AcademicClass existingClass = new AcademicClass(new ModuleCode("CS2103"), new ClassName("SS1"));
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
+
+        // Uppercasing ß produces SS, but invalid input must be rejected before normalization.
+        assertParseException("deleteclass m/CS2103 c/\u00df1", ClassName.MESSAGE_CONSTRAINTS);
+
+        assertEquals(List.of(existingClass), logic.getAcademicClassList());
+        assertEquals(List.of(existingClass), storage.readAddressBook().orElseThrow().getAcademicClassList());
     }
 
     @Test

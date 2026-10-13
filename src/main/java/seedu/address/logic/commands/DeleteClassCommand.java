@@ -1,13 +1,9 @@
 package seedu.address.logic.commands;
 
 import static java.util.Objects.requireNonNull;
-import static seedu.address.commons.util.AppUtil.checkArgument;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_CLASS_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_MODULE_CODE;
-
-import java.util.Locale;
-import java.util.Optional;
 
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.commands.exceptions.CommandException;
@@ -36,31 +32,22 @@ public class DeleteClassCommand extends Command {
     public static final String MESSAGE_CLASS_NOT_FOUND =
             "No class with module code %1$s and class name %2$s exists.";
 
-    private final String moduleCode;
-    private final String className;
+    private final ModuleCode moduleCode;
+    private final ClassName className;
 
     /**
-     * Creates a command to delete the class matching the given nonempty lookup values.
-     * Unlike class creation, lookup does not impose module code or class name format constraints.
+     * Creates a command to delete the class matching the given module code and class name.
      */
-    public DeleteClassCommand(String moduleCode, String className) {
+    public DeleteClassCommand(ModuleCode moduleCode, ClassName className) {
         requireAllNonNull(moduleCode, className);
-        checkArgument(!moduleCode.trim().isEmpty(), ModuleCode.MESSAGE_EMPTY);
-        checkArgument(!className.trim().isEmpty(), ClassName.MESSAGE_EMPTY);
-        this.moduleCode = moduleCode.trim().toUpperCase(Locale.ENGLISH);
-        this.className = className.trim().toUpperCase(Locale.ENGLISH);
+        this.moduleCode = moduleCode;
+        this.className = className;
     }
 
     @Override
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
-        // Nonempty lookup values outside the creation format cannot match a stored class.
-        Optional<AcademicClass> matchingClass = Optional.empty();
-        if (ModuleCode.isValidModuleCode(moduleCode) && ClassName.isValidClassName(className)) {
-            matchingClass = model.getAddressBook().findAcademicClass(
-                    new ModuleCode(moduleCode), new ClassName(className));
-        }
-        AcademicClass classToDelete = matchingClass
+        AcademicClass classToDelete = model.getAddressBook().findAcademicClass(moduleCode, className)
                 .orElseThrow(() -> new CommandException(
                         String.format(MESSAGE_CLASS_NOT_FOUND, moduleCode, className)));
 
