@@ -159,6 +159,40 @@ Common errors:
 * Invalid module code: `Module code must contain letters or digits`
 * Invalid class name: `Class names can only contain letters, digits, or '-'`
 
+### Assigning a student to a class: `assign`
+
+Assigns an existing student to an existing academic class.
+
+Format: `assign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME`
+
+* All three parameters are required and must be supplied exactly once. They can appear in any order.
+* Leading and trailing spaces are removed from parameter values.
+* Student numbers, module codes, and class names are matched case-insensitively. Hyphens matter: `F10` and `F-10` identify different classes.
+* `STUDENT_NUMBER` must contain 5 to 20 letters or digits, without spaces or special characters.
+* `MODULE_CODE` must begin with a letter and contain only letters or digits.
+* `CLASS_NAME` must contain at least one letter or digit, and may contain only letters, digits, or hyphens.
+* The student and class must already exist. A student hidden by the current search can still be assigned; assignment preserves the displayed student list.
+* A student may belong to multiple classes. Repeating an assignment reports that the student is already assigned and leaves the membership unchanged.
+
+Examples:
+* `assign sn/A1111111H m/CS2103 c/F-10` assigns student `A1111111H` to class `F-10` for module `CS2103`.
+* `assign c/ f10-2 sn/ a0234567y m/ cs2103t` assigns student `A0234567Y` to class `F10-2` for module `CS2103T`.
+
+Expected output:
+* `Student (A1111111H) has been assigned to CS2103-F-10.`
+
+Common errors:
+* Missing parameter: `You're missing some parameters. The correct format is assign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME`
+* Student not found: `Student (A1234567H) cannot be found in the address book.`
+* Class not found: `Class (CS2100-F10) cannot be found in the address book.`
+* Student already assigned: `Student (A1234567H) is already assigned to class CS2101-L1.`
+* Repeated parameter: `Multiple values specified for the following single-valued field(s):` followed by the repeated prefixes.
+* Unknown parameter: `Unknown parameter: PREFIX`
+* Unexpected text before the parameters: `Invalid command format!` followed by the command usage.
+* Empty or invalid student number, module code, or class name: the corresponding validation error from `add` or `addclass`.
+
+Rejected commands leave memberships and student counts unchanged.
+
 ### Editing a student: `edit`
 
 Edits an existing student in TAssist.
@@ -311,7 +345,6 @@ The following MVP commands are planned or specified, but are not currently accep
 * `liststudent`: use `list` instead.
 * `deleteclass m/MODULE_CODE c/CLASS_NAME`
 * `listclass`
-* `assign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME`
 * `unassign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME`
 * `listbyclass c/CLASS_NAME m/MODULE_CODE`
 
@@ -339,6 +372,7 @@ Action     | Format, Examples
 -----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 **Add**    | `add sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM] [t/TAG]... ` <br> e.g., `add sn/A0123456X n/James Ho e/jamesho@example.com tg/james_ho t/CS2103`
 **Add Class** | `addclass m/MODULE_CODE c/CLASS_NAME` <br> e.g., `addclass m/CS2103T c/F10-2`
+**Assign** | `assign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME` <br> e.g., `assign sn/A0123456X m/CS2103T c/F10-2`
 **Clear**  | `clear`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
 **Edit**   | `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`

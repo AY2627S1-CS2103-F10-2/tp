@@ -1,5 +1,6 @@
 package seedu.address.ui;
 
+import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
@@ -32,6 +33,6 @@ public class AcademicClassCard extends UiPart<Region> {
         this.academicClass = academicClass;
         id.setText(displayedIndex + ". ");
         className.setText(academicClass.getModuleCode().value + " " + academicClass.getClassName().value);
-        studentCount.setText("Students: " + academicClass.getStudents().size());
+        studentCount.textProperty().bind(Bindings.size(academicClass.getStudents()).asString("Students: %d"));
     }
 }
