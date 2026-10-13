@@ -7,13 +7,13 @@ import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.BENSON;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableSet;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.ModelManager;
 import seedu.address.model.academicclass.AcademicClass;
@@ -133,7 +133,7 @@ public class UnassignCommandTest {
      * This fixture tests command/model coordination, not AcademicClass's removal implementation.
      */
     private static class AcademicClassWithStudents extends AcademicClass {
-        private final Set<Person> members = new HashSet<>();
+        private final ObservableSet<Person> members = FXCollections.observableSet();
 
         AcademicClassWithStudents(ModuleCode moduleCode, ClassName className, Person... persons) {
             super(moduleCode, className);
@@ -141,8 +141,8 @@ public class UnassignCommandTest {
         }
 
         @Override
-        public Set<Person> getStudents() {
-            return Collections.unmodifiableSet(members);
+        public ObservableSet<Person> getStudents() {
+            return FXCollections.unmodifiableObservableSet(members);
         }
 
         @Override

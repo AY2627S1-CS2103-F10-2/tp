@@ -4,17 +4,22 @@ import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableSet;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.StudentNumber;
+import seedu.address.model.person.StudentObserver;
 
 /**
  * Represents a Class in the address book.
  * Guarantees: identity fields are immutable and validated; student membership can be updated.
  */
-public class AcademicClass {
+public class AcademicClass implements StudentObserver {
 
     // Identity fields
     private final ModuleCode moduleCode;
@@ -109,5 +114,37 @@ public class AcademicClass {
 
     public boolean hasIdentity(ModuleCode moduleCode, ClassName className) {
         return this.className.equals(className) && this.moduleCode.equals(moduleCode);
+    }
+
+    @Override
+    public void onStudentUpdate(Person oldStudent, Person newStudent) {
+        if (students.contains(oldStudent)) {
+            students.remove(oldStudent);
+
+            if (newStudent != null) {
+                students.add(newStudent);
+            }
+        }
+
+    }
+
+    @Override
+    public void onStudentListReplaced(List<Person> students) {
+        requireNonNull(students);
+
+        Set<StudentNumber> memberNumbers = this.students.stream()
+                .map(Person::getStudentNumber)
+                .collect(Collectors.toSet());
+
+        Set<Person> replacements = new HashSet<>();
+        for (Person student : students) {
+            requireNonNull(student);
+            if (memberNumbers.contains(student.getStudentNumber())) {
+                replacements.add(student);
+            }
+        }
+
+        this.students.clear();
+        this.students.addAll(replacements);
     }
 }
