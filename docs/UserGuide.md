@@ -266,7 +266,7 @@ Format: `unassign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME`
 * Only membership in the specified class is removed. The student record, academic class, and memberships in other classes remain unchanged.
 * The current person filter and displayed order remain unchanged.
 
-#### Examples
+Examples
 
 Suppose student `A1111111H` is assigned to class `F10` in module `CS2103`. Run:
 
@@ -288,18 +288,18 @@ unassign c/f10 m/cs2103 sn/a1111111h
 
 Both commands target the same membership. Run either command once; repeating it after successful removal reports that the student is no longer assigned to the class.
 
-#### Common errors
+Common errors:
 
-If a command fails validation or the student, class, or membership cannot be found, no membership is removed.
+* Missing parameter: `You're missing some parameters. The correct format is unassign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME`
+* Student not found: `Student (A1234567H) cannot be found in the address book.`
+* Class not found: `Class (CS2100-F10) cannot be found in the address book.`
+* Student not assigned to the class: `Student (A1234567H) is not assigned to class CS2101-L1.` This also occurs when repeating a successful unassignment.
+* Repeated parameter: `Multiple values specified for the following single-valued field(s):` followed by the repeated prefixes.
+* Unknown parameter: `Unknown parameter: PREFIX`
+* Unexpected text before the parameters: `Invalid command format!` followed by the command usage.
+* Empty or invalid student number, module code, or class name: the corresponding validation error from `add` or `addclass`.
 
-| Situation | Feedback and action |
-| --- | --- |
-| The student number is valid but does not exist. | `Student (A1111111H) cannot be found in the address book.` Check the student's number. |
-| The class identity is valid but does not exist. | `Class (CS2103-F10) cannot be found in the address book.` Check both the module code and class name. |
-| The student and class exist, but the student is not assigned to that class. | `Student (A1111111H) is not assigned to class CS2103-F10.` Check the membership. This also occurs when repeating a successful unassignment. |
-| A required prefix is omitted, such as `unassign sn/A1111111H m/CS2103`. | The app reports missing parameters and shows the required format. Include `sn/`, `m/`, and `c/`. |
-| A prefix has no value, such as `m/`, or its value has an invalid format. | The app shows a field-specific validation message. Supply a non-empty value meeting the constraints above. |
-| A prefix is repeated, an unknown prefix is supplied, or extra text precedes the parameters. | The app reports duplicate fields, an unknown parameter, or an invalid command format. Use each supported prefix exactly once and omit extra text. |
+Rejected commands leave memberships and student counts unchanged.
 
 ### Clearing all entries: `clear`
 
@@ -345,7 +345,6 @@ The following MVP commands are planned or specified, but are not currently accep
 * `liststudent`: use `list` instead.
 * `deleteclass m/MODULE_CODE c/CLASS_NAME`
 * `listclass`
-* `unassign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME`
 * `listbyclass c/CLASS_NAME m/MODULE_CODE`
 
 If any of these command words are entered, TAssist displays `Unknown command.`
