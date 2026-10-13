@@ -238,7 +238,6 @@ public class AddressBook implements ReadOnlyAddressBook {
      *
      * @return true if membership was removed, or false if the student was not assigned
      * @throws NullPointerException if either argument is null
-     * @throws IllegalArgumentException if the student or academic class does not exist
      */
     public boolean unassignStudentFromClass(Person person, AcademicClass academicClass) {
         requireAllNonNull(person, academicClass);
