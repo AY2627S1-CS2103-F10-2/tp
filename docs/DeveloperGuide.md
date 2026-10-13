@@ -421,7 +421,7 @@ Use case ends.
 
 **Extensions:**
 
-- **1a. Required details are missing, or unrecognised or extra details are supplied.**
+- **1a. Required details are missing, values are empty or invalid, or repeated, unrecognised or extra details are supplied.**
   - 1a1. TAssist informs TA of the error and the required details, without changing any assignments.
   - Use case ends.
 
@@ -437,10 +437,7 @@ Use case ends.
 
 - **1d. The student is already assigned to the specified class.**
   - 1d1. TAssist keeps the existing assignment without creating a duplicate.
-  - Use case resumes from step 3.
-
-- **2a. TAssist is unable to save the assignment.**
-  - 2a1. TAssist informs TA that the assignment could not be saved.
+  - 1d2. TAssist informs TA that the student is already assigned, identifying the student number and class.
   - Use case ends.
 
 #### **Unassign Student from Class**
@@ -590,6 +587,43 @@ testers are expected to do more *exploratory* testing.
       Expected: Similar to previous.
 
 1. _{ more test cases … }_
+
+### Assigning a student to a class
+
+1. Successful assignment and live count updates
+
+   1. Prerequisites: Use student numbers, emails, and a class that do not already exist. Run
+      `add sn/A1111111H n/Alice Tan e/alice.assign@example.com`,
+      `add sn/A2222222J n/Bob Lim e/bob.assign@example.com`, and `addclass m/CS2103 c/F-10`.
+      Expected: The new class shows `Students: 0`.
+
+   1. Test case: `assign sn/A1111111H m/CS2103 c/F-10`<br>
+      Expected: Success feedback identifies the student and class; the count immediately becomes 1.
+
+   1. Test case: `find Nobody`, then `assign c/ f-10 sn/ a2222222j m/ cs2103`<br>
+      Expected: Assignment succeeds despite the filter, the count becomes 2, and the student list stays empty.
+
+1. Duplicate assignment and errors
+
+   1. Test case: `assign sn/A1111111H m/CS2103 c/F-10` again<br>
+      Expected: Already-assigned feedback; the count remains 2.
+
+   1. Test cases: `assign sn/A9999999Z m/CS2103 c/F-10` and `assign sn/A1111111H m/CS9999 c/F-10`
+      (assuming those identifiers do not exist)<br>
+      Expected: Student-not-found and class-not-found feedback respectively; memberships remain unchanged.
+
+   1. Incorrect commands to try: `assign sn/random-numbers m/CS2103 c/F-10`,
+      `assign sn/A1111111H m/CS2103`, `assign sn/A1111111H m/CS2103 c/`,
+      `assign sn/A1111111H sn/A1111111H m/CS2103 c/F-10`, and
+      `assign sn/A1111111H m/CS2103 c/F-10 x/extra`<br>
+      Expected: Validation, missing-parameter, empty-value, duplicate-prefix, and unknown-prefix errors
+      respectively. Memberships and the count remain unchanged.
+
+1. Persistence
+
+   1. Close and reopen the app after the successful assignments.<br>
+      Expected: The class still shows 2 students. Its `studentNumbers` JSON list contains each assigned
+      student number once. Repeating either assignment reports that the student is already assigned.
 
 ### Saving data
 
