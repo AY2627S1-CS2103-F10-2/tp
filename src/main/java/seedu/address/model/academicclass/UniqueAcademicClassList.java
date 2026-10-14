@@ -30,6 +30,8 @@ public class UniqueAcademicClassList implements Iterable<AcademicClass> {
             throw new DuplicateAcademicClassException();
         }
         internalList.setAll(List.copyOf(academicClasses));
+
+
     }
 
     /**

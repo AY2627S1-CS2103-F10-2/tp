@@ -16,6 +16,7 @@ import seedu.address.model.academicclass.ModuleCode;
 import seedu.address.model.academicclass.UniqueAcademicClassList;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.StudentNumber;
+import seedu.address.model.person.StudentObserver;
 import seedu.address.model.person.UniquePersonList;
 
 /**
@@ -26,6 +27,8 @@ public class AddressBook implements ReadOnlyAddressBook {
 
     private final UniquePersonList persons = new UniquePersonList();
     private final UniqueAcademicClassList academicClasses = new UniqueAcademicClassList();
+
+    private List<StudentObserver> studentObservers = new ArrayList<>();
 
     /**
      * Creates an empty AddressBook.
@@ -50,6 +53,10 @@ public class AddressBook implements ReadOnlyAddressBook {
      */
     public void setPersons(List<Person> persons) {
         this.persons.setPersons(persons);
+
+        for (StudentObserver studentObserver : studentObservers) {
+            studentObserver.onStudentListReplaced(persons);
+        }
     }
 
     /**
@@ -58,6 +65,8 @@ public class AddressBook implements ReadOnlyAddressBook {
      */
     public void setAcademicClasses(List<AcademicClass> academicClasses) {
         this.academicClasses.setAcademicClasses(academicClasses);
+
+        resetStudentObservers(academicClasses);
     }
 
     /**
@@ -72,8 +81,44 @@ public class AddressBook implements ReadOnlyAddressBook {
         UniqueAcademicClassList replacementClasses = new UniqueAcademicClassList();
         replacementClasses.setAcademicClasses(newData.getAcademicClassList());
 
+        resetStudentObservers(newData.getAcademicClassList());
+
         persons.setPersons(replacementPersons);
         academicClasses.setAcademicClasses(replacementClasses.asUnmodifiableObservableList());
+
+
+    }
+
+    private void resetStudentObservers(Iterable<AcademicClass> academicClasses) {
+        studentObservers = new ArrayList<>();
+
+        for (AcademicClass academicClass : academicClasses) {
+            addStudentObserver(academicClass);
+        }
+    }
+
+    /**
+     * Removes the given observer so it no longer receives student change notifications.
+     *
+     * TODO: When implementing DeleteClassCommand, ensure the model's class deletion method
+     * calls this method with the deleted class's stored instance after successful removal.
+     *
+     * @throws NullPointerException if {@code studentObserver} is null
+     */
+    private void removeStudentObserver(StudentObserver studentObserver) {
+        requireNonNull(studentObserver);
+        this.studentObservers.remove(studentObserver);
+    }
+
+    private void addStudentObserver(StudentObserver studentObserver) {
+        requireNonNull(studentObserver);
+        this.studentObservers.add(studentObserver);
+    }
+
+    private void updateStudentObservers(Person oldStudent, Person newStudent) {
+        for (StudentObserver studentObserver : studentObservers) {
+            studentObserver.onStudentUpdate(oldStudent, newStudent);
+        }
     }
 
     //// person-level operations
@@ -141,6 +186,7 @@ public class AddressBook implements ReadOnlyAddressBook {
         requireNonNull(editedPerson);
 
         persons.setPerson(target, editedPerson);
+        updateStudentObservers(target, editedPerson);
     }
 
     /**
@@ -149,6 +195,7 @@ public class AddressBook implements ReadOnlyAddressBook {
      */
     public void removePerson(Person key) {
         persons.remove(key);
+        updateStudentObservers(key, null);
     }
 
     //// academic class-level operations
@@ -170,6 +217,8 @@ public class AddressBook implements ReadOnlyAddressBook {
         List<AcademicClass> updatedAcademicClasses = new ArrayList<>(academicClasses.asUnmodifiableObservableList());
         updatedAcademicClasses.add(academicClass);
         academicClasses.setAcademicClasses(updatedAcademicClasses);
+
+        studentObservers.add(academicClass);
     }
 
     /**
@@ -178,6 +227,7 @@ public class AddressBook implements ReadOnlyAddressBook {
      */
     public void removeAcademicClass(AcademicClass key) {
         academicClasses.remove(key);
+        removeStudentObserver(key);
     }
 
     /**
@@ -190,6 +240,17 @@ public class AddressBook implements ReadOnlyAddressBook {
     public boolean assignStudentToClass(Person person, AcademicClass academicClass) {
         requireAllNonNull(person, academicClass);
         return academicClass.assignStudent(person);
+    }
+
+    /**
+     * Unassigns the stored student from the stored academic class with the given identities.
+     *
+     * @return true if membership was removed, or false if the student was not assigned
+     * @throws NullPointerException if either argument is null
+     */
+    public boolean unassignStudentFromClass(Person person, AcademicClass academicClass) {
+        requireAllNonNull(person, academicClass);
+        return academicClass.unassignStudent(person);
     }
 
     //// util methods

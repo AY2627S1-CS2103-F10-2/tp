@@ -129,4 +129,14 @@ public interface Model {
      * @throws NullPointerException if {@code predicate} is null.
      */
     void updateFilteredPersonListAlphabetically(Predicate<Person> predicate);
+
+    /**
+     * Unassigns the stored student from the stored academic class with the given identities.
+     * Does not change the current person filter or displayed order.
+     *
+     * @return true if membership was removed, or false if the student was not assigned
+     * @throws NullPointerException if either argument is null
+     * @throws IllegalArgumentException if the student or academic class does not exist
+     */
+    boolean unassignStudentFromClass(Person person, AcademicClass academicClass);
 }

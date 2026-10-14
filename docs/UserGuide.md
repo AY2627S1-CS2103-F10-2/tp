@@ -336,6 +336,58 @@ Common errors:
 
 Invalid module codes and class names are rejected before searching for a class. Valid values that do not identify an existing class result in a "no matching class" error.
 
+### Unassigning a student from an academic class: `unassign`
+
+Removes a student's membership from one academic class. Use this when a student leaves a class but should remain in the address book or in other classes.
+
+Format: `unassign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME`
+
+**Before you begin:** The student and academic class must exist, and the student must already be assigned to that class.
+
+* All three parameters are required and must each appear exactly once. You can enter them in any order.
+* `STUDENT_NUMBER` must contain 5–20 letters or digits, without spaces.
+* `MODULE_CODE` must start with a letter and contain only letters or digits.
+* `CLASS_NAME` may contain letters, digits, and hyphens (`-`), and must contain at least one letter or digit.
+* Identifiers are matched exactly, ignoring letter case. For example, `cs2103` matches `CS2103`, but class name `F10` does not match `F-10`.
+* The command uses the student number, not an index in the displayed list. It can unassign a student hidden by a previous `find` command.
+* Only membership in the specified class is removed. The student record, academic class, and memberships in other classes remain unchanged.
+* The current person filter and displayed order remain unchanged.
+
+Examples
+
+Suppose student `A1111111H` is assigned to class `F10` in module `CS2103`. Run:
+
+```text
+unassign sn/A1111111H m/CS2103 c/F10
+```
+
+Expected feedback:
+
+```text
+Student (A1111111H) has been unassigned from CS2103-F10.
+```
+
+You can also change the parameter order and use lowercase identifiers:
+
+```text
+unassign c/f10 m/cs2103 sn/a1111111h
+```
+
+Both commands target the same membership. Run either command once; repeating it after successful removal reports that the student is no longer assigned to the class.
+
+Common errors:
+
+* Missing parameter: `You're missing some parameters. The correct format is unassign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME`
+* Student not found: `Student (A1234567H) cannot be found in the address book.`
+* Class not found: `Class (CS2100-F10) cannot be found in the address book.`
+* Student not assigned to the class: `Student (A1234567H) is not assigned to class CS2101-L1.` This also occurs when repeating a successful unassignment.
+* Repeated parameter: `Multiple values specified for the following single-valued field(s):` followed by the repeated prefixes.
+* Unknown parameter: `Unknown parameter: PREFIX`
+* Unexpected text before the parameters: `Invalid command format!` followed by the command usage.
+* Empty or invalid student number, module code, or class name: the corresponding validation error from `add` or `addclass`.
+
+Rejected commands leave memberships and student counts unchanged.
+
 ### Clearing all entries: `clear`
 
 Clears all students and classes from TAssist.
@@ -379,7 +431,6 @@ The following MVP commands are planned or specified, but are not currently accep
 * `deletestudent sn/STUDENT_NUMBER`: use `delete INDEX` instead.
 * `liststudent`: use `list` instead.
 * `listclass`
-* `unassign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME`
 
 If any of these command words are entered, TAssist displays `Unknown command.`
 
@@ -413,5 +464,6 @@ Action     | Format, Examples
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **List**   | `list`
 **List students by class** | `listbyclass m/MODULE_CODE c/CLASS_NAME`<br> e.g., `listbyclass m/CS2103 c/F10-2`
+**Unassign** | `unassign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME`<br> e.g., `unassign sn/A1111111H m/CS2103 c/F10`
 **Help**   | `help`
 **Exit**   | `exit`
