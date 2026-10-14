@@ -165,6 +165,11 @@ public class AddClassCommandTest {
         }
 
         @Override
+        public void deleteAcademicClass(AcademicClass target) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
         public boolean unassignStudentFromClass(Person person, AcademicClass academicClass) {
             throw new AssertionError("This method should not be called.");
         }

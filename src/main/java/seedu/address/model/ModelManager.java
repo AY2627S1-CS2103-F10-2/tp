@@ -134,6 +134,11 @@ public class ModelManager implements Model {
     }
 
     @Override
+    public void deleteAcademicClass(AcademicClass target) {
+        addressBook.removeAcademicClass(target);
+    }
+
+    @Override
     public boolean assignStudentToClass(Person person, AcademicClass academicClass) {
         return addressBook.assignStudentToClass(person, academicClass);
     }

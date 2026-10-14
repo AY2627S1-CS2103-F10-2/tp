@@ -222,6 +222,14 @@ public class AddressBook implements ReadOnlyAddressBook {
     }
 
     /**
+     * Removes {@code key} from this address book without deleting any person records.
+     * {@code key} must exist in the address book.
+     */
+    public void removeAcademicClass(AcademicClass key) {
+        academicClasses.remove(key);
+    }
+
+    /**
      * Assigns the given student to the given class.
      * Both arguments must be the actual objects stored in this address book.
      * Returns true if membership was added, or false if already assigned.
