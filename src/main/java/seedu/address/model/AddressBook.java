@@ -227,6 +227,7 @@ public class AddressBook implements ReadOnlyAddressBook {
      */
     public void removeAcademicClass(AcademicClass key) {
         academicClasses.remove(key);
+        removeStudentObserver(key);
     }
 
     /**

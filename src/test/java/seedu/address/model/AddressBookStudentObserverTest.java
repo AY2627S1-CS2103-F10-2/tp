@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
+import seedu.address.model.academicclass.exceptions.AcademicClassNotFoundException;
 import seedu.address.model.academicclass.exceptions.DuplicateAcademicClassException;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.exceptions.DuplicatePersonException;
@@ -25,6 +26,62 @@ import seedu.address.testutil.PersonBuilder;
  */
 public class AddressBookStudentObserverTest {
     private final AddressBook addressBook = new AddressBook();
+
+    @Test
+    public void removeAcademicClass_existingClass_stopsNotificationsAndPreservesPersons() {
+        AcademicClass removedClass = classWithAlice("OB1");
+        AcademicClass remainingClass = classWithAlice("OB2");
+        addressBook.addPerson(ALICE);
+        addressBook.addPerson(BENSON);
+        addressBook.addAcademicClass(removedClass);
+        addressBook.addAcademicClass(remainingClass);
+
+        addressBook.removeAcademicClass(removedClass);
+
+        assertEquals(List.of(ALICE, BENSON), addressBook.getPersonList());
+        assertEquals(List.of(remainingClass), addressBook.getAcademicClassList());
+        Person updatedAlice = new PersonBuilder(ALICE).withName("Updated Alice").build();
+        addressBook.setPerson(ALICE, updatedAlice);
+        addressBook.removePerson(updatedAlice);
+
+        assertSame(ALICE, removedClass.getStudents().iterator().next());
+        assertTrue(remainingClass.getStudents().isEmpty());
+        assertEquals(List.of(BENSON), addressBook.getPersonList());
+    }
+
+    @Test
+    public void removeAcademicClass_equivalentKey_unregistersStoredInstanceAndSupportsRecreation() {
+        AcademicClass original = classWithAlice("OB1");
+        addressBook.addPerson(ALICE);
+        addressBook.addAcademicClass(original);
+        AcademicClass equivalentKey = new AcademicClass(original.getModuleCode(), original.getClassName());
+
+        addressBook.removeAcademicClass(equivalentKey);
+        AcademicClass replacement = classWithAlice("OB1");
+        addressBook.addAcademicClass(replacement);
+        Person updatedAlice = new PersonBuilder(ALICE).withName("Updated Alice").build();
+        addressBook.setPerson(ALICE, updatedAlice);
+
+        assertSame(ALICE, original.getStudents().iterator().next());
+        assertSame(updatedAlice, replacement.getStudents().iterator().next());
+        assertSame(replacement, addressBook.getAcademicClassList().getFirst());
+    }
+
+    @Test
+    public void removeAcademicClass_invalidRemoval_preservesObserverRegistrations() {
+        AcademicClass storedClass = classWithAlice("OB1");
+        AcademicClass missingClass = classWithAlice("OB2");
+        addressBook.addPerson(ALICE);
+        addressBook.addAcademicClass(storedClass);
+
+        assertThrows(NullPointerException.class, () -> addressBook.removeAcademicClass(null));
+        assertThrows(AcademicClassNotFoundException.class, () -> addressBook.removeAcademicClass(missingClass));
+        addressBook.removePerson(ALICE);
+
+        assertTrue(storedClass.getStudents().isEmpty());
+        assertEquals(List.of(storedClass), addressBook.getAcademicClassList());
+        assertEquals(Set.of(ALICE), missingClass.getStudents());
+    }
 
     @Test
     public void setPersons_validReplacement_reconcilesMembershipsAcrossAllClasses() {
