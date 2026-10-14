@@ -22,7 +22,7 @@ TAssist is a **desktop application for NUS Teaching Assistants who need to manag
 
 1. Copy the file to the folder you want to use as the _home folder_ for TAssist.
 
-1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar addressbook.jar`.<br>
+1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar TAssist.jar`.<br>
    A GUI similar to the one below should appear in a few seconds. The app shows students and classes in separate sections.<br>
    ![Ui](images/Ui.png)
 
