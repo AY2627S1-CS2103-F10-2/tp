@@ -88,6 +88,11 @@ public class MainWindowTest {
         }
 
         @Override
+        public ObservableList<AcademicClass> getFilteredAcademicClassList() {
+            return FXCollections.observableArrayList();
+        }
+
+        @Override
         public GuiSettings getGuiSettings() {
             return new GuiSettings();
         }

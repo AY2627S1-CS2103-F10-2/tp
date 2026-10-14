@@ -3,6 +3,7 @@ package seedu.address.model;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static seedu.address.model.Model.PREDICATE_SHOW_ALL_ACADEMIC_CLASSES;
 import static seedu.address.model.Model.PREDICATE_SHOW_ALL_PERSONS;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.ALICE;
@@ -173,6 +174,26 @@ public class ModelManagerTest {
     }
 
     @Test
+    public void getFilteredAcademicClassList_filtersAndPreservesInsertionOrder() {
+        AcademicClass first = new AcademicClass(new ModuleCode("CS2100"), new ClassName("L03"));
+        AcademicClass second = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("T01"));
+        modelManager.addAcademicClass(first);
+        modelManager.addAcademicClass(second);
+
+        modelManager.updateFilteredAcademicClassList(academicClass -> academicClass.equals(second));
+        assertEquals(List.of(second), modelManager.getFilteredAcademicClassList());
+
+        modelManager.updateFilteredAcademicClassList(PREDICATE_SHOW_ALL_ACADEMIC_CLASSES);
+        assertEquals(List.of(first, second), modelManager.getFilteredAcademicClassList());
+    }
+
+    @Test
+    public void getFilteredAcademicClassList_modifyList_throwsUnsupportedOperationException() {
+        assertThrows(UnsupportedOperationException.class, () ->
+                modelManager.getFilteredAcademicClassList().remove(0));
+    }
+
+    @Test
     public void getFilteredPersonList_modifyList_throwsUnsupportedOperationException() {
         assertThrows(UnsupportedOperationException.class, () -> modelManager.getFilteredPersonList().remove(0));
     }
@@ -195,6 +216,8 @@ public class ModelManagerTest {
     @Test
     public void equals() {
         AddressBook addressBook = new AddressBookBuilder().withPerson(ALICE).withPerson(BENSON).build();
+        AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+        addressBook.addAcademicClass(academicClass);
         AddressBook differentAddressBook = new AddressBook();
         UserPrefs userPrefs = new UserPrefs();
 
@@ -222,6 +245,11 @@ public class ModelManagerTest {
 
         // resets modelManager to initial state for upcoming tests
         modelManager.updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
+
+        // different academic class filtered list -> returns false
+        modelManager.updateFilteredAcademicClassList(academic -> false);
+        assertFalse(modelManager.equals(new ModelManager(addressBook, userPrefs)));
+        modelManager.updateFilteredAcademicClassList(PREDICATE_SHOW_ALL_ACADEMIC_CLASSES);
 
         // different userPrefs -> returns false
         UserPrefs differentUserPrefs = new UserPrefs();

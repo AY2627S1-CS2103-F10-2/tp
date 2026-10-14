@@ -18,6 +18,9 @@ public interface Model {
     /** {@code Predicate} that always evaluates to true */
     Predicate<Person> PREDICATE_SHOW_ALL_PERSONS = unused -> true;
 
+    /** {@code Predicate} that always evaluates to true for academic classes. */
+    Predicate<AcademicClass> PREDICATE_SHOW_ALL_ACADEMIC_CLASSES = unused -> true;
+
     /**
      * Returns the user prefs.
      */
@@ -114,6 +117,9 @@ public interface Model {
      */
     ObservableList<AcademicClass> getAcademicClassList();
 
+    /** Returns an unmodifiable view of the filtered academic class list. */
+    ObservableList<AcademicClass> getFilteredAcademicClassList();
+
     /** Returns an unmodifiable observable view of persons in their displayed order. */
     ObservableList<Person> getFilteredPersonList();
 
@@ -129,6 +135,12 @@ public interface Model {
      * @throws NullPointerException if {@code predicate} is null.
      */
     void updateFilteredPersonListAlphabetically(Predicate<Person> predicate);
+
+    /**
+     * Updates the academic class filter while preserving insertion order.
+     * @throws NullPointerException if {@code predicate} is null.
+     */
+    void updateFilteredAcademicClassList(Predicate<AcademicClass> predicate);
 
     /**
      * Unassigns the stored student from the stored academic class with the given identities.

@@ -30,6 +30,8 @@ public class ModelManager implements Model {
     private final FilteredList<Person> filteredPersons;
     private final SortedList<Person> sortedPersons;
     private final ObservableList<Person> displayedPersons;
+    private final FilteredList<AcademicClass> filteredAcademicClasses;
+    private final ObservableList<AcademicClass> displayedAcademicClasses;
 
     /**
      * Initializes a ModelManager with the given addressBook and userPrefs.
@@ -44,6 +46,8 @@ public class ModelManager implements Model {
         filteredPersons = new FilteredList<>(this.addressBook.getPersonList());
         sortedPersons = new SortedList<>(filteredPersons);
         displayedPersons = FXCollections.unmodifiableObservableList(sortedPersons);
+        filteredAcademicClasses = new FilteredList<>(this.addressBook.getAcademicClassList());
+        displayedAcademicClasses = FXCollections.unmodifiableObservableList(filteredAcademicClasses);
     }
 
     public ModelManager() {
@@ -148,6 +152,11 @@ public class ModelManager implements Model {
         return addressBook.getAcademicClassList();
     }
 
+    @Override
+    public ObservableList<AcademicClass> getFilteredAcademicClassList() {
+        return displayedAcademicClasses;
+    }
+
     //=========== Filtered Person List Accessors =============================================================
 
     /**
@@ -173,6 +182,12 @@ public class ModelManager implements Model {
     }
 
     @Override
+    public void updateFilteredAcademicClassList(Predicate<AcademicClass> predicate) {
+        requireNonNull(predicate);
+        filteredAcademicClasses.setPredicate(predicate);
+    }
+
+    @Override
     public boolean unassignStudentFromClass(Person person, AcademicClass academicClass) {
         return addressBook.unassignStudentFromClass(person, academicClass);
     }
@@ -190,7 +205,8 @@ public class ModelManager implements Model {
 
         return addressBook.equals(otherModelManager.addressBook)
                 && userPrefs.equals(otherModelManager.userPrefs)
-                && displayedPersons.equals(otherModelManager.displayedPersons);
+                && displayedPersons.equals(otherModelManager.displayedPersons)
+                && displayedAcademicClasses.equals(otherModelManager.displayedAcademicClasses);
     }
 
 }
