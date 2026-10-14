@@ -3,6 +3,7 @@ package seedu.address.model;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static seedu.address.model.Model.PREDICATE_SHOW_ALL_ACADEMIC_CLASSES;
 import static seedu.address.model.Model.PREDICATE_SHOW_ALL_PERSONS;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.ALICE;
@@ -170,6 +171,26 @@ public class ModelManagerTest {
     @Test
     public void getAcademicClassList_modifyList_throwsUnsupportedOperationException() {
         assertThrows(UnsupportedOperationException.class, () -> modelManager.getAcademicClassList().remove(0));
+    }
+
+    @Test
+    public void getFilteredAcademicClassList_filtersAndPreservesInsertionOrder() {
+        AcademicClass first = new AcademicClass(new ModuleCode("CS2100"), new ClassName("L03"));
+        AcademicClass second = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("T01"));
+        modelManager.addAcademicClass(first);
+        modelManager.addAcademicClass(second);
+
+        modelManager.updateFilteredAcademicClassList(academicClass -> academicClass.equals(second));
+        assertEquals(List.of(second), modelManager.getFilteredAcademicClassList());
+
+        modelManager.updateFilteredAcademicClassList(PREDICATE_SHOW_ALL_ACADEMIC_CLASSES);
+        assertEquals(List.of(first, second), modelManager.getFilteredAcademicClassList());
+    }
+
+    @Test
+    public void getFilteredAcademicClassList_modifyList_throwsUnsupportedOperationException() {
+        assertThrows(UnsupportedOperationException.class, () ->
+                modelManager.getFilteredAcademicClassList().remove(0));
     }
 
     @Test
