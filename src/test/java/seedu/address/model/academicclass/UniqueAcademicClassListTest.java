@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -12,6 +13,8 @@ import java.util.NoSuchElementException;
 
 import org.junit.jupiter.api.Test;
 
+import javafx.collections.ListChangeListener;
+import seedu.address.model.academicclass.exceptions.AcademicClassNotFoundException;
 import seedu.address.model.academicclass.exceptions.DuplicateAcademicClassException;
 
 public class UniqueAcademicClassListTest {
@@ -63,6 +66,43 @@ public class UniqueAcademicClassListTest {
         assertThrows(UnsupportedOperationException.class, ()
             -> uniqueAcademicClassList.asUnmodifiableObservableList().remove(0));
         assertTrue(uniqueAcademicClassList.asUnmodifiableObservableList().isEmpty());
+    }
+
+    @Test
+    public void remove_nullClass_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> uniqueAcademicClassList.remove(null));
+    }
+
+    @Test
+    public void remove_missingClass_throwsAndPreservesContents() {
+        AcademicClass first = new AcademicClass(new ModuleCode("CS2103"), new ClassName("F10-2"));
+        AcademicClass missing = new AcademicClass(new ModuleCode("CS2103"), new ClassName("F11-2"));
+        uniqueAcademicClassList.setAcademicClasses(List.of(first));
+
+        assertThrows(AcademicClassNotFoundException.class, () -> uniqueAcademicClassList.remove(missing));
+        assertEquals(List.of(first), uniqueAcademicClassList.asUnmodifiableObservableList());
+    }
+
+    @Test
+    public void remove_existingClass_updatesAndNotifiesUnmodifiableView() {
+        AcademicClass first = new AcademicClass(new ModuleCode("CS2103"), new ClassName("F10-2"));
+        AcademicClass second = new AcademicClass(new ModuleCode("ST2334"), new ClassName("T24"));
+        uniqueAcademicClassList.setAcademicClasses(List.of(first, second));
+        var view = uniqueAcademicClassList.asUnmodifiableObservableList();
+        List<AcademicClass> removedClasses = new ArrayList<>();
+        view.addListener((ListChangeListener<AcademicClass>) change -> {
+            while (change.next()) {
+                removedClasses.addAll(change.getRemoved());
+            }
+        });
+
+        uniqueAcademicClassList.remove(new AcademicClass(new ModuleCode("cs2103"), new ClassName("f10-2")));
+
+        assertEquals(List.of(second), view);
+        assertEquals(List.of(first), removedClasses);
+        assertThrows(UnsupportedOperationException.class, () -> view.remove(second));
+        uniqueAcademicClassList.remove(second);
+        assertTrue(view.isEmpty());
     }
 
     @Test

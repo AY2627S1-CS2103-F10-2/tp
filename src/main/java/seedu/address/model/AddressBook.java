@@ -154,8 +154,7 @@ public class AddressBook implements ReadOnlyAddressBook {
     //// academic class-level operations
 
     /**
-     * Returns true if an academic class with the same module code and class name
-     * exists in the address book.
+     * Returns true if an academic class with the same module code and class name exists in the address book.
      */
     public boolean hasAcademicClass(AcademicClass academicClass) {
         requireNonNull(academicClass);
@@ -171,6 +170,14 @@ public class AddressBook implements ReadOnlyAddressBook {
         List<AcademicClass> updatedAcademicClasses = new ArrayList<>(academicClasses.asUnmodifiableObservableList());
         updatedAcademicClasses.add(academicClass);
         academicClasses.setAcademicClasses(updatedAcademicClasses);
+    }
+
+    /**
+     * Removes {@code key} from this address book without deleting any person records.
+     * {@code key} must exist in the address book.
+     */
+    public void removeAcademicClass(AcademicClass key) {
+        academicClasses.remove(key);
     }
 
     /**

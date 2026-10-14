@@ -1,5 +1,6 @@
 package seedu.address.model.academicclass;
 
+import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
 import java.util.HashSet;
@@ -8,6 +9,7 @@ import java.util.List;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import seedu.address.model.academicclass.exceptions.AcademicClassNotFoundException;
 import seedu.address.model.academicclass.exceptions.DuplicateAcademicClassException;
 
 /**
@@ -28,6 +30,17 @@ public class UniqueAcademicClassList implements Iterable<AcademicClass> {
             throw new DuplicateAcademicClassException();
         }
         internalList.setAll(List.copyOf(academicClasses));
+    }
+
+    /**
+     * Removes the equivalent academic class from the list.
+     * The academic class must exist in the list.
+     */
+    public void remove(AcademicClass toRemove) {
+        requireNonNull(toRemove);
+        if (!internalList.remove(toRemove)) {
+            throw new AcademicClassNotFoundException();
+        }
     }
 
     /**

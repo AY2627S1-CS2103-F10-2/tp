@@ -95,6 +95,12 @@ public interface Model {
     void addAcademicClass(AcademicClass academicClass);
 
     /**
+     * Deletes the given academic class.
+     * The academic class must exist in the address book.
+     */
+    void deleteAcademicClass(AcademicClass target);
+
+    /**
      * Assigns the given student to the given class.
      * Both arguments must be the actual objects stored in this address book.
      * Returns true if membership was added, or false if already assigned.
