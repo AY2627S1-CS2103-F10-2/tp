@@ -30,6 +30,7 @@ public class ModelManager implements Model {
     private final FilteredList<Person> filteredPersons;
     private final SortedList<Person> sortedPersons;
     private final ObservableList<Person> displayedPersons;
+    private Predicate<Person> personFilter = PREDICATE_SHOW_ALL_PERSONS;
     private final FilteredList<AcademicClass> filteredAcademicClasses;
     private final ObservableList<AcademicClass> displayedAcademicClasses;
 
@@ -144,7 +145,11 @@ public class ModelManager implements Model {
 
     @Override
     public boolean assignStudentToClass(Person person, AcademicClass academicClass) {
-        return addressBook.assignStudentToClass(person, academicClass);
+        boolean isAssigned = addressBook.assignStudentToClass(person, academicClass);
+        if (isAssigned) {
+            refreshFilteredPersonList();
+        }
+        return isAssigned;
     }
 
     @Override
@@ -171,6 +176,7 @@ public class ModelManager implements Model {
     @Override
     public void updateFilteredPersonList(Predicate<Person> predicate) {
         requireNonNull(predicate);
+        personFilter = predicate;
         filteredPersons.setPredicate(predicate);
         sortedPersons.setComparator(null);
     }
@@ -189,7 +195,20 @@ public class ModelManager implements Model {
 
     @Override
     public boolean unassignStudentFromClass(Person person, AcademicClass academicClass) {
-        return addressBook.unassignStudentFromClass(person, academicClass);
+        boolean isUnassigned = addressBook.unassignStudentFromClass(person, academicClass);
+        if (isUnassigned) {
+            refreshFilteredPersonList();
+        }
+        return isUnassigned;
+    }
+
+    /**
+     * Re-evaluates membership-dependent predicates without changing the current display order.
+     */
+    private void refreshFilteredPersonList() {
+        // Wrap the original predicate, not the previous wrapper, to avoid accumulating nested calls.
+        Predicate<Person> predicate = personFilter;
+        filteredPersons.setPredicate(predicate::test);
     }
 
     @Override
