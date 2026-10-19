@@ -147,6 +147,7 @@ public class ModelManager implements Model {
     @Override
     public void deleteAcademicClass(AcademicClass target) {
         addressBook.removeAcademicClass(target);
+        refreshFilteredPersonList();
     }
 
     @Override

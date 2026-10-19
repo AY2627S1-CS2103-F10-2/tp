@@ -82,6 +82,53 @@ public class ClassFilterIntegrationTest {
         assertEquals(List.of(BENSON, DANIEL), model.getFilteredPersonList());
     }
 
+    @Test
+    public void execute_deleteActiveClass_clearsExistingViewWithoutDeletingStudents() throws Exception {
+        var displayed = model.getFilteredPersonList();
+        execute("deleteclass m/CS2103 c/F10-2");
+        assertEquals(List.of(), displayed);
+        assertEquals(List.of(DANIEL, BENSON, ALICE), model.getAddressBook().getPersonList());
+    }
+
+    @Test
+    public void execute_deleteOtherClass_preservesActiveClassFilter() throws Exception {
+        execute("addclass m/CS2100 c/F10-2");
+        execute("assign sn/" + ALICE.getStudentNumber() + " m/CS2100 c/F10-2");
+        execute("deleteclass m/CS2100 c/F10-2");
+        assertEquals(List.of(BENSON, DANIEL), model.getFilteredPersonList());
+    }
+
+    @Test
+    public void execute_recreateDeletedClass_usesNewMembership() throws Exception {
+        var displayed = model.getFilteredPersonList();
+        execute("deleteclass m/CS2103 c/F10-2");
+        execute("addclass m/CS2103 c/F10-2");
+        execute("assign sn/" + ALICE.getStudentNumber() + " m/CS2103 c/F10-2");
+        assertEquals(List.of(ALICE), displayed);
+        execute("unassign sn/" + ALICE.getStudentNumber() + " m/CS2103 c/F10-2");
+        assertEquals(List.of(), displayed);
+    }
+
+    @Test
+    public void execute_deleteClassAfterFind_preservesSearchAndInsertionOrder() throws Exception {
+        execute("find Meier");
+        execute("deleteclass m/CS2103 c/F10-2");
+        assertEquals(List.of(DANIEL, BENSON), model.getFilteredPersonList());
+    }
+
+    @Test
+    public void execute_deleteClassAfterList_preservesAllStudents() throws Exception {
+        execute("list");
+        execute("deleteclass m/CS2103 c/F10-2");
+        assertEquals(List.of(DANIEL, BENSON, ALICE), model.getFilteredPersonList());
+    }
+
+    @Test
+    public void execute_deleteMissingClass_preservesActiveView() {
+        assertThrows(CommandException.class, () -> execute("deleteclass m/CS2103 c/F11-2"));
+        assertEquals(List.of(BENSON, DANIEL), model.getFilteredPersonList());
+    }
+
     private void execute(String command) throws ParseException, CommandException {
         parser.parseCommand(command).execute(model);
     }
