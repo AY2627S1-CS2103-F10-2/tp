@@ -130,6 +130,22 @@ public class AttendanceTest {
     }
 
     @Test
+    public void copyFor_fixedClock_preservesDateValidation() {
+        Clock historicalClock = Clock.fixed(Instant.parse("2000-01-01T16:30:00Z"), ZoneId.of("Asia/Singapore"));
+        LocalDate historicalToday = LocalDate.of(2000, 1, 2);
+        Attendance original = new Attendance(ALICE, academicClass, historicalClock);
+        original.addDate(historicalToday.minusDays(1));
+
+        Attendance copy = original.copyFor(BENSON, academicClass);
+
+        assertEquals(Set.of(historicalToday.minusDays(1)), copy.getAttendedDates());
+        assertTrue(copy.addDate(historicalToday));
+        assertThrows(IllegalArgumentException.class, () -> copy.addDate(historicalToday.plusDays(1)));
+        assertEquals(Set.of(historicalToday.minusDays(1), historicalToday), copy.getAttendedDates());
+        assertEquals(Set.of(historicalToday.minusDays(1)), original.getAttendedDates());
+    }
+
+    @Test
     public void addDate_differentAssociations_keepsDatesSeparate() {
         Attendance otherStudent = new Attendance(BENSON, academicClass, CLOCK);
         AcademicClass otherClass = new AcademicClass(new ModuleCode("CS2101"), new ClassName("T01"));

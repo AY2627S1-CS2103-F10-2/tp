@@ -72,6 +72,33 @@ public class AttendanceStorageTest {
     }
 
     @Test
+    public void saveAndRead_afterAssignedStudentEdit_preservesCanonicalReferences() throws Exception {
+        AddressBook source = createAddressBook();
+        source.assignStudentToClass(ALICE, academicClass);
+        source.addAttendance(ALICE, academicClass, DATE);
+        Person edited = new PersonBuilder(ALICE).withStudentNumber("A9999999X").withName("Updated Alice").build();
+
+        source.setPerson(ALICE, edited);
+
+        assertEquals(Set.of(edited), academicClass.getStudents());
+        assertSame(edited, academicClass.getStudents().iterator().next());
+        assertSame(edited, source.getAttendanceList().get(0).getStudent());
+        assertEquals(Set.of(DATE), source.getAttendanceList().get(0).getAttendedDates());
+
+        AddressBook restored = roundTrip(source);
+        Person storedStudent = restored.findPersonByStudentNumber(edited.getStudentNumber()).orElseThrow();
+        AcademicClass storedClass = restored.getAcademicClassList().get(0);
+        assertEquals(edited, storedStudent);
+        assertTrue(restored.findPersonByStudentNumber(ALICE.getStudentNumber()).isEmpty());
+        assertEquals(Set.of(storedStudent), storedClass.getStudents());
+        assertSame(storedStudent, storedClass.getStudents().iterator().next());
+        assertEquals(1, restored.getAttendanceList().size());
+        assertSame(storedStudent, restored.getAttendanceList().get(0).getStudent());
+        assertSame(storedClass, restored.getAttendanceList().get(0).getAcademicClass());
+        assertEquals(Set.of(DATE), restored.getAttendanceList().get(0).getAttendedDates());
+    }
+
+    @Test
     public void saveAndRead_afterEndpointDeletion_doesNotRestoreHistory() throws Exception {
         AddressBook source = createAddressBook();
         source.addAttendance(ALICE, academicClass, DATE);
