@@ -1,5 +1,7 @@
 package seedu.address.model;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -8,6 +10,7 @@ import seedu.address.commons.core.GuiSettings;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
+import seedu.address.model.attendance.Attendance;
 import seedu.address.model.person.Person;
 
 
@@ -20,6 +23,25 @@ public interface Model {
 
     /** {@code Predicate} that always evaluates to true for academic classes. */
     Predicate<AcademicClass> PREDICATE_SHOW_ALL_ACADEMIC_CLASSES = unused -> true;
+
+    /** Returns snapshots with isolated date sets and shared canonical student/class references. */
+    List<Attendance> getAttendanceList();
+
+    /**
+     * Records attendance for existing endpoints, returning false for a duplicate date.
+     * Current-membership eligibility is checked by the command, not this storage API.
+     * @throws IllegalArgumentException if an endpoint is missing or the date is in the future.
+     * @throws NullPointerException if any argument is null.
+     */
+    boolean addAttendance(Person person, AcademicClass academicClass, LocalDate date);
+
+    /**
+     * Removes a recorded date, including history retained after unassignment.
+     * Returns false if no matching date exists.
+     * @throws IllegalArgumentException if an endpoint is missing or the date is in the future.
+     * @throws NullPointerException if any argument is null.
+     */
+    boolean removeAttendance(Person person, AcademicClass academicClass, LocalDate date);
 
     /**
      * Returns the user prefs.

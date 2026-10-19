@@ -6,6 +6,7 @@ import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -55,6 +56,31 @@ public class Attendance {
     /** Returns the count derived from the unique attended dates. */
     public int getAttendanceCount() {
         return attendedDates.size();
+    }
+
+    /** Copies recorded history to the supplied endpoints without revalidating historical dates. */
+    public Attendance copyFor(Person student, AcademicClass academicClass) {
+        Attendance copy = new Attendance(student, academicClass, clock);
+        copy.attendedDates.addAll(attendedDates);
+        return copy;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == this) {
+            return true;
+        }
+        if (!(other instanceof Attendance otherAttendance)) {
+            return false;
+        }
+        return student.equals(otherAttendance.student)
+                && academicClass.equals(otherAttendance.academicClass)
+                && attendedDates.equals(otherAttendance.attendedDates);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(student, academicClass, attendedDates);
     }
 
     /**
