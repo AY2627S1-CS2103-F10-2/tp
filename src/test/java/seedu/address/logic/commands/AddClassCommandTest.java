@@ -26,6 +26,7 @@ import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
 import seedu.address.model.attendance.Attendance;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.StudentNumber;
 
 
 public class AddClassCommandTest {
@@ -103,6 +104,11 @@ public class AddClassCommandTest {
 
         @Override
         public boolean removeAttendance(Person person, AcademicClass academicClass, LocalDate date) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public Optional<Person> findPersonByStudentNumber(StudentNumber studentNumber) {
             throw new AssertionError("This method should not be called.");
         }
 

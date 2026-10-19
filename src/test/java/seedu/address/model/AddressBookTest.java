@@ -56,6 +56,49 @@ public class AddressBookTest {
     }
 
     @Test
+    public void assignStudentToClass_unstoredPerson_throwsAssertionError() {
+        AcademicClass storedClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+        addressBook.addAcademicClass(storedClass);
+
+        assertThrows(AssertionError.class, () -> addressBook.assignStudentToClass(ALICE, storedClass));
+        assertTrue(storedClass.getStudents().isEmpty());
+    }
+
+    @Test
+    public void assignStudentToClass_equalPersonCopy_throwsAssertionError() {
+        AcademicClass storedClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+        addressBook.addPerson(ALICE);
+        addressBook.addAcademicClass(storedClass);
+        Person copy = new PersonBuilder(ALICE).build();
+        assertEquals(ALICE, copy);
+
+        assertThrows(AssertionError.class, () -> addressBook.assignStudentToClass(copy, storedClass));
+        assertTrue(storedClass.getStudents().isEmpty());
+    }
+
+    @Test
+    public void assignStudentToClass_unstoredClass_throwsAssertionError() {
+        addressBook.addPerson(ALICE);
+        AcademicClass unstoredClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+
+        assertThrows(AssertionError.class, () -> addressBook.assignStudentToClass(ALICE, unstoredClass));
+        assertTrue(unstoredClass.getStudents().isEmpty());
+    }
+
+    @Test
+    public void assignStudentToClass_equalClassCopy_throwsAssertionError() {
+        addressBook.addPerson(ALICE);
+        AcademicClass storedClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+        addressBook.addAcademicClass(storedClass);
+        AcademicClass copy = new AcademicClass(storedClass.getModuleCode(), storedClass.getClassName());
+        assertEquals(storedClass, copy);
+
+        assertThrows(AssertionError.class, () -> addressBook.assignStudentToClass(ALICE, copy));
+        assertTrue(storedClass.getStudents().isEmpty());
+        assertTrue(copy.getStudents().isEmpty());
+    }
+
+    @Test
     public void assignStudentToClass_nullArgument_throwsNullPointerException() {
         AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
         assertThrows(NullPointerException.class, () -> addressBook.assignStudentToClass(null, academicClass));

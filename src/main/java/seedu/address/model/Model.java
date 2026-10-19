@@ -12,6 +12,7 @@ import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
 import seedu.address.model.attendance.Attendance;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.StudentNumber;
 
 
 /**
@@ -70,6 +71,13 @@ public interface Model {
      * Returns true if a person with the same identity as {@code person} exists in the address book.
      */
     boolean hasPerson(Person person);
+
+    /**
+     * Finds the stored person by student number across the full address book, regardless of the current filter.
+     * Returns an empty optional if no person matches. Does not change the current filter.
+     * @throws NullPointerException if {@code studentNumber} is null.
+     */
+    Optional<Person> findPersonByStudentNumber(StudentNumber studentNumber);
 
 
     /**

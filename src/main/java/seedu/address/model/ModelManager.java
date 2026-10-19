@@ -21,6 +21,7 @@ import seedu.address.model.academicclass.ModuleCode;
 import seedu.address.model.attendance.Attendance;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.PersonNameComparator;
+import seedu.address.model.person.StudentNumber;
 
 /**
  * Represents the in-memory model of the address book data.
@@ -106,6 +107,11 @@ public class ModelManager implements Model {
     public boolean hasPerson(Person person) {
         requireNonNull(person);
         return addressBook.hasPerson(person);
+    }
+
+    @Override
+    public Optional<Person> findPersonByStudentNumber(StudentNumber studentNumber) {
+        return addressBook.findPersonByStudentNumber(studentNumber);
     }
 
 
