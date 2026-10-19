@@ -253,10 +253,12 @@ Format: `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]
 * Existing values will be updated to the input values.
 * When editing tags, all of the student's existing tags are removed; adding tags is not cumulative.
 * To remove all of a student's tags, enter `t/` without a tag after it.
+* To remove a student's Telegram username, enter `tg/` without a username after it. Omitting `tg/` keeps the existing username.
 * Student number, email, and Telegram username must remain unique after editing.
 
 Examples:
 *  `edit 1 tg/john_doe e/johndoe@example.com` edits the Telegram username and email address of the 1st student.
+*  `edit 1 tg/` removes the Telegram username of the 1st student.
 *  `edit 2 sn/A0234567Y n/Benjamin Lim t/` edits the student number and name of the 2nd student, and clears all existing tags.
 
 ### Locating students by name: `find`
