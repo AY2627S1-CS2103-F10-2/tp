@@ -198,4 +198,29 @@ public class AttendanceIntegrationTest {
         book.setAcademicClasses(List.of());
         assertEquals(List.of(), book.getAttendanceList());
     }
+
+    @Test
+    public void setAttendance_duplicateOrOrphanedRecords_preservesHistory() {
+        AddressBook book = new AddressBook(model.getAddressBook());
+        book.addAttendance(ALICE, academicClass, DATE);
+        List<Attendance> original = book.getAttendanceList();
+        Attendance record = original.get(0);
+        assertThrows(IllegalArgumentException.class, () -> book.setAttendance(List.of(record, record)));
+        Person missing = new PersonBuilder(ALICE).withStudentNumber("A9999999X").build();
+        assertThrows(IllegalArgumentException.class, () -> book.setAttendance(
+                List.of(record.copyFor(missing, academicClass))));
+        assertEquals(original, book.getAttendanceList());
+    }
+
+    @Test
+    public void setAttendance_validRecords_copiesDatesIndependently() {
+        AddressBook book = new AddressBook(model.getAddressBook());
+        Attendance record = new Attendance(ALICE, academicClass);
+        record.addDate(DATE);
+        book.setAttendance(List.of(record));
+        record.removeDate(DATE);
+        assertEquals(Set.of(DATE), book.getAttendanceList().get(0).getAttendedDates());
+        book.setAttendance(List.of());
+        assertEquals(List.of(), book.getAttendanceList());
+    }
 }

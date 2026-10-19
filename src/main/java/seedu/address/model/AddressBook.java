@@ -265,6 +265,14 @@ public class AddressBook implements ReadOnlyAddressBook {
 
     //// attendance operations
 
+    /** Replaces attendance after validating all associations, without partially changing existing history. */
+    public void setAttendance(List<Attendance> records) {
+        requireNonNull(records);
+        List<Attendance> replacement = copyAttendance(records, this);
+        attendanceRecords.clear();
+        attendanceRecords.addAll(replacement);
+    }
+
     @Override
     public List<Attendance> getAttendanceList() {
         return attendanceRecords.stream()
@@ -329,8 +337,12 @@ public class AddressBook implements ReadOnlyAddressBook {
 
     /** Validates and copies associations before reset mutates any existing data. */
     private List<Attendance> copyAttendance(ReadOnlyAddressBook source) {
+        return copyAttendance(source.getAttendanceList(), source);
+    }
+
+    private List<Attendance> copyAttendance(List<Attendance> records, ReadOnlyAddressBook source) {
         List<Attendance> copies = new ArrayList<>();
-        for (Attendance record : source.getAttendanceList()) {
+        for (Attendance record : records) {
             requireNonNull(record);
             Person person = source.getPersonList().stream()
                     .filter(candidate -> candidate.isSamePerson(record.getStudent())).findFirst()
