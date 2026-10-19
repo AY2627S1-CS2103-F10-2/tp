@@ -6,7 +6,6 @@ import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
-import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
@@ -39,11 +38,9 @@ public class AssignCommand extends Command {
     @Override
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
-        ReadOnlyAddressBook addressBook = model.getAddressBook();
-        Person person = addressBook.findPersonByStudentNumber(studentNumber)
+        Person person = model.findPersonByStudentNumber(studentNumber)
                 .orElseThrow(() -> new CommandException(String.format(MESSAGE_STUDENT_NOT_FOUND, studentNumber)));
-        AcademicClass academicClass = addressBook
-                .findAcademicClass(moduleCode, className)
+        AcademicClass academicClass = model.findAcademicClass(moduleCode, className)
                 .orElseThrow(() -> new CommandException(String.format(MESSAGE_CLASS_NOT_FOUND, moduleCode, className)));
         if (!model.assignStudentToClass(person, academicClass)) {
             throw new CommandException(String.format(MESSAGE_ALREADY_ASSIGNED,
