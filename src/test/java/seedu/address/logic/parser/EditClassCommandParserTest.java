@@ -94,7 +94,8 @@ public class EditClassCommandParserTest {
 
     @Test
     public void parseCommand_editClass_routesToCorrectParser() throws Exception {
-        assertEquals(expected("CS2103", "OB5"), new AddressBookParser().parseCommand("editc 1 m/CS2103 c/OB5"));
+        assertEquals(expected("CS2103", "OB5"),
+                new AddressBookParser().parseCommand("editclass 1 m/CS2103 c/OB5"));
     }
 
     private EditClassCommand expected(String moduleCode, String className) {
