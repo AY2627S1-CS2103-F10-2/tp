@@ -11,6 +11,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -34,6 +35,25 @@ public class AttendanceTest {
         assertEquals(academicClass, attendance.getAcademicClass());
         assertEquals(Set.of(), attendance.getAttendedDates());
         assertEquals(0, attendance.getAttendanceCount());
+    }
+
+    @Test
+    public void fromRecordedDates_futureRelativeToClock_preservesIndependentHistory() {
+        Set<LocalDate> dates = new HashSet<>(Set.of(LocalDate.MAX));
+        Attendance restored = Attendance.fromRecordedDates(ALICE, academicClass, dates);
+        dates.clear();
+        assertEquals(Set.of(LocalDate.MAX), restored.getAttendedDates());
+        assertThrows(IllegalArgumentException.class, () -> restored.addDate(LocalDate.MAX));
+    }
+
+    @Test
+    public void fromRecordedDates_nullInputs_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> Attendance.fromRecordedDates(null, academicClass, Set.of()));
+        assertThrows(NullPointerException.class, () -> Attendance.fromRecordedDates(ALICE, null, Set.of()));
+        assertThrows(NullPointerException.class, () -> Attendance.fromRecordedDates(ALICE, academicClass, null));
+        Set<LocalDate> dates = new HashSet<>();
+        dates.add(null);
+        assertThrows(NullPointerException.class, () -> Attendance.fromRecordedDates(ALICE, academicClass, dates));
     }
 
     @Test

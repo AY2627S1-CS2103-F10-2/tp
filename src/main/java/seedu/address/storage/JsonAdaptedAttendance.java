@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -55,15 +57,14 @@ class JsonAdaptedAttendance {
             AcademicClass academicClass = addressBook.findAcademicClass(new ModuleCode(moduleCode),
                     new ClassName(className))
                     .orElseThrow(() -> new IllegalValueException("Attendance references a nonexistent class."));
-            Attendance attendance = new Attendance(student, academicClass);
-            restoreDates(attendance);
-            return attendance;
+            return Attendance.fromRecordedDates(student, academicClass, parseRecordedDates());
         } catch (IllegalArgumentException e) {
             throw new IllegalValueException("Invalid attendance record: " + e.getMessage());
         }
     }
 
-    private void restoreDates(Attendance attendance) throws IllegalValueException {
+    private Set<LocalDate> parseRecordedDates() throws IllegalValueException {
+        Set<LocalDate> dates = new TreeSet<>();
         for (String value : attendedDates) {
             if (value == null) {
                 throw new IllegalValueException("Attendance date must not be null.");
@@ -73,12 +74,13 @@ class JsonAdaptedAttendance {
                 if (!date.toString().equals(value)) {
                     throw new IllegalValueException("Attendance dates must use canonical ISO local-date format.");
                 }
-                if (!attendance.addDate(date)) {
+                if (!dates.add(date)) {
                     throw new IllegalValueException("Attendance contains a duplicate date.");
                 }
             } catch (DateTimeParseException e) {
                 throw new IllegalValueException("Attendance contains an invalid calendar date.");
             }
         }
+        return dates;
     }
 }

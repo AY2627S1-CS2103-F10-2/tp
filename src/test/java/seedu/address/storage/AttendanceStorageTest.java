@@ -12,9 +12,11 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.TimeZone;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.parallel.Isolated;
 
 import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.commons.exceptions.IllegalValueException;
@@ -27,6 +29,7 @@ import seedu.address.model.person.Person;
 import seedu.address.testutil.PersonBuilder;
 
 /** Tests attendance through the real JSON storage boundary. */
+@Isolated("Timezone regression temporarily changes the JVM default timezone")
 public class AttendanceStorageTest {
     private static final LocalDate DATE = LocalDate.of(2000, 1, 1);
     @TempDir
@@ -47,6 +50,33 @@ public class AttendanceStorageTest {
         assertSame(restored.getPersonList().get(0), restored.getAttendanceList().get(0).getStudent());
         assertSame(restored.getAcademicClassList().get(0), restored.getAttendanceList().get(0).getAcademicClass());
         assertTrue(restored.getAcademicClassList().get(0).getStudents().isEmpty());
+    }
+
+    @Test
+    public void saveAndRead_afterTimeZoneMovesBack_preservesRecordedDates() throws Exception {
+        TimeZone originalZone = TimeZone.getDefault();
+        try {
+            // A 26-hour offset difference guarantees that the restored local date is earlier.
+            TimeZone.setDefault(TimeZone.getTimeZone("GMT+14:00"));
+            LocalDate recordedDate = LocalDate.now();
+            AddressBook source = createAddressBook();
+            source.addAttendance(ALICE, academicClass, recordedDate);
+            JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("timezone.json"));
+            storage.saveAddressBook(source);
+
+            TimeZone.setDefault(TimeZone.getTimeZone("GMT-12:00"));
+            assertTrue(recordedDate.isAfter(LocalDate.now()));
+            AddressBook restored = new AddressBook(storage.readAddressBook().orElseThrow());
+
+            assertEquals(Set.of(recordedDate), restored.getAttendanceList().get(0).getAttendedDates());
+            assertSame(restored.getPersonList().get(0), restored.getAttendanceList().get(0).getStudent());
+            assertSame(restored.getAcademicClassList().get(0), restored.getAttendanceList().get(0).getAcademicClass());
+            assertThrows(IllegalArgumentException.class, () ->
+                    restored.addAttendance(ALICE, academicClass, recordedDate.plusDays(1)));
+            assertEquals(restored, roundTrip(restored));
+        } finally {
+            TimeZone.setDefault(originalZone);
+        }
     }
 
     @Test
@@ -121,7 +151,7 @@ public class AttendanceStorageTest {
     @Test
     public void toModelType_invalidDates_rejectsRecord() {
         for (String date : Arrays.asList(null, "", "2000-02-30", "2000-1-01", "01/01/2000",
-                "2000-01-01T00:00:00", "9999-12-31")) {
+                "2000-01-01T00:00:00")) {
             JsonAdaptedAttendance record = new JsonAdaptedAttendance(ALICE.getStudentNumber().value,
                     "CS2103", "F10-2", Arrays.asList(date));
             assertThrows(IllegalValueException.class, () -> dataWithAttendance(List.of(record)).toModelType());

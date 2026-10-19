@@ -40,6 +40,24 @@ public class Attendance {
         this.clock = clock;
     }
 
+    /**
+     * Restores previously recorded dates without comparing them with today's date.
+     * A timezone change or clock rollback must not invalidate saved history.
+     * Storage must validate date syntax and reject duplicates before calling this method.
+     * New user entries must use {@link #addDate(LocalDate)} instead.
+     *
+     * @throws NullPointerException if an argument or a recorded date is null
+     */
+    public static Attendance fromRecordedDates(Person student, AcademicClass academicClass,
+            Set<LocalDate> recordedDates) {
+        requireNonNull(recordedDates);
+        Attendance attendance = new Attendance(student, academicClass);
+        for (LocalDate date : recordedDates) {
+            attendance.attendedDates.add(requireNonNull(date));
+        }
+        return attendance;
+    }
+
     public Person getStudent() {
         return student;
     }
