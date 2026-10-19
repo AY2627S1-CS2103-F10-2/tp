@@ -239,6 +239,10 @@ public class AddressBook implements ReadOnlyAddressBook {
      */
     public boolean assignStudentToClass(Person person, AcademicClass academicClass) {
         requireAllNonNull(person, academicClass);
+        assert getPersonList().stream().anyMatch(stored -> stored == person)
+                : "Student must be the actual object stored in this address book";
+        assert getAcademicClassList().stream().anyMatch(stored -> stored == academicClass)
+                : "Class must be the actual object stored in this address book";
         return academicClass.assignStudent(person);
     }
 
