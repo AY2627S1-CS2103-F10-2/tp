@@ -25,7 +25,7 @@ import seedu.address.model.academicclass.ModuleCode;
  */
 public class EditClassCommand extends Command {
 
-    public static final String COMMAND_WORD = "editc";
+    public static final String COMMAND_WORD = "editclass";
 
     public static final String MESSAGE_USAGE = COMMAND_WORD + ": Edits the details of the academic class identified "
             + "by the index number used in the displayed class list. "
