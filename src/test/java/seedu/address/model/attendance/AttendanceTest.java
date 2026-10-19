@@ -130,6 +130,37 @@ public class AttendanceTest {
     }
 
     @Test
+    public void equals_comparesStudentClassAndDates() {
+        attendance.addDate(TODAY);
+        Attendance equivalent = new Attendance(ALICE, academicClass, CLOCK);
+        equivalent.addDate(TODAY);
+        Attendance otherStudent = new Attendance(BENSON, academicClass, CLOCK);
+        otherStudent.addDate(TODAY);
+        AcademicClass otherClass = new AcademicClass(new ModuleCode("CS2101"), new ClassName("T01"));
+        Attendance otherMembership = new Attendance(ALICE, otherClass, CLOCK);
+        otherMembership.addDate(TODAY);
+
+        assertTrue(attendance.equals(attendance));
+        assertEquals(attendance, equivalent);
+        assertEquals(equivalent, attendance);
+        assertFalse(attendance.equals(null));
+        assertFalse(attendance.equals("attendance"));
+        assertFalse(attendance.equals(otherStudent));
+        assertFalse(attendance.equals(otherMembership));
+        equivalent.removeDate(TODAY);
+        assertFalse(attendance.equals(equivalent));
+    }
+
+    @Test
+    public void hashCode_equalHistoriesWithDifferentClocks_returnsSameHash() {
+        Attendance equivalent = new Attendance(ALICE, academicClass, CLOCK.withZone(ZoneId.of("UTC")));
+        attendance.addDate(TODAY.minusDays(1));
+        equivalent.addDate(TODAY.minusDays(1));
+        assertEquals(attendance, equivalent);
+        assertEquals(attendance.hashCode(), equivalent.hashCode());
+    }
+
+    @Test
     public void copyFor_fixedClock_preservesDateValidation() {
         Clock historicalClock = Clock.fixed(Instant.parse("2000-01-01T16:30:00Z"), ZoneId.of("Asia/Singapore"));
         LocalDate historicalToday = LocalDate.of(2000, 1, 2);

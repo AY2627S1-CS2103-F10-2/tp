@@ -98,6 +98,20 @@ public class AttendanceIntegrationTest {
     }
 
     @Test
+    public void setPerson_otherStudentsAttendance_preservesHistory() {
+        model.addAttendance(ALICE, academicClass, DATE);
+        model.addAttendance(BENSON, academicClass, DATE.plusDays(1));
+        Person edited = new PersonBuilder(ALICE).withName("Updated Alice").build();
+
+        model.setPerson(ALICE, edited);
+
+        assertEquals(2, model.getAttendanceList().size());
+        assertSame(edited, model.getAttendanceList().get(0).getStudent());
+        assertSame(BENSON, model.getAttendanceList().get(1).getStudent());
+        assertEquals(Set.of(DATE.plusDays(1)), model.getAttendanceList().get(1).getAttendedDates());
+    }
+
+    @Test
     public void setPerson_duplicateIdentity_preservesHistory() {
         model.addAttendance(ALICE, academicClass, DATE);
         assertThrows(DuplicatePersonException.class, () -> model.setPerson(ALICE, BENSON));
@@ -210,6 +224,36 @@ public class AttendanceIntegrationTest {
         assertThrows(IllegalArgumentException.class, () -> book.setAttendance(
                 List.of(record.copyFor(missing, academicClass))));
         assertEquals(original, book.getAttendanceList());
+    }
+
+    @Test
+    public void setAttendance_missingClass_preservesHistory() {
+        AddressBook book = new AddressBook(model.getAddressBook());
+        book.addAttendance(ALICE, academicClass, DATE);
+        List<Attendance> original = book.getAttendanceList();
+        AcademicClass missingClass = new AcademicClass(new ModuleCode("CS2101"), new ClassName("T01"));
+        Attendance invalid = original.get(0).copyFor(ALICE, missingClass);
+
+        assertThrows(IllegalArgumentException.class, () -> book.setAttendance(List.of(original.get(0), invalid)));
+        assertEquals(original, book.getAttendanceList());
+    }
+
+    @Test
+    public void setAttendance_distinctPairs_preservesSeparateHistories() {
+        AddressBook book = new AddressBook(model.getAddressBook());
+        AcademicClass otherClass = new AcademicClass(new ModuleCode("CS2101"), new ClassName("T01"));
+        book.addAcademicClass(otherClass);
+        Attendance first = new Attendance(ALICE, academicClass);
+        Attendance otherMembership = new Attendance(ALICE, otherClass);
+        Attendance otherStudent = new Attendance(BENSON, academicClass);
+        first.addDate(DATE);
+        otherMembership.addDate(DATE.plusDays(1));
+        otherStudent.addDate(DATE.plusDays(2));
+
+        book.setAttendance(List.of(first, otherMembership, otherStudent));
+
+        assertEquals(List.of(first, otherMembership, otherStudent), book.getAttendanceList());
+        assertEquals(book, new AddressBook(book));
     }
 
     @Test

@@ -129,6 +129,17 @@ public class AttendanceStorageTest {
     }
 
     @Test
+    public void toModelType_nonCanonicalDate_rejectsParseableDate() {
+        String date = "+02000-01-01";
+        assertEquals(DATE, LocalDate.parse(date));
+        JsonAdaptedAttendance record = new JsonAdaptedAttendance(ALICE.getStudentNumber().value,
+                "CS2103", "F10-2", List.of(date));
+        assertThrows(IllegalValueException.class,
+                "Attendance dates must use canonical ISO local-date format.", () ->
+                dataWithAttendance(List.of(record)).toModelType());
+    }
+
+    @Test
     public void toModelType_missingFields_rejectsRecord() {
         for (JsonAdaptedAttendance record : List.of(
                 new JsonAdaptedAttendance(null, "CS2103", "F10-2", List.of()),
