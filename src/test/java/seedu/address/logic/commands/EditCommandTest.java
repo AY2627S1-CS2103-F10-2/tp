@@ -72,6 +72,33 @@ public class EditCommandTest {
     }
 
     @Test
+    public void execute_removeTelegram_success() {
+        Person original = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
+        assertTrue(original.getTelegram().isPresent());
+        assertTelegramRemovalSuccess(original);
+    }
+
+    @Test
+    public void execute_removeAlreadyAbsentTelegram_success() {
+        Person original = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
+        Person withoutTelegram = new PersonBuilder(original).withTelegram(null).build();
+        model.setPerson(original, withoutTelegram);
+        assertTelegramRemovalSuccess(withoutTelegram);
+    }
+
+    private void assertTelegramRemovalSuccess(Person original) {
+        Person editedPerson = new PersonBuilder(original).withTelegram(null).build();
+        EditPersonDescriptor descriptor = new EditPersonDescriptor();
+        descriptor.setTelegram(null);
+        EditCommand command = new EditCommand(INDEX_FIRST_PERSON, descriptor);
+        Model expectedModel = new ModelManager(new AddressBook(model.getAddressBook()), new UserPrefs());
+        expectedModel.setPerson(original, editedPerson);
+        String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(editedPerson));
+
+        assertCommandSuccess(command, model, expectedMessage, expectedModel);
+    }
+
+    @Test
     public void execute_noFieldSpecifiedUnfilteredList_success() {
         EditCommand editCommand = new EditCommand(INDEX_FIRST_PERSON, new EditPersonDescriptor());
         Person editedPerson = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());

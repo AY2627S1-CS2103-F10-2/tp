@@ -58,13 +58,35 @@ public class EditPersonDescriptorTest {
     }
 
     @Test
+    public void telegramRemoval_distinctFromUnchangedAndPreservedByCopy() {
+        EditPersonDescriptor unchanged = new EditPersonDescriptor();
+        EditPersonDescriptor unchangedCopy = new EditPersonDescriptor(unchanged);
+        assertEquals(unchanged, unchangedCopy);
+        assertFalse(unchangedCopy.isAnyFieldEdited());
+        assertFalse(unchangedCopy.isTelegramEdited());
+
+        EditPersonDescriptor removal = new EditPersonDescriptor();
+        removal.setTelegram(null);
+        assertFalse(unchanged.equals(removal));
+        assertTrue(removal.isAnyFieldEdited());
+        assertTrue(removal.isTelegramEdited());
+        assertTrue(removal.getTelegram().isEmpty());
+
+        EditPersonDescriptor removalCopy = new EditPersonDescriptor(removal);
+        assertEquals(removal, removalCopy);
+        assertTrue(removalCopy.isTelegramEdited());
+        assertTrue(removalCopy.isAnyFieldEdited());
+    }
+
+    @Test
     public void toStringMethod() {
         EditPersonDescriptor editPersonDescriptor = new EditPersonDescriptor();
         String expected = EditPersonDescriptor.class.getCanonicalName() + "{studentNumber="
                 + editPersonDescriptor.getStudentNumber().orElse(null) + ", name="
                 + editPersonDescriptor.getName().orElse(null) + ", email="
                 + editPersonDescriptor.getEmail().orElse(null) + ", telegram="
-                + editPersonDescriptor.getTelegram().orElse(null) + ", tags="
+                + editPersonDescriptor.getTelegram().orElse(null) + ", telegramEdited="
+                + editPersonDescriptor.isTelegramEdited() + ", tags="
                 + editPersonDescriptor.getTags().orElse(null) + "}";
         assertEquals(expected, editPersonDescriptor.toString());
     }
