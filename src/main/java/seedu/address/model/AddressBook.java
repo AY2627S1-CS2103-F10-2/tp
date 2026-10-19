@@ -189,6 +189,15 @@ public class AddressBook implements ReadOnlyAddressBook {
         updateStudentObservers(target, editedPerson);
     }
 
+    public void setAcademicClass(AcademicClass target, AcademicClass editedClass) {
+        requireNonNull(editedClass);
+
+
+        academicClasses.setAcademicClass(target, editedClass);
+        removeStudentObserver(target);
+        addStudentObserver(editedClass);
+    }
+
     /**
      * Removes {@code key} from this {@code AddressBook}.
      * {@code key} must exist in the address book.

@@ -35,6 +35,31 @@ public class UniqueAcademicClassList implements Iterable<AcademicClass> {
     }
 
     /**
+     * Replaces {@code target} without changing its position in the list.
+     *
+     * @throws NullPointerException if either argument is null
+     * @throws AcademicClassNotFoundException if the target is absent
+     * @throws DuplicateAcademicClassException if another class has the replacement identity
+     */
+    public void setAcademicClass(AcademicClass target, AcademicClass editedClass) {
+        requireAllNonNull(target, editedClass);
+
+        int index = internalList.indexOf(target);
+        if (index == -1) {
+            throw new AcademicClassNotFoundException();
+        }
+
+        for (int i = 0; i < internalList.size(); i++) {
+            if (i != index && internalList.get(i).hasIdentity(
+                    editedClass.getModuleCode(), editedClass.getClassName())) {
+                throw new DuplicateAcademicClassException();
+            }
+        }
+
+        internalList.set(index, editedClass);
+    }
+
+    /**
      * Removes the equivalent academic class from the list.
      * The academic class must exist in the list.
      */

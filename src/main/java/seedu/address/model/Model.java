@@ -88,6 +88,8 @@ public interface Model {
      */
     void setPerson(Person target, Person editedPerson);
 
+    void setAcademicClass(AcademicClass target, AcademicClass editedClass);
+
     /**
      * Returns true if an academic class with the same module code and class name exists in the address book.
      */

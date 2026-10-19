@@ -128,6 +128,13 @@ public class ModelManager implements Model {
     }
 
     @Override
+    public void setAcademicClass(AcademicClass target, AcademicClass editedClass) {
+        requireAllNonNull(target, editedClass);
+
+        addressBook.setAcademicClass(target, editedClass);
+    }
+
+    @Override
     public boolean hasAcademicClass(AcademicClass academicClass) {
         requireNonNull(academicClass);
         return addressBook.hasAcademicClass(academicClass);
