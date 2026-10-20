@@ -159,6 +159,11 @@ public interface Model {
      */
     void updateFilteredPersonListAlphabetically(Predicate<Person> predicate);
 
+    /** Refreshes the displayed person list without changing its filter or ordering. */
+    default void refreshFilteredPersonList() {
+        // Optional for model implementations that do not expose a live UI list.
+    }
+
     /**
      * Updates the academic class filter while preserving insertion order.
      * @throws NullPointerException if {@code predicate} is null.

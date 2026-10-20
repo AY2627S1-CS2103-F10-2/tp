@@ -40,6 +40,7 @@ public class ListByClassCommand extends Command {
         AcademicClass academicClass = findAcademicClass(model);
         model.updateFilteredPersonListAlphabetically(person -> isStudentInClass(model, person));
         model.setAttendanceDisplayClass(academicClass);
+        model.refreshFilteredPersonList();
         return new CommandResult(String.format(MESSAGE_SUCCESS, model.getFilteredPersonList().size(),
                 academicClass.getModuleCode(), academicClass.getClassName()));
     }

@@ -230,7 +230,8 @@ public class ModelManager implements Model {
     /**
      * Re-evaluates membership-dependent predicates without changing the current display order.
      */
-    private void refreshFilteredPersonList() {
+    @Override
+    public void refreshFilteredPersonList() {
         // Wrap the original predicate, not the previous wrapper, to avoid accumulating nested calls.
         Predicate<Person> predicate = personFilter;
         filteredPersons.setPredicate(predicate::test);
