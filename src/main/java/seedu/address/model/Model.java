@@ -122,6 +122,13 @@ public interface Model {
     Optional<AcademicClass> findAcademicClass(ModuleCode moduleCode, ClassName className);
 
     /**
+     * Displays the given class's students alphabetically and tracks the selected class.
+     *
+     * @throws NullPointerException if {@code academicClass} is null
+     */
+    void filterPersonsByClass(AcademicClass academicClass);
+
+    /**
      * Adds the given academic class.
      * {@code academicClass} must not already exist in the address book.
      */

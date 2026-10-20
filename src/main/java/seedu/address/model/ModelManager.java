@@ -35,6 +35,7 @@ public class ModelManager implements Model {
     private final SortedList<Person> sortedPersons;
     private final ObservableList<Person> displayedPersons;
     private Predicate<Person> personFilter = PREDICATE_SHOW_ALL_PERSONS;
+    private AcademicClass personFilterClass;
     private final FilteredList<AcademicClass> filteredAcademicClasses;
     private final ObservableList<AcademicClass> displayedAcademicClasses;
 
@@ -97,6 +98,7 @@ public class ModelManager implements Model {
     @Override
     public void setAddressBook(ReadOnlyAddressBook addressBook) {
         this.addressBook.resetData(addressBook);
+        updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
     }
 
     @Override
@@ -158,6 +160,17 @@ public class ModelManager implements Model {
     }
 
     @Override
+    public void filterPersonsByClass(AcademicClass academicClass) {
+        requireNonNull(academicClass);
+        updateFilteredPersonListAlphabetically(person ->
+                addressBook.findAcademicClass(academicClass.getModuleCode(), academicClass.getClassName())
+                        .map(storedClass -> storedClass.getStudents().stream()
+                                .anyMatch(member -> member.isSamePerson(person)))
+                        .orElse(false));
+        personFilterClass = academicClass;
+    }
+
+    @Override
     public void addAcademicClass(AcademicClass academicClass) {
         addressBook.addAcademicClass(academicClass);
     }
@@ -201,6 +214,7 @@ public class ModelManager implements Model {
     @Override
     public void updateFilteredPersonList(Predicate<Person> predicate) {
         requireNonNull(predicate);
+        this.personFilterClass = null;
         personFilter = predicate;
         filteredPersons.setPredicate(predicate);
         sortedPersons.setComparator(null);
