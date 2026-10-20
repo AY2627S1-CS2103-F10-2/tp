@@ -36,7 +36,7 @@ public class CommandBox extends UiPart<Region> {
     }
 
     /**
-     * Recalls commands without executing them when Up or Down is pressed.
+     * Recalls commands without executing them when unmodified Up or Down is pressed.
      */
     private void handleHistoryNavigation(KeyEvent event) {
         if (event.getCode() != KeyCode.UP && event.getCode() != KeyCode.DOWN) {
@@ -48,8 +48,10 @@ public class CommandBox extends UiPart<Region> {
         String currentInput = commandTextField.getText();
         String recalledInput = event.getCode() == KeyCode.UP
                 ? commandHistory.previous(currentInput) : commandHistory.next(currentInput);
-        commandTextField.setText(recalledInput);
-        commandTextField.positionCaret(recalledInput.length());
+        if (!recalledInput.equals(currentInput)) {
+            commandTextField.setText(recalledInput);
+            commandTextField.positionCaret(recalledInput.length());
+        }
         event.consume();
     }
 

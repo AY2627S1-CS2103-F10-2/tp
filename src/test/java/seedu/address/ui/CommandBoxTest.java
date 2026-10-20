@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -111,6 +112,66 @@ public class CommandBoxTest {
             press(input, KeyCode.UP);
             assertEquals("list", input.getText());
         });
+    }
+
+    @Test
+    public void navigate_modifiedArrows_leaveInputAndHistoryPositionUnchanged() throws Exception {
+        runOnFxThreadAndWait(() -> {
+            CommandBox box = new CommandBox(command -> new CommandResult("Success"));
+            TextField input = getInput(box);
+            submit(input, "list");
+            submit(input, "help");
+            input.setText("draft");
+            List<KeyCode> passedThrough = new ArrayList<>();
+            EventHandler<KeyEvent> observer = event -> {
+                assertFalse(event.isConsumed());
+                passedThrough.add(event.getCode());
+            };
+            input.addEventFilter(KeyEvent.KEY_PRESSED, observer);
+            for (KeyCode code : List.of(KeyCode.UP, KeyCode.DOWN)) {
+                for (int modifier = 0; modifier < 4; modifier++) {
+                    input.fireEvent(new KeyEvent(KeyEvent.KEY_PRESSED, "", "", code,
+                            modifier == 0, modifier == 1, modifier == 2, modifier == 3));
+                    assertEquals("draft", input.getText());
+                }
+            }
+            assertEquals(8, passedThrough.size());
+            input.removeEventFilter(KeyEvent.KEY_PRESSED, observer);
+            press(input, KeyCode.UP);
+            assertEquals("help", input.getText());
+            press(input, KeyCode.DOWN);
+            assertEquals("draft", input.getText());
+        });
+    }
+
+    @Test
+    public void navigate_unchangedText_preservesUndoAndCaret() throws Exception {
+        runOnFxThreadAndWait(() -> {
+            CommandBox box = new CommandBox(command -> new CommandResult("Success"));
+            TextField input = getInput(box);
+            assertNavigationPreservesUndo(input, KeyCode.UP);
+            assertNavigationPreservesUndo(input, KeyCode.DOWN);
+            submit(input, "list");
+            // Down at the draft cannot advance, even with saved history.
+            assertNavigationPreservesUndo(input, KeyCode.DOWN);
+            press(input, KeyCode.UP);
+            // Up at the oldest entry cannot advance.
+            assertNavigationPreservesUndo(input, KeyCode.UP);
+        });
+    }
+
+    private static void assertNavigationPreservesUndo(TextField input, KeyCode code) {
+        input.setText("draft text");
+        input.deleteText(2, 5);
+        String editedText = input.getText();
+        input.positionCaret(1);
+        assertTrue(input.isUndoable());
+        press(input, code);
+        assertEquals(editedText, input.getText());
+        assertEquals(1, input.getCaretPosition());
+        assertTrue(input.isUndoable());
+        input.undo();
+        assertEquals("draft text", input.getText());
     }
 
     private static TextField getInput(CommandBox box) {
