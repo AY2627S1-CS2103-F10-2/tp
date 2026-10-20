@@ -23,6 +23,7 @@ import seedu.address.model.tag.Tag;
 public class ParserUtil {
 
     public static final String MESSAGE_INVALID_INDEX = "Index must be a positive integer.";
+    public static final String MESSAGE_INVALID_POSITIVE_INTEGER = "Value must be a positive integer.";
 
     /**
      * Parses {@code oneBasedIndex} into an {@code Index} and returns it. Leading and trailing whitespaces will be
@@ -36,6 +37,16 @@ public class ParserUtil {
         }
         return Index.fromOneBased(Integer.parseInt(trimmedIndex));
     }
+
+    /** Parses a positive integer. */
+    public static int parsePositiveInteger(String value) throws ParseException {
+        String trimmed = value.trim();
+        if (!StringUtil.isNonZeroUnsignedInteger(trimmed)) {
+            throw new ParseException(MESSAGE_INVALID_POSITIVE_INTEGER);
+        }
+        return Integer.parseInt(trimmed);
+    }
+
 
     /**
      * Parses a {@code String name} into a {@code Name}.

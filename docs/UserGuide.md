@@ -33,7 +33,7 @@ TAssist is a **desktop application for NUS Teaching Assistants who need to manag
 
    * `add sn/A0123456X n/John Doe e/johnd@example.com tg/john_doe` : Adds a student named `John Doe`.
 
-   * `addclass m/CS2103T c/F10-2` : Creates a class named `F10-2` for module `CS2103T`.
+   * `addclass m/CS2103T c/F10-2 l/11` : Creates a class with 11 total lessons.
 
    * `delete 3` : Deletes the 3rd student shown in the current list.
 
@@ -132,6 +132,7 @@ The student list displays each student's name, student number, email, optional T
 ### Listing students by class: `listbyclass`
 
 Shows only students assigned to the specified module and class, alphabetically by name using the existing student cards.
+Each card also shows attendance as `ATTENDED/TOTAL_LESSONS` for that class.
 
 Format: `listbyclass m/MODULE_CODE c/CLASS_NAME`
 
@@ -182,10 +183,11 @@ the saved data from loading on restart. Back up your data before experimenting w
 
 Creates an academic class. Created classes appear in the class list section of the UI.
 
-Format: `addclass m/MODULE_CODE c/CLASS_NAME`
+Format: `addclass m/MODULE_CODE c/CLASS_NAME l/TOTAL_LESSONS`
 
 * `MODULE_CODE` is the module that the class belongs to.
 * `CLASS_NAME` is the class name for that module.
+* `TOTAL_LESSONS` is the positive number used as the denominator in attendance rates.
 * The `m/` and `c/` parameters can be supplied in any order.
 * Each class is uniquely identified by its module code and class name pair.
 * Duplicate classes with the same module code and class name are not allowed.
@@ -194,8 +196,8 @@ Format: `addclass m/MODULE_CODE c/CLASS_NAME`
 * `CLASS_NAME` must contain at least one letter or digit, and may contain only letters, digits, or hyphens.
 
 Examples:
-* `addclass m/CS2103T c/F10-2`
-* `addclass c/T24 m/ST2334`
+* `addclass m/CS2103T c/F10-2 l/11`
+* `addclass c/T24 m/ST2334 l/12`
 
 Expected output:
 * `New class added: CS2103T-F10-2`

@@ -7,6 +7,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
+import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.person.Person;
 
 /**
@@ -39,12 +40,19 @@ public class PersonCard extends UiPart<Region> {
     @FXML
     private Label telegram;
     @FXML
+    private Label attendance;
+    @FXML
     private FlowPane tags;
 
     /**
      * Creates a {@code PersonCard} with the given {@code Person} and index to display.
      */
     public PersonCard(Person person, int displayedIndex) {
+        this(person, displayedIndex, null);
+    }
+
+    /** Creates a card and optionally shows this student's attendance for a class. */
+    public PersonCard(Person person, int displayedIndex, AcademicClass attendanceClass) {
         super(FXML);
         this.person = person;
         id.setText(displayedIndex + ". ");
@@ -57,8 +65,21 @@ public class PersonCard extends UiPart<Region> {
             telegram.setVisible(false);
             telegram.setManaged(false);
         }
+        if (attendanceClass == null) {
+            attendance.setVisible(false);
+            attendance.setManaged(false);
+        } else {
+            updateAttendance(attendanceClass);
+            attendanceClass.attendanceVersionProperty().addListener((observable, oldValue, newValue) ->
+                    updateAttendance(attendanceClass));
+        }
         person.getTags().stream()
                 .sorted(Comparator.comparing(tag -> tag.tagName))
                 .forEach(tag -> tags.getChildren().add(new Label(tag.tagName)));
+    }
+
+    private void updateAttendance(AcademicClass attendanceClass) {
+        attendance.setText(String.format("%d/%d", attendanceClass.getAttendanceCount(person),
+                attendanceClass.getTotalLessons()));
     }
 }

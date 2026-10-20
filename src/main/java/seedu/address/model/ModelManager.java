@@ -34,6 +34,7 @@ public class ModelManager implements Model {
     private Predicate<Person> personFilter = PREDICATE_SHOW_ALL_PERSONS;
     private final FilteredList<AcademicClass> filteredAcademicClasses;
     private final ObservableList<AcademicClass> displayedAcademicClasses;
+    private AcademicClass attendanceDisplayClass;
 
     /**
      * Initializes a ModelManager with the given addressBook and userPrefs.
@@ -95,6 +96,11 @@ public class ModelManager implements Model {
     @Override
     public Optional<Person> findPersonByStudentNumber(StudentNumber studentNumber) {
         return addressBook.findPersonByStudentNumber(studentNumber);
+    }
+
+    @Override
+    public Optional<AcademicClass> getAttendanceDisplayClass() {
+        return Optional.ofNullable(attendanceDisplayClass);
     }
 
 
@@ -160,6 +166,17 @@ public class ModelManager implements Model {
     }
 
     @Override
+    public void setAttendanceDisplayClass(AcademicClass academicClass) {
+        requireNonNull(academicClass);
+        attendanceDisplayClass = academicClass;
+    }
+
+    @Override
+    public void clearAttendanceDisplayClass() {
+        attendanceDisplayClass = null;
+    }
+
+    @Override
     public ObservableList<AcademicClass> getAcademicClassList() {
         return addressBook.getAcademicClassList();
     }
@@ -183,6 +200,7 @@ public class ModelManager implements Model {
     @Override
     public void updateFilteredPersonList(Predicate<Person> predicate) {
         requireNonNull(predicate);
+        clearAttendanceDisplayClass();
         personFilter = predicate;
         filteredPersons.setPredicate(predicate);
         sortedPersons.setComparator(null);

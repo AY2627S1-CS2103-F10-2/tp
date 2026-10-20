@@ -1,5 +1,7 @@
 package seedu.address.logic;
 
+import java.util.Optional;
+
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.logic.commands.CommandResult;
@@ -23,6 +25,11 @@ public interface Logic {
 
     /** Returns an unmodifiable view of the filtered list of persons */
     ObservableList<Person> getFilteredPersonList();
+
+    /** Returns the class whose attendance is displayed beside the person list, if any. */
+    default Optional<AcademicClass> getAttendanceDisplayClass() {
+        return Optional.empty();
+    }
 
     /** Returns an unmodifiable view of the list of academic classes */
     ObservableList<AcademicClass> getAcademicClassList();

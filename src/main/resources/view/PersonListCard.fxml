@@ -33,4 +33,9 @@
       <Label fx:id="telegram" styleClass="cell_small_label" text="\$telegram" />
     </VBox>
   </GridPane>
+  <Label fx:id="attendance" styleClass="cell_big_label" text="0/0">
+    <HBox.margin>
+      <Insets right="15" />
+    </HBox.margin>
+  </Label>
 </HBox>

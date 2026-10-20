@@ -19,10 +19,12 @@ public class AddClassCommand extends Command {
     public static final String MESSAGE_USAGE = COMMAND_WORD + ": Adds an academic class to the address book. "
             + "Parameters: "
             + PREFIX_MODULE_CODE + "MODULE_CODE "
-            + PREFIX_CLASS_NAME + "CLASS_NAME\n"
+            + PREFIX_CLASS_NAME + "CLASS_NAME "
+            + "[" + seedu.address.logic.parser.CliSyntax.PREFIX_TOTAL_LESSONS + "TOTAL_LESSONS]\n"
             + "Example: " + COMMAND_WORD + " "
             + PREFIX_MODULE_CODE + "CS2103 "
-            + PREFIX_CLASS_NAME + "F10-2";
+            + PREFIX_CLASS_NAME + "F10-2 "
+            + seedu.address.logic.parser.CliSyntax.PREFIX_TOTAL_LESSONS + "11";
 
     public static final String MESSAGE_SUCCESS = "New class added: %1$s";
     public static final String MESSAGE_DUPLICATE_CLASS = "A class with this name for this module already exists";

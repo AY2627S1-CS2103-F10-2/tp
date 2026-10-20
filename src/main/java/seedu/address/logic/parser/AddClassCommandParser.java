@@ -2,6 +2,7 @@ package seedu.address.logic.parser;
 
 import static seedu.address.logic.parser.CliSyntax.PREFIX_CLASS_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_MODULE_CODE;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_TOTAL_LESSONS;
 
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -25,7 +26,7 @@ public class AddClassCommandParser implements Parser<AddClassCommand> {
     public static final String MESSAGE_DUPLICATE_PARAMETER = "Parameter %1$s was specified more than once.";
 
     private static final Set<String> VALID_PREFIXES = Set.of(PREFIX_MODULE_CODE.toString(),
-            PREFIX_CLASS_NAME.toString());
+            PREFIX_CLASS_NAME.toString(), PREFIX_TOTAL_LESSONS.toString());
     private static final Pattern PREFIX_PATTERN = Pattern.compile("(?<=\\s)([^\\s/]+/)");
 
     /**
@@ -52,9 +53,17 @@ public class AddClassCommandParser implements Parser<AddClassCommand> {
 
         rejectDuplicatePrefix(argMultimap, PREFIX_MODULE_CODE);
         rejectDuplicatePrefix(argMultimap, PREFIX_CLASS_NAME);
+        rejectDuplicatePrefix(argMultimap, PREFIX_TOTAL_LESSONS);
         ModuleCode moduleCode = ParserUtil.parseModuleCode(argMultimap.getValue(PREFIX_MODULE_CODE).get());
         ClassName className = ParserUtil.parseClassName(argMultimap.getValue(PREFIX_CLASS_NAME).get());
-        AcademicClass academicClass = new AcademicClass(moduleCode, className);
+        int totalLessons = argMultimap.getValue(PREFIX_TOTAL_LESSONS).isPresent()
+                ? ParserUtil.parsePositiveInteger(argMultimap.getValue(PREFIX_TOTAL_LESSONS).get()) : 0;
+        AcademicClass academicClass;
+        try {
+            academicClass = new AcademicClass(moduleCode, className, totalLessons);
+        } catch (IllegalArgumentException e) {
+            throw new ParseException(e.getMessage());
+        }
 
         return new AddClassCommand(academicClass);
     }

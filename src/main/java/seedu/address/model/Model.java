@@ -57,6 +57,11 @@ public interface Model {
      */
     Optional<Person> findPersonByStudentNumber(StudentNumber studentNumber);
 
+    /** Returns the class whose attendance is currently shown beside the person list, if any. */
+    default Optional<AcademicClass> getAttendanceDisplayClass() {
+        return Optional.empty();
+    }
+
 
     /**
      * Returns true if a person with the same email (ignoring case) as {@code person} exists in the address book.
@@ -119,6 +124,16 @@ public interface Model {
      * @throws NullPointerException if either argument is null.
      */
     boolean assignStudentToClass(Person person, AcademicClass academicClass);
+
+    /** Sets the class whose attendance should be rendered beside displayed students. */
+    default void setAttendanceDisplayClass(AcademicClass academicClass) {
+        // Optional display context for Model implementations that expose a GUI.
+    }
+
+    /** Clears the attendance context shown beside displayed students. */
+    default void clearAttendanceDisplayClass() {
+        // Optional display context for Model implementations that expose a GUI.
+    }
 
     /**
      * Returns an unmodifiable view of the academic class list.
