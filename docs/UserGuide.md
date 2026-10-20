@@ -143,6 +143,8 @@ Format: `listbyclass m/MODULE_CODE c/CLASS_NAME`
 * Names are sorted ignoring case, with original spelling used to break ties.
 * An existing class with no students shows an empty student list and a count of zero.
 * A nonexistent class produces an error without changing the current student list.
+* Deleting the class currently being displayed empties the student list without deleting student records.
+  If you recreate the same module/class pair, subsequent assignments update this view using the new class membership.
 * This command changes only the displayed student list, not student records, class memberships, or the class list.
 * Use `list` to show all students again. `list` and `find` display results in their original insertion order.
 
