@@ -49,6 +49,12 @@ TAssist is a **desktop application for NUS Teaching Assistants who need to manag
 
 ## Features
 
+### Recalling previous commands
+
+In the command box, press **Up/Down** arrows to browse the latest **20 successful commands** from this app session.
+
+Edits of past commands are kept while browsing and cleared when you submit a command. Failed input remains as your draft.
+
 <box type="info" seamless>
 
 **Notes about the command format:**<br>
