@@ -7,7 +7,9 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_MODULE_CODE;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.logging.Logger;
 
+import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.CollectionUtil;
 import seedu.address.commons.util.ToStringBuilder;
@@ -25,6 +27,7 @@ public class EditClassCommand extends Command {
 
     public static final String COMMAND_WORD = "editclass";
 
+    private static final Logger logger = LogsCenter.getLogger(EditClassCommand.class);
     public static final String MESSAGE_USAGE = COMMAND_WORD + ": Edits the details of the academic class identified "
             + "by the index number used in the displayed class list. "
             + "Existing values will be overwritten by the input values. "
@@ -69,10 +72,13 @@ public class EditClassCommand extends Command {
         AcademicClass editedClass = createEditedAcademicClass(classToEdit, editClassDescriptor);
 
         if (!classToEdit.isSameClass(editedClass) && model.hasAcademicClass(editedClass)) {
+            logger.fine("Class edit rejected: another class has the requested identity.");
             throw new CommandException(MESSAGE_DUPLICATE_CLASS);
         }
 
         model.setAcademicClass(classToEdit, editedClass);
+        logger.info("Edited academic class from " + classToEdit + " to " + editedClass);
+        
         return new CommandResult(String.format(MESSAGE_EDIT_CLASS_SUCCESS, editedClass));
     }
 
