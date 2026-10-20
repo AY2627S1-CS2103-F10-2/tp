@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +26,7 @@ import seedu.address.model.ReadOnlyUserPrefs;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
+import seedu.address.model.attendance.Attendance;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.StudentNumber;
 import seedu.address.testutil.PersonBuilder;
@@ -114,6 +116,21 @@ public class AddCommandTest {
      * A default model stub that has all of the methods failing.
      */
     private class ModelStub implements Model {
+        @Override
+        public List<Attendance> getAttendanceList() {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public boolean addAttendance(Person person, AcademicClass academicClass, LocalDate date) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public boolean removeAttendance(Person person, AcademicClass academicClass, LocalDate date) {
+            throw new AssertionError("This method should not be called.");
+        }
+
         @Override
         public Optional<Person> findPersonByStudentNumber(StudentNumber studentNumber) {
             throw new AssertionError("This method should not be called.");
