@@ -9,6 +9,7 @@ import seedu.address.model.Model;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
+import seedu.address.model.person.Person;
 
 /**
  * Lists students assigned to a specified academic class.
@@ -37,8 +38,7 @@ public class ListByClassCommand extends Command {
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
         AcademicClass academicClass = findAcademicClass(model);
-        model.updateFilteredPersonListAlphabetically(person -> academicClass.getStudents().stream()
-                .anyMatch(member -> member.isSamePerson(person)));
+        model.updateFilteredPersonListAlphabetically(person -> isStudentInClass(model, person));
         return new CommandResult(String.format(MESSAGE_SUCCESS, model.getFilteredPersonList().size(),
                 academicClass.getModuleCode(), academicClass.getClassName()));
     }
@@ -46,6 +46,13 @@ public class ListByClassCommand extends Command {
     private AcademicClass findAcademicClass(Model model) throws CommandException {
         return model.findAcademicClass(moduleCode, className)
                 .orElseThrow(() -> new CommandException(MESSAGE_CLASS_NOT_FOUND));
+    }
+
+    private boolean isStudentInClass(Model model, Person person) {
+        return model.findAcademicClass(moduleCode, className)
+                .map(academicClass -> academicClass.getStudents().stream()
+                        .anyMatch(member -> member.isSamePerson(person)))
+                .orElse(false);
     }
 
     @Override
