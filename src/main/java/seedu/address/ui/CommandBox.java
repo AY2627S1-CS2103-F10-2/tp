@@ -42,6 +42,9 @@ public class CommandBox extends UiPart<Region> {
         if (event.getCode() != KeyCode.UP && event.getCode() != KeyCode.DOWN) {
             return;
         }
+        if (event.isShiftDown() || event.isControlDown() || event.isAltDown() || event.isMetaDown()) {
+            return;
+        }
         String currentInput = commandTextField.getText();
         String recalledInput = event.getCode() == KeyCode.UP
                 ? commandHistory.previous(currentInput) : commandHistory.next(currentInput);
