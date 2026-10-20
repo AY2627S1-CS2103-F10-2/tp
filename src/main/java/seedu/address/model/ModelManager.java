@@ -143,7 +143,6 @@ public class ModelManager implements Model {
             filterPersonsByClass(editedClass);
         }
 
-        refreshFilteredPersonList();
     }
 
     @Override
