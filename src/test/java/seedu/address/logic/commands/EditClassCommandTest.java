@@ -26,6 +26,7 @@ import seedu.address.model.UserPrefs;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
+import seedu.address.model.academicclass.exceptions.DuplicateAcademicClassException;
 import seedu.address.model.person.Person;
 import seedu.address.storage.JsonAddressBookStorage;
 import seedu.address.testutil.PersonBuilder;
@@ -155,7 +156,7 @@ public class EditClassCommandTest {
     }
 
     @Test
-    public void execute_filteredIndex_editsDisplayedClassAndResetsViews() throws Exception {
+    public void execute_filteredIndex_editsDisplayedClassAndPreservesViews() throws Exception {
         model.updateFilteredAcademicClassList(academicClass -> academicClass == other);
         model.updateFilteredPersonListAlphabetically(person -> false);
 
@@ -164,18 +165,55 @@ public class EditClassCommandTest {
         assertSame(original, model.getAcademicClassList().getFirst());
         assertEquals(NEW_NAME, model.getAcademicClassList().get(1).getClassName());
         assertEquals(Set.of(ALICE), model.getAcademicClassList().get(1).getStudents());
-        assertEquals(model.getAcademicClassList(), model.getFilteredAcademicClassList());
-        assertEquals(List.of(ALICE, BENSON), model.getFilteredPersonList());
+        assertTrue(model.getFilteredAcademicClassList().isEmpty());
+        assertTrue(model.getFilteredPersonList().isEmpty());
     }
 
     @Test
-    public void execute_afterListByClass_discardsOldClassFilter() throws Exception {
+    public void execute_afterListByClass_followsEditedClassFilter() throws Exception {
         new ListByClassCommand(MODULE, NAME).execute(model);
         command(null, NEW_NAME).execute(model);
         AcademicClass edited = model.getAcademicClassList().getFirst();
         model.unassignStudentFromClass(ALICE, edited);
-        assertEquals(List.of(ALICE, BENSON), model.getFilteredPersonList());
+        assertEquals(List.of(BENSON), model.getFilteredPersonList());
         assertEquals(Set.of(BENSON), edited.getStudents());
+    }
+
+    @Test
+    public void execute_viewingOtherClass_preservesSelectedClass() throws Exception {
+        model.filterPersonsByClass(other);
+        command(null, NEW_NAME).execute(model);
+        model.assignStudentToClass(BENSON, other);
+        assertEquals(List.of(ALICE, BENSON), model.getFilteredPersonList());
+        model.unassignStudentFromClass(ALICE, other);
+        assertEquals(List.of(BENSON), model.getFilteredPersonList());
+    }
+
+    @Test
+    public void execute_afterFind_preservesNameFilter() throws Exception {
+        model.filterPersonsByClass(original);
+        model.updateFilteredPersonList(person -> person == BENSON);
+        command(null, NEW_NAME).execute(model);
+        model.unassignStudentFromClass(BENSON, model.getAcademicClassList().getFirst());
+        assertEquals(List.of(BENSON), model.getFilteredPersonList());
+    }
+
+    @Test
+    public void setAcademicClass_duplicate_preservesActiveClassFilter() {
+        model.filterPersonsByClass(original);
+        assertThrows(DuplicateAcademicClassException.class, () ->
+                model.setAcademicClass(original, other));
+        model.unassignStudentFromClass(ALICE, original);
+        assertEquals(List.of(BENSON), model.getFilteredPersonList());
+    }
+
+    @Test
+    public void execute_renameTwice_followsLatestClassMembership() throws Exception {
+        model.filterPersonsByClass(original);
+        command(null, NEW_NAME).execute(model);
+        command(NEW_MODULE, new ClassName("OB6")).execute(model);
+        model.unassignStudentFromClass(ALICE, model.getAcademicClassList().getFirst());
+        assertEquals(List.of(BENSON), model.getFilteredPersonList());
     }
 
     @Test

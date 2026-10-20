@@ -134,7 +134,16 @@ public class ModelManager implements Model {
     public void setAcademicClass(AcademicClass target, AcademicClass editedClass) {
         requireAllNonNull(target, editedClass);
 
+        boolean isViewingTargetClass = personFilterClass != null
+                && personFilterClass.isSameClass(target);
+
         addressBook.setAcademicClass(target, editedClass);
+
+        if (isViewingTargetClass) {
+            filterPersonsByClass(editedClass);
+        }
+
+        refreshFilteredPersonList();
     }
 
     @Override
