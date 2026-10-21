@@ -27,7 +27,6 @@ public class EditClassCommand extends Command {
 
     public static final String COMMAND_WORD = "editclass";
 
-    private static final Logger logger = LogsCenter.getLogger(EditClassCommand.class);
     public static final String MESSAGE_USAGE = COMMAND_WORD + ": Edits the details of the academic class identified "
             + "by the index number used in the displayed class list. "
             + "Existing values will be overwritten by the input values. "
@@ -43,6 +42,8 @@ public class EditClassCommand extends Command {
     public static final String MESSAGE_EDIT_CLASS_SUCCESS = "Edited class: %1$s";
     public static final String MESSAGE_DUPLICATE_CLASS = "A class with these details already exists!";
     public static final String MESSAGE_NOT_EDITED = "At least one field to edit must be provided.";
+
+    private static final Logger logger = LogsCenter.getLogger(EditClassCommand.class);
 
     private final Index index;
     private final EditClassDescriptor editClassDescriptor;
@@ -78,7 +79,7 @@ public class EditClassCommand extends Command {
 
         model.setAcademicClass(classToEdit, editedClass);
         logger.info("Edited academic class from " + classToEdit + " to " + editedClass);
-        
+
         return new CommandResult(String.format(MESSAGE_EDIT_CLASS_SUCCESS, editedClass));
     }
 
