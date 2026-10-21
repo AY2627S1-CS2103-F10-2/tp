@@ -120,6 +120,7 @@
         "creating-a-class-addclass": "Creating a class: addclass",
         "assigning-a-student-to-a-class-assign": "Assigning a student to a class: assign",
         "editing-a-student-edit": "Editing a student: edit",
+        "editing-a-class-editclass": "Editing a class: editclass",
         "locating-students-by-name-find": "Locating students by name: find",
         "deleting-a-student-delete": "Deleting a student: delete",
         "deleting-a-class-deleteclass": "Deleting a class: deleteclass",
