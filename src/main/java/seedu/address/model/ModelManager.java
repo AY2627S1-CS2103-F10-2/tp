@@ -3,6 +3,8 @@ package seedu.address.model;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
@@ -16,6 +18,7 @@ import seedu.address.commons.core.LogsCenter;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
+import seedu.address.model.attendance.Attendance;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.PersonNameComparator;
 import seedu.address.model.person.StudentNumber;
@@ -76,6 +79,21 @@ public class ModelManager implements Model {
     }
 
     //=========== AddressBook ================================================================================
+
+    @Override
+    public List<Attendance> getAttendanceList() {
+        return addressBook.getAttendanceList();
+    }
+
+    @Override
+    public boolean addAttendance(Person person, AcademicClass academicClass, LocalDate date) {
+        return addressBook.addAttendance(person, academicClass, date);
+    }
+
+    @Override
+    public boolean removeAttendance(Person person, AcademicClass academicClass, LocalDate date) {
+        return addressBook.removeAttendance(person, academicClass, date);
+    }
 
     @Override
     public void setAddressBook(ReadOnlyAddressBook addressBook) {

@@ -3,6 +3,7 @@ package seedu.address.model;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -14,6 +15,7 @@ import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
 import seedu.address.model.academicclass.UniqueAcademicClassList;
+import seedu.address.model.attendance.Attendance;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.StudentNumber;
 import seedu.address.model.person.StudentObserver;
@@ -27,6 +29,7 @@ public class AddressBook implements ReadOnlyAddressBook {
 
     private final UniquePersonList persons = new UniquePersonList();
     private final UniqueAcademicClassList academicClasses = new UniqueAcademicClassList();
+    private final List<Attendance> attendanceRecords = new ArrayList<>();
 
     private List<StudentObserver> studentObservers = new ArrayList<>();
 
@@ -57,6 +60,7 @@ public class AddressBook implements ReadOnlyAddressBook {
         for (StudentObserver studentObserver : studentObservers) {
             studentObserver.onStudentListReplaced(persons);
         }
+        reconcileAttendance();
     }
 
     /**
@@ -67,6 +71,7 @@ public class AddressBook implements ReadOnlyAddressBook {
         this.academicClasses.setAcademicClasses(academicClasses);
 
         resetStudentObservers(academicClasses);
+        reconcileAttendance();
     }
 
     /**
@@ -80,13 +85,14 @@ public class AddressBook implements ReadOnlyAddressBook {
         replacementPersons.setPersons(newData.getPersonList());
         UniqueAcademicClassList replacementClasses = new UniqueAcademicClassList();
         replacementClasses.setAcademicClasses(newData.getAcademicClassList());
+        List<Attendance> replacementAttendance = copyAttendance(newData);
 
         resetStudentObservers(newData.getAcademicClassList());
 
         persons.setPersons(replacementPersons);
         academicClasses.setAcademicClasses(replacementClasses.asUnmodifiableObservableList());
-
-
+        attendanceRecords.clear();
+        attendanceRecords.addAll(replacementAttendance);
     }
 
     private void resetStudentObservers(Iterable<AcademicClass> academicClasses) {
@@ -187,6 +193,8 @@ public class AddressBook implements ReadOnlyAddressBook {
 
         persons.setPerson(target, editedPerson);
         updateStudentObservers(target, editedPerson);
+        attendanceRecords.replaceAll(record -> record.getStudent().isSamePerson(target)
+                ? record.copyFor(editedPerson, record.getAcademicClass()) : record);
     }
 
     public void setAcademicClass(AcademicClass target, AcademicClass editedClass) {
@@ -205,6 +213,7 @@ public class AddressBook implements ReadOnlyAddressBook {
     public void removePerson(Person key) {
         persons.remove(key);
         updateStudentObservers(key, null);
+        attendanceRecords.removeIf(record -> record.getStudent().isSamePerson(key));
     }
 
     //// academic class-level operations
@@ -237,6 +246,7 @@ public class AddressBook implements ReadOnlyAddressBook {
     public void removeAcademicClass(AcademicClass key) {
         academicClasses.remove(key);
         removeStudentObserver(key);
+        attendanceRecords.removeIf(record -> record.getAcademicClass().equals(key));
     }
 
     /**
@@ -268,6 +278,103 @@ public class AddressBook implements ReadOnlyAddressBook {
     public boolean unassignStudentFromClass(Person person, AcademicClass academicClass) {
         requireAllNonNull(person, academicClass);
         return academicClass.unassignStudent(person);
+    }
+
+    //// attendance operations
+
+    /** Replaces attendance after validating all associations, without partially changing existing history. */
+    public void setAttendance(List<Attendance> records) {
+        requireNonNull(records);
+        List<Attendance> replacement = copyAttendance(records, this);
+        attendanceRecords.clear();
+        attendanceRecords.addAll(replacement);
+    }
+
+    @Override
+    public List<Attendance> getAttendanceList() {
+        return attendanceRecords.stream()
+                .map(record -> record.copyFor(record.getStudent(), record.getAcademicClass())).toList();
+    }
+
+    /** Records a valid date against canonical stored endpoints; membership eligibility is caller policy. */
+    public boolean addAttendance(Person person, AcademicClass academicClass, LocalDate date) {
+        requireAllNonNull(person, academicClass, date);
+        Person storedPerson = requireStoredPerson(person);
+        AcademicClass storedClass = requireStoredClass(academicClass);
+        Optional<Attendance> existing = findAttendance(storedPerson, storedClass);
+        if (existing.isPresent()) {
+            return existing.get().addDate(date);
+        }
+        Attendance record = new Attendance(storedPerson, storedClass);
+        record.addDate(date);
+        attendanceRecords.add(record);
+        return true;
+    }
+
+    /** Removes a recorded date without requiring current membership; returns false if it is absent. */
+    public boolean removeAttendance(Person person, AcademicClass academicClass, LocalDate date) {
+        requireAllNonNull(person, academicClass, date);
+        Person storedPerson = requireStoredPerson(person);
+        AcademicClass storedClass = requireStoredClass(academicClass);
+        Attendance record = findAttendance(storedPerson, storedClass)
+                .orElseGet(() -> new Attendance(storedPerson, storedClass));
+        return record.removeDate(date);
+    }
+
+    private Optional<Attendance> findAttendance(Person person, AcademicClass academicClass) {
+        return attendanceRecords.stream().filter(record -> record.getStudent().isSamePerson(person)
+                && record.getAcademicClass().equals(academicClass)).findFirst();
+    }
+
+    private Person requireStoredPerson(Person person) {
+        return findPersonByStudentNumber(person.getStudentNumber())
+                .orElseThrow(() -> new IllegalArgumentException("Attendance student does not exist."));
+    }
+
+    private AcademicClass requireStoredClass(AcademicClass academicClass) {
+        return findAcademicClass(academicClass.getModuleCode(), academicClass.getClassName())
+                .orElseThrow(() -> new IllegalArgumentException("Attendance class does not exist."));
+    }
+
+    /** Rebinds retained identities after bulk replacement and removes history for deleted endpoints. */
+    private void reconcileAttendance() {
+        List<Attendance> retained = new ArrayList<>();
+        for (Attendance record : attendanceRecords) {
+            Optional<Person> person = findPersonByStudentNumber(record.getStudent().getStudentNumber());
+            AcademicClass oldClass = record.getAcademicClass();
+            Optional<AcademicClass> academicClass = findAcademicClass(
+                    oldClass.getModuleCode(), oldClass.getClassName());
+            if (person.isPresent() && academicClass.isPresent()) {
+                retained.add(record.copyFor(person.get(), academicClass.get()));
+            }
+        }
+        attendanceRecords.clear();
+        attendanceRecords.addAll(retained);
+    }
+
+    /** Validates and copies associations before reset mutates any existing data. */
+    private List<Attendance> copyAttendance(ReadOnlyAddressBook source) {
+        return copyAttendance(source.getAttendanceList(), source);
+    }
+
+    private List<Attendance> copyAttendance(List<Attendance> records, ReadOnlyAddressBook source) {
+        List<Attendance> copies = new ArrayList<>();
+        for (Attendance record : records) {
+            requireNonNull(record);
+            Person person = source.getPersonList().stream()
+                    .filter(candidate -> candidate.isSamePerson(record.getStudent())).findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Attendance student does not exist."));
+            AcademicClass academicClass = source.getAcademicClassList().stream()
+                    .filter(candidate -> candidate.equals(record.getAcademicClass())).findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Attendance class does not exist."));
+            boolean isDuplicate = copies.stream().anyMatch(copy -> copy.getStudent().isSamePerson(person)
+                    && copy.getAcademicClass().equals(academicClass));
+            if (isDuplicate) {
+                throw new IllegalArgumentException("Duplicate attendance association.");
+            }
+            copies.add(record.copyFor(person, academicClass));
+        }
+        return copies;
     }
 
     //// util methods
@@ -302,11 +409,12 @@ public class AddressBook implements ReadOnlyAddressBook {
         }
 
         return persons.equals(otherAddressBook.persons)
-                && academicClasses.equals(otherAddressBook.academicClasses);
+                && academicClasses.equals(otherAddressBook.academicClasses)
+                && attendanceRecords.equals(otherAddressBook.attendanceRecords);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(persons, academicClasses);
+        return Objects.hash(persons, academicClasses, attendanceRecords);
     }
 }
