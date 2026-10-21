@@ -3,7 +3,9 @@ package seedu.address.logic.commands;
 import static java.util.Objects.requireNonNull;
 
 import java.util.List;
+import java.util.logging.Logger;
 
+import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.Messages;
@@ -22,6 +24,8 @@ public class ListByClassCommand extends Command {
             + "Example: " + COMMAND_WORD + " 1";
     public static final String MESSAGE_SUCCESS = "Listed %1$d students taking %2$s (%3$s).";
 
+    private static final Logger logger = LogsCenter.getLogger(ListByClassCommand.class);
+
     private final Index index;
 
     /**
@@ -34,14 +38,18 @@ public class ListByClassCommand extends Command {
     @Override
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
+        logger.fine("Listing students for displayed class index " + index.getOneBased());
         List<AcademicClass> lastShownList = model.getFilteredAcademicClassList();
         if (index.getZeroBased() >= lastShownList.size()) {
+            logger.warning("List-by-class rejected: invalid displayed class index " + index.getOneBased());
             throw new CommandException(Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX);
         }
         AcademicClass academicClass = lastShownList.get(index.getZeroBased());
         model.filterPersonsByClass(academicClass);
         model.setAttendanceDisplayClass(academicClass);
         model.refreshFilteredPersonList();
+        logger.info("Listed " + model.getFilteredPersonList().size() + " students for academic class "
+                + academicClass.getModuleCode() + " (" + academicClass.getClassName() + ")");
         return new CommandResult(String.format(MESSAGE_SUCCESS, model.getFilteredPersonList().size(),
                 academicClass.getModuleCode(), academicClass.getClassName()));
     }

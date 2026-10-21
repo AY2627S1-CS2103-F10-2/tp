@@ -88,12 +88,18 @@ public class ModelManager implements Model {
 
     @Override
     public boolean addAttendance(Person person, AcademicClass academicClass, LocalDate date) {
-        return addressBook.addAttendance(person, academicClass, date);
+        boolean added = addressBook.addAttendance(person, academicClass, date);
+        logger.info((added ? "Added" : "Skipped duplicate") + " attendance for class "
+                + academicClass.getModuleCode() + " (" + academicClass.getClassName() + ")");
+        return added;
     }
 
     @Override
     public boolean removeAttendance(Person person, AcademicClass academicClass, LocalDate date) {
-        return addressBook.removeAttendance(person, academicClass, date);
+        boolean removed = addressBook.removeAttendance(person, academicClass, date);
+        logger.info((removed ? "Removed" : "Could not remove") + " attendance for class "
+                + academicClass.getModuleCode() + " (" + academicClass.getClassName() + ")");
+        return removed;
     }
 
     @Override
@@ -215,12 +221,15 @@ public class ModelManager implements Model {
     public void setAttendanceDisplayClass(AcademicClass academicClass) {
         requireNonNull(academicClass);
         attendanceDisplayClass = academicClass;
+        logger.info("Displaying attendance for class " + academicClass.getModuleCode() + " ("
+                + academicClass.getClassName() + ")");
         refreshFilteredPersonList();
     }
 
     @Override
     public void clearAttendanceDisplayClass() {
         attendanceDisplayClass = null;
+        logger.fine("Cleared attendance display class");
     }
 
     @Override
