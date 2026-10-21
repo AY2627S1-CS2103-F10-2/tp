@@ -173,6 +173,11 @@ public class AddClassCommandTest {
         }
 
         @Override
+        public void setAcademicClass(AcademicClass target, AcademicClass editedClass) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
         public void filterPersonsByClass(AcademicClass academicClass) {
             throw new AssertionError("This method should not be called.");
         }
