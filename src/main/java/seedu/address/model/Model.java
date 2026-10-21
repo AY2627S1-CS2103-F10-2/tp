@@ -151,6 +151,14 @@ public interface Model {
     void updateFilteredAcademicClassList(Predicate<AcademicClass> predicate);
 
     /**
+     * Shows classes containing the selected student, preserving class insertion order.
+     * Keeps this view updated after membership changes and edits to the student's number.
+     * Leaves the displayed student list unchanged.
+     * @throws NullPointerException if {@code studentNumber} is null.
+     */
+    void updateFilteredAcademicClassListByStudent(StudentNumber studentNumber);
+
+    /**
      * Unassigns the stored student from the stored academic class with the given identities.
      * Does not change the current person filter or displayed order.
      *
