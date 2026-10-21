@@ -1,0 +1,34 @@
+@startuml
+!include style.puml
+show members
+top to bottom direction
+skinparam objectBackgroundColor #FFFFAA
+skinparam objectBorderColor #000000
+skinparam objectFontColor #000000
+skinparam DefaultTextAlignment left
+skinparam ArrowFontStyle plain
+
+object "<u>:CommandBox</u>" as box
+hide box members
+object "<u>commandHistory:CommandHistory</u>" as history {
+    draft = "addclass m/CS2103 n/f"
+    position = 2
+}
+object "<u>commands:ArrayList</u>" as commands {
+    [0] = "help"
+    [1] = "find Carol"
+    [2] = "list"
+    [3] = "find Alice"
+}
+object "<u>workingCommands:ArrayList</u>" as working {
+    [0] = "help"
+    [1] = "find Carol"
+    [2] = "list"
+    [3] = "find Alice"
+}
+
+box -- history
+history -- commands
+history -- working
+commands -[hidden]right-> working
+@enduml
