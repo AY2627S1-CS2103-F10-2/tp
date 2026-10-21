@@ -51,8 +51,8 @@ public class ListByStudentCommand extends Command {
         assert matchingClasses.stream().allMatch(academicClass -> academicClass.getStudents().stream()
                 .anyMatch(member -> member.isSamePerson(student)))
                 : "The class filter returned a class without the selected student";
-        logger.fine(() -> "Listed " + matchingClasses.size() + " classes for displayed student index "
-                + targetIndex.getOneBased());
+        logger.fine(() -> "Listed " + matchingClasses.size() + " classes for student " + student.getStudentNumber()
+                + " at displayed index " + targetIndex.getOneBased());
         String feedback = matchingClasses.size() == 1
                 ? String.format(MESSAGE_SINGLE_CLASS_SUCCESS, student.getName(), student.getStudentNumber())
                 : String.format(MESSAGE_SUCCESS, matchingClasses.size(), student.getName(), student.getStudentNumber());
