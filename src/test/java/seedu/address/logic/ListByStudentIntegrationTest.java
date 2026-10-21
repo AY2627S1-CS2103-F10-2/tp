@@ -1,6 +1,8 @@
 package seedu.address.logic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.nio.file.Files;
@@ -15,6 +17,8 @@ import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.academicclass.AcademicClass;
+import seedu.address.model.academicclass.ClassName;
+import seedu.address.model.academicclass.ModuleCode;
 import seedu.address.storage.JsonAddressBookStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
 import seedu.address.storage.StorageManager;
@@ -24,6 +28,37 @@ public class ListByStudentIntegrationTest {
 
     @TempDir
     public Path temporaryFolder;
+
+    @Test
+    public void execute_editClassAfterStudentLookup_assignsToEditedClassAndRefreshesView() throws Exception {
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("addressbook.json"));
+        ModelManager model = new ModelManager();
+        LogicManager logic = createLogic(model, storage);
+        populate(logic);
+        logic.execute("listbystudent 1");
+        var displayed = model.getFilteredAcademicClassList();
+        AcademicClass original = displayed.get(0);
+
+        logic.execute("editclass 1 m/CS2113 c/RENAMED-T01");
+        AcademicClass edited = model.findAcademicClass(new ModuleCode("CS2113"), new ClassName("RENAMED-T01"))
+                .orElseThrow();
+        assertNotSame(original, edited);
+        assertSame(edited, displayed.get(0));
+        assertEquals(List.of("CS2113-RENAMED-T01", "CS2100-DEMO-L01"), displayedClasses(model));
+        assertEquals(original.getStudents(), edited.getStudents());
+
+        assertThrows(CommandException.class, () -> logic.execute("assign sn/A0999803Z m/CS2103 c/DEMO-T01"));
+        logic.execute("assign sn/A0999803Z m/CS2113 c/RENAMED-T01");
+        assertEquals(3, edited.getStudents().size());
+        assertEquals(2, original.getStudents().size());
+        assertSame(edited, displayed.get(0));
+
+        logic.execute("unassign sn/A0999801X m/CS2113 c/RENAMED-T01");
+        assertEquals(List.of("CS2100-DEMO-L01"), displayedClasses(model));
+        logic.execute("assign sn/A0999801X m/CS2113 c/RENAMED-T01");
+        assertEquals(List.of("CS2113-RENAMED-T01", "CS2100-DEMO-L01"), displayedClasses(model));
+        assertSame(edited, displayed.get(0));
+    }
 
     @Test
     public void execute_clearAfterStudentLookup_newClassIsVisible() throws Exception {
