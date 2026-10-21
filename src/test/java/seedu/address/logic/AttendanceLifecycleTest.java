@@ -149,6 +149,39 @@ public class AttendanceLifecycleTest {
         logic = new LogicManager(model, storage);
     }
 
+    @Test
+    public void execute_renameClass_attendanceCommandsUseNewIdentityAcrossReload() throws Exception {
+        logic.execute("listbyclass m/CS2103 c/F10-2");
+        logic.execute("editclass 1 m/CS2101 c/F11-2");
+        assertEquals(1, model.getFilteredPersonList().size());
+        assertDates(Set.of(DATE));
+        assertSame(model.getAcademicClassList().getFirst(), model.getAttendanceList().getFirst().getAcademicClass());
+        assertThrows(CommandException.class, () -> logic.execute("addattendance" + TARGET + " d/2024-03-01"));
+        assertThrows(CommandException.class, () -> logic.execute("deleteattendance" + TARGET + " d/2024-02-29"));
+        String renamedTarget = " sn/A0123456X m/CS2101 c/F11-2";
+        assertThrows(CommandException.class, () -> logic.execute("addattendance" + renamedTarget + " d/2024-02-29"));
+        logic.execute("addattendance" + renamedTarget + " d/2024-03-01");
+        logic.execute("deleteattendance" + renamedTarget + " d/2024-02-29");
+        reload();
+        assertDates(Set.of(LocalDate.of(2024, 3, 1)));
+        assertEquals("CS2101-F11-2", model.getAttendanceList().getFirst().getAcademicClass().toString());
+    }
+
+    @Test
+    public void execute_renameAfterUnassignment_canDeleteRetainedHistory() throws Exception {
+        logic.execute("unassign" + TARGET);
+        logic.execute("editclass 1 c/F11-2");
+        reload();
+        assertDates(Set.of(DATE));
+        assertEquals(Set.of(), model.getAcademicClassList().getFirst().getStudents());
+        String renamedTarget = " sn/A0123456X m/CS2103 c/F11-2";
+        assertThrows(CommandException.class, () -> logic.execute("addattendance" + renamedTarget + " d/2024-03-01"));
+        logic.execute("deleteattendance" + renamedTarget + " d/2024-02-29");
+        reload();
+        assertDates(Set.of());
+        assertEquals(Set.of(), model.getAcademicClassList().getFirst().getStudents());
+    }
+
     private void assertDates(Set<LocalDate> expected) {
         assertEquals(1, model.getAttendanceList().size());
         assertEquals(expected, model.getAttendanceList().getFirst().getAttendedDates());

@@ -335,6 +335,8 @@ Format: `editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]`
 * Supplied values replace the corresponding existing details. Omitted fields remain unchanged.
 * The resulting module code and class name must not identify another existing class. Different modules can have classes with the same name.
 * Student memberships are preserved. Student records, other classes, and memberships in other classes remain unchanged.
+* Attendance history is preserved, including records for students who are no longer assigned to the class.
+  Use the updated module code and class name for subsequent attendance commands.
 * If the current student view lists members of the edited class, it follows the renamed class and remains alphabetical. Other student filters and their displayed order remain unchanged.
 * Subsequent commands that identify the class by module code and class name must use its updated details.
 
