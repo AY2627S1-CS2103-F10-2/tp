@@ -66,6 +66,7 @@
         "launch-and-shutdown": "Launch and shutdown",
         "deleting-a-person": "Deleting a person",
         "assigning-a-student-to-a-class": "Assigning a student to a class",
+        "listing-classes-by-student": "Listing classes by student",
         "saving-data": "Saving data"
       },
       "headingKeywords": {}
@@ -92,6 +93,7 @@
       "headings": {
         "setting-up-and-getting-started": "Setting up and getting started",
         "setting-up-the-project-on-your-computer": "Setting up the project on your computer",
+        "enable-assertions": "Enable assertions",
         "before-writing-code": "Before writing code"
       },
       "headingKeywords": {}
@@ -118,6 +120,8 @@
         "adding-a-student-add": "Adding a student: add",
         "listing-all-students-list": "Listing all students: list",
         "listing-students-by-class-listbyclass": "Listing students by class: listbyclass",
+        "listing-classes-by-student-listbystudent": "Listing classes by student: listbystudent",
+        "listing-all-classes-listclass": "Listing all classes: listclass",
         "creating-a-class-addclass": "Creating a class: addclass",
         "assigning-a-student-to-a-class-assign": "Assigning a student to a class: assign",
         "editing-a-student-edit": "Editing a student: edit",
