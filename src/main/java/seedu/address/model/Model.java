@@ -1,5 +1,7 @@
 package seedu.address.model;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -8,6 +10,7 @@ import seedu.address.commons.core.GuiSettings;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
+import seedu.address.model.attendance.Attendance;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.StudentNumber;
 
@@ -21,6 +24,25 @@ public interface Model {
 
     /** {@code Predicate} that always evaluates to true for academic classes. */
     Predicate<AcademicClass> PREDICATE_SHOW_ALL_ACADEMIC_CLASSES = unused -> true;
+
+    /** Returns snapshots with isolated date sets and shared canonical student/class references. */
+    List<Attendance> getAttendanceList();
+
+    /**
+     * Records attendance for existing endpoints, returning false for a duplicate date.
+     * Current-membership eligibility is checked by the command, not this storage API.
+     * @throws IllegalArgumentException if an endpoint is missing or the date is in the future.
+     * @throws NullPointerException if any argument is null.
+     */
+    boolean addAttendance(Person person, AcademicClass academicClass, LocalDate date);
+
+    /**
+     * Removes a recorded date, including history retained after unassignment.
+     * Returns false if no matching date exists.
+     * @throws IllegalArgumentException if an endpoint is missing or the date is in the future.
+     * @throws NullPointerException if any argument is null.
+     */
+    boolean removeAttendance(Person person, AcademicClass academicClass, LocalDate date);
 
     /**
      * Returns the user prefs.
@@ -58,9 +80,7 @@ public interface Model {
     Optional<Person> findPersonByStudentNumber(StudentNumber studentNumber);
 
     /** Returns the class whose attendance is currently shown beside the person list, if any. */
-    default Optional<AcademicClass> getAttendanceDisplayClass() {
-        return Optional.empty();
-    }
+    Optional<AcademicClass> getAttendanceDisplayClass();
 
 
     /**
@@ -93,6 +113,8 @@ public interface Model {
      */
     void setPerson(Person target, Person editedPerson);
 
+    void setAcademicClass(AcademicClass target, AcademicClass editedClass);
+
     /**
      * Returns true if an academic class with the same module code and class name exists in the address book.
      */
@@ -103,6 +125,13 @@ public interface Model {
      * @throws NullPointerException if either identifier is null.
      */
     Optional<AcademicClass> findAcademicClass(ModuleCode moduleCode, ClassName className);
+
+    /**
+     * Displays the given class's students alphabetically and tracks the selected class.
+     *
+     * @throws NullPointerException if {@code academicClass} is null
+     */
+    void filterPersonsByClass(AcademicClass academicClass);
 
     /**
      * Adds the given academic class.
@@ -126,14 +155,10 @@ public interface Model {
     boolean assignStudentToClass(Person person, AcademicClass academicClass);
 
     /** Sets the class whose attendance should be rendered beside displayed students. */
-    default void setAttendanceDisplayClass(AcademicClass academicClass) {
-        // Optional display context for Model implementations that expose a GUI.
-    }
+    void setAttendanceDisplayClass(AcademicClass academicClass);
 
     /** Clears the attendance context shown beside displayed students. */
-    default void clearAttendanceDisplayClass() {
-        // Optional display context for Model implementations that expose a GUI.
-    }
+    void clearAttendanceDisplayClass();
 
     /**
      * Returns an unmodifiable view of the academic class list.

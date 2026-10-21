@@ -31,7 +31,7 @@ public class ClassFilterIntegrationTest {
         execute("addclass m/CS2103 c/F10-2");
         execute("assign sn/" + DANIEL.getStudentNumber() + " m/CS2103 c/F10-2");
         execute("assign sn/" + BENSON.getStudentNumber() + " m/CS2103 c/F10-2");
-        execute("listbyclass m/CS2103 c/F10-2");
+        execute("listbyclass 1");
     }
 
     @Test

@@ -33,7 +33,7 @@ TAssist is a **desktop application for NUS Teaching Assistants who need to manag
 
    * `add sn/A0123456X n/John Doe e/johnd@example.com tg/john_doe` : Adds a student named `John Doe`.
 
-   * `addclass m/CS2103T c/F10-2 l/11` : Creates a class with 11 total lessons.
+   * `addclass m/CS2103T c/F10-2 l/11` : Creates a class named `F10-2` for module `CS2103T` with 11 total lessons.
 
    * `delete 3` : Deletes the 3rd student shown in the current list.
 
@@ -48,6 +48,12 @@ TAssist is a **desktop application for NUS Teaching Assistants who need to manag
 --------------------------------------------------------------------------------------------------------------------
 
 ## Features
+
+### Recalling previous commands
+
+In the command box, press **Up/Down** arrows to browse the latest **20 successful commands** from this app session.
+
+Edits of past commands are kept while browsing and cleared when you submit a command. Failed input remains as your draft.
 
 <box type="info" seamless>
 
@@ -131,28 +137,25 @@ The student list displays each student's name, student number, email, optional T
 
 ### Listing students by class: `listbyclass`
 
-Shows only students assigned to the specified module and class, alphabetically by name using the existing student cards.
+Shows only students assigned to the class at the specified displayed index, alphabetically by name using the existing
+student cards.
 Each card also shows attendance as `ATTENDED/TOTAL_LESSONS` for that class.
 
-Format: `listbyclass m/MODULE_CODE c/CLASS_NAME`
+Format: `listbyclass INDEX`
 
-* Both parameters are required exactly once and can appear in either order. Unknown parameters are rejected.
-* Surrounding spaces are ignored. Module and class names must match an existing pair, ignoring case.
-* Module codes must start with an ASCII letter and contain only ASCII letters or digits.
-* Class names must contain at least one ASCII letter or digit, and may contain only ASCII letters, digits, or hyphens.
-* Empty or invalid values produce the same validation errors as `addclass` and `assign`, without changing the student list.
+* `INDEX` must be a positive integer referring to a class in the displayed class list.
+* The class list index is independent of the student list index.
+* An invalid or out-of-range index is rejected without changing the student list.
 * Names are sorted ignoring case, with original spelling used to break ties.
 * An existing class with no students shows an empty student list and a count of zero.
-* A nonexistent class produces an error without changing the current student list.
 * Deleting the class currently being displayed empties the student list without deleting student records.
-  If you recreate the same module/class pair, subsequent assignments update this view using the new class membership.
+  If you recreate the class, subsequent assignments update this view using the new class membership.
 * This command changes only the displayed student list, not student records, class memberships, or the class list.
 * Use `list` to show all students again. `list` and `find` display results in their original insertion order.
 
 Examples:
 
-* `listbyclass m/CS2103 c/F10-2`
-* `listbyclass c/f10-2 m/cs2103`
+* Check the class list displayed in the UI, then run `listbyclass INDEX` for the desired class.
 
 The result message includes the student count and class, for example: `Listed 2 students taking CS2103 (F10-2).`
 
@@ -167,12 +170,12 @@ add sn/A0999902Y n/Amy Test e/amy.test@example.com
 addclass m/CS2103 c/TEST-103
 assign sn/A0999901X m/CS2103 c/TEST-103
 assign sn/A0999902Y m/CS2103 c/TEST-103
-listbyclass m/CS2103 c/TEST-103
+listbyclass 1
 ```
 
 The student list shows only Amy Test followed by Zoe Test, with the message
 `Listed 2 students taking CS2103 (TEST-103).` Other students and the class list are unchanged.
-After closing and reopening TAssist, run `listbyclass m/CS2103 c/TEST-103` again to display the saved
+After closing and reopening TAssist, check the class list and run `listbyclass 1` again to display the saved
 memberships alphabetically. The filtered view itself is not saved. Run `list` to return to all students.
 
 **Known limitation:** Updating class memberships when assigned students are edited or deleted is deferred to v1.4.
@@ -257,11 +260,66 @@ Format: `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]
 * Existing values will be updated to the input values.
 * When editing tags, all of the student's existing tags are removed; adding tags is not cumulative.
 * To remove all of a student's tags, enter `t/` without a tag after it.
+* To remove a student's Telegram username, enter `tg/` without a username after it. Omitting `tg/` keeps the existing username.
 * Student number, email, and Telegram username must remain unique after editing.
 
 Examples:
 *  `edit 1 tg/john_doe e/johndoe@example.com` edits the Telegram username and email address of the 1st student.
+*  `edit 1 tg/` removes the Telegram username of the 1st student.
 *  `edit 2 sn/A0234567Y n/Benjamin Lim t/` edits the student number and name of the 2nd student, and clears all existing tags.
+
+### Editing a class: `editclass`
+
+Changes an academic class's module code or class name. Use this when a class's details change but its existing student memberships should be kept.
+
+Format: `editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]`
+
+**Before you begin:** The academic class must exist. Run `listclass` and check its index in the displayed class list.
+
+* `INDEX` must be a positive integer, such as `1`, `2`, or `3`, and refer to a class in the displayed class list, not the student list.
+* At least one of `m/` or `c/` is required. Each supplied parameter must appear exactly once. You can enter them in either order after the index.
+* `MODULE_CODE` must start with a letter and contain only letters or digits.
+* `CLASS_NAME` may contain letters, digits, and hyphens (`-`), and must contain at least one letter or digit.
+* Leading and trailing spaces in field values are ignored, and letters are converted to uppercase. For example, `cs2103` becomes `CS2103`.
+* Supplied values replace the corresponding existing details. Omitted fields remain unchanged.
+* The resulting module code and class name must not identify another existing class. Different modules can have classes with the same name.
+* Student memberships are preserved. Student records, other classes, and memberships in other classes remain unchanged.
+* If the current student view lists members of the edited class, it follows the renamed class and remains alphabetical. Other student filters and their displayed order remain unchanged.
+* Subsequent commands that identify the class by module code and class name must use its updated details.
+
+Examples
+
+Suppose class `F10` in module `CS2103` is at index `1` in the displayed class list. Run:
+
+```text
+editclass 1 c/F11
+```
+
+Expected feedback:
+
+```text
+Edited class: CS2103-F11
+```
+
+You can also change both details, reverse the parameter order, and use lowercase values:
+
+```text
+editclass 1 c/f12 m/cs2101
+```
+
+This changes the class to `CS2101-F12` while keeping its assigned students. Editing a class to its existing details is also accepted and leaves its memberships unchanged.
+
+Common errors:
+
+* Missing or invalid index, or unexpected text before the parameters: `Invalid command format!` followed by the command usage.
+* Index outside the displayed class list: `The class index provided is invalid.`
+* No fields supplied: `At least one field to edit must be provided.`
+* Another class already has the resulting details: `A class with these details already exists!`
+* Repeated parameter: `Multiple values specified for the following single-valued field(s):` followed by the repeated prefixes.
+* Empty or invalid module code or class name: the corresponding validation error from `addclass`.
+* Unknown parameter: rejected as invalid command format or an invalid field value, depending on its position. Only `m/` and `c/` are supported.
+
+Rejected commands leave class details, memberships, and student counts unchanged.
 
 ### Locating students by name: `find`
 
@@ -465,9 +523,10 @@ Action     | Format, Examples
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
 **Delete Class** | `deleteclass m/MODULE_CODE c/CLASS_NAME`<br> e.g., `deleteclass m/CS2103T c/F10-2`
 **Edit**   | `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
+**Edit Class** | `editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]`<br> e.g., `editclass 1 m/CS2103 c/F11`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **List**   | `list`
-**List students by class** | `listbyclass m/MODULE_CODE c/CLASS_NAME`<br> e.g., `listbyclass m/CS2103 c/F10-2`
+**List students by class** | `listbyclass INDEX`<br> e.g., `listbyclass 1`
 **Unassign** | `unassign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME`<br> e.g., `unassign sn/A1111111H m/CS2103 c/F10`
 **Help**   | `help`
 **Exit**   | `exit`

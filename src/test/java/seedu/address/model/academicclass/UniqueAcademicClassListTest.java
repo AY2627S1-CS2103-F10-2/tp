@@ -2,6 +2,7 @@ package seedu.address.model.academicclass;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
 
@@ -20,6 +21,84 @@ import seedu.address.model.academicclass.exceptions.DuplicateAcademicClassExcept
 public class UniqueAcademicClassListTest {
 
     private final UniqueAcademicClassList uniqueAcademicClassList = new UniqueAcademicClassList();
+
+    @Test
+    public void setAcademicClass_validReplacement_preservesPositionAndNotifiesExistingView() {
+        AcademicClass first = new AcademicClass(new ModuleCode("CS2103"), new ClassName("OB1"));
+        AcademicClass second = new AcademicClass(new ModuleCode("CS2103"), new ClassName("OB2"));
+        AcademicClass edited = new AcademicClass(new ModuleCode("CS2101"), new ClassName("OB5"));
+        uniqueAcademicClassList.setAcademicClasses(List.of(first, second));
+        var view = uniqueAcademicClassList.asUnmodifiableObservableList();
+        List<AcademicClass> added = new ArrayList<>();
+        List<AcademicClass> removed = new ArrayList<>();
+        view.addListener((ListChangeListener<AcademicClass>) change -> {
+            while (change.next()) {
+                added.addAll(change.getAddedSubList());
+                removed.addAll(change.getRemoved());
+            }
+        });
+
+        uniqueAcademicClassList.setAcademicClass(first, edited);
+
+        assertEquals(List.of(edited, second), view);
+        assertSame(edited, view.getFirst());
+        assertEquals(List.of(edited), added);
+        assertEquals(List.of(first), removed);
+    }
+
+    @Test
+    public void setAcademicClass_sameIdentity_replacesReference() {
+        AcademicClass first = new AcademicClass(new ModuleCode("CS2103"), new ClassName("OB1"));
+        AcademicClass edited = new AcademicClass(new ModuleCode("CS2103"), new ClassName("OB1"));
+        uniqueAcademicClassList.setAcademicClasses(List.of(first));
+
+        uniqueAcademicClassList.setAcademicClass(first, edited);
+
+        assertSame(edited, uniqueAcademicClassList.asUnmodifiableObservableList().getFirst());
+    }
+
+    @Test
+    public void setAcademicClass_equivalentTarget_findsStoredClass() {
+        AcademicClass first = new AcademicClass(new ModuleCode("CS2103"), new ClassName("OB1"));
+        AcademicClass key = new AcademicClass(new ModuleCode("cs2103"), new ClassName("ob1"));
+        AcademicClass edited = new AcademicClass(new ModuleCode("CS2101"), new ClassName("OB5"));
+        uniqueAcademicClassList.setAcademicClasses(List.of(first));
+
+        uniqueAcademicClassList.setAcademicClass(key, edited);
+
+        assertSame(edited, uniqueAcademicClassList.asUnmodifiableObservableList().getFirst());
+    }
+
+    @Test
+    public void setAcademicClass_duplicateIdentity_rejectsWithoutChangingContents() {
+        AcademicClass first = new AcademicClass(new ModuleCode("CS2103"), new ClassName("OB1"));
+        AcademicClass second = new AcademicClass(new ModuleCode("CS2103"), new ClassName("OB2"));
+        uniqueAcademicClassList.setAcademicClasses(List.of(first, second));
+
+        assertThrows(DuplicateAcademicClassException.class, () -> uniqueAcademicClassList.setAcademicClass(first,
+                new AcademicClass(new ModuleCode("cs2103"), new ClassName("ob2"))));
+
+        assertEquals(List.of(first, second), uniqueAcademicClassList.asUnmodifiableObservableList());
+    }
+
+    @Test
+    public void setAcademicClass_missingTarget_rejectsWithoutChangingContents() {
+        AcademicClass first = new AcademicClass(new ModuleCode("CS2103"), new ClassName("OB1"));
+        AcademicClass missing = new AcademicClass(new ModuleCode("CS2103"), new ClassName("OB2"));
+        uniqueAcademicClassList.setAcademicClasses(List.of(first));
+        assertThrows(AcademicClassNotFoundException.class, () ->
+                uniqueAcademicClassList.setAcademicClass(missing, first));
+        assertEquals(List.of(first), uniqueAcademicClassList.asUnmodifiableObservableList());
+    }
+
+    @Test
+    public void setAcademicClass_nullArguments_rejectsWithoutChangingContents() {
+        AcademicClass first = new AcademicClass(new ModuleCode("CS2103"), new ClassName("OB1"));
+        uniqueAcademicClassList.setAcademicClasses(List.of(first));
+        assertThrows(NullPointerException.class, () -> uniqueAcademicClassList.setAcademicClass(null, first));
+        assertThrows(NullPointerException.class, () -> uniqueAcademicClassList.setAcademicClass(first, null));
+        assertEquals(List.of(first), uniqueAcademicClassList.asUnmodifiableObservableList());
+    }
 
     @Test
     public void setAcademicClasses_nullListOrElement_throwsNullPointerException() {

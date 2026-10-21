@@ -5,6 +5,9 @@ import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_CLASS_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_MODULE_CODE;
 
+import java.util.logging.Logger;
+
+import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
@@ -32,6 +35,8 @@ public class DeleteClassCommand extends Command {
     public static final String MESSAGE_CLASS_NOT_FOUND =
             "No class with module code %1$s and class name %2$s exists.";
 
+    private static final Logger logger = LogsCenter.getLogger(DeleteClassCommand.class);
+
     private final ModuleCode moduleCode;
     private final ClassName className;
 
@@ -48,10 +53,14 @@ public class DeleteClassCommand extends Command {
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
         AcademicClass classToDelete = model.getAddressBook().findAcademicClass(moduleCode, className)
-                .orElseThrow(() -> new CommandException(
-                        String.format(MESSAGE_CLASS_NOT_FOUND, moduleCode, className)));
+                .orElseThrow(() -> {
+                    logger.fine("Class deletion rejected: specified class does not exist.");
+                    return new CommandException(
+                            String.format(MESSAGE_CLASS_NOT_FOUND, moduleCode, className));
+                });
 
         model.deleteAcademicClass(classToDelete);
+        logger.info("Deleted academic class " + classToDelete);
         return new CommandResult(String.format(MESSAGE_DELETE_CLASS_SUCCESS, classToDelete));
     }
 

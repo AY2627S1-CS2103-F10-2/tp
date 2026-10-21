@@ -1,5 +1,6 @@
 package seedu.address.ui;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
@@ -11,6 +12,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.layout.Region;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.model.academicclass.AcademicClass;
+import seedu.address.model.attendance.Attendance;
 import seedu.address.model.person.Person;
 
 /**
@@ -20,6 +22,7 @@ public class PersonListPanel extends UiPart<Region> {
     private static final String FXML = "PersonListPanel.fxml";
     private final Logger logger = LogsCenter.getLogger(PersonListPanel.class);
     private final Supplier<Optional<AcademicClass>> attendanceClassSupplier;
+    private final Supplier<List<Attendance>> attendanceListSupplier;
 
     @FXML
     private ListView<Person> personListView;
@@ -28,14 +31,16 @@ public class PersonListPanel extends UiPart<Region> {
      * Creates a {@code PersonListPanel} with the given {@code ObservableList}.
      */
     public PersonListPanel(ObservableList<Person> personList) {
-        this(personList, Optional::empty);
+        this(personList, Optional::empty, List::of);
     }
 
     /** Creates a person list whose cards can display the currently selected class attendance. */
     public PersonListPanel(ObservableList<Person> personList,
-            Supplier<Optional<AcademicClass>> attendanceClassSupplier) {
+            Supplier<Optional<AcademicClass>> attendanceClassSupplier,
+            Supplier<List<Attendance>> attendanceListSupplier) {
         super(FXML);
         this.attendanceClassSupplier = attendanceClassSupplier;
+        this.attendanceListSupplier = attendanceListSupplier;
         personListView.setItems(personList);
         personListView.setCellFactory(listView -> new PersonListViewCell());
     }
@@ -53,7 +58,7 @@ public class PersonListPanel extends UiPart<Region> {
                 setText(null);
             } else {
                 setGraphic(new PersonCard(person, getIndex() + 1,
-                        attendanceClassSupplier.get().orElse(null)).getRoot());
+                        attendanceClassSupplier.get().orElse(null), attendanceListSupplier.get()).getRoot());
             }
         }
     }

@@ -3,12 +3,8 @@ package seedu.address.model.academicclass;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
-import java.time.LocalDate;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -34,9 +30,6 @@ public class AcademicClass implements StudentObserver {
     private final ObservableSet<Person> students = FXCollections.observableSet(new HashSet<>());
     // Cached read-only view of students; reflects membership changes and forwards change notifications.
     private final ObservableSet<Person> unmodifiableStudents = FXCollections.unmodifiableObservableSet(students);
-    private final Map<StudentNumber, Set<LocalDate>> attendance = new HashMap<>();
-    private final javafx.beans.property.IntegerProperty attendanceVersion =
-            new javafx.beans.property.SimpleIntegerProperty(this, "attendanceVersion", 0);
 
     /**
      * Every field must be present and not null.
@@ -58,6 +51,18 @@ public class AcademicClass implements StudentObserver {
         this.className = className;
         this.totalLessons = totalLessons;
     }
+
+    /**
+     * Creates a class with the given identity and an independent copy of {@code toCopy}'s memberships.
+     * Immutable person records are shared between the two membership sets.
+     *
+     * @throws NullPointerException if any argument is null
+     */
+    public AcademicClass(ModuleCode moduleCode, ClassName className, AcademicClass toCopy) {
+        this(moduleCode, className, toCopy.getTotalLessons());
+        this.students.addAll(toCopy.getStudents());
+    }
+
 
     public ModuleCode getModuleCode() {
         return moduleCode;
@@ -129,8 +134,6 @@ public class AcademicClass implements StudentObserver {
 
         if (students.contains(person)) {
             students.remove(person);
-            attendance.remove(person.getStudentNumber());
-            attendanceVersion.set(attendanceVersion.get() + 1);
 
             return true; // can output if removal success or not
         }
@@ -140,61 +143,6 @@ public class AcademicClass implements StudentObserver {
 
     public boolean hasIdentity(ModuleCode moduleCode, ClassName className) {
         return this.className.equals(className) && this.moduleCode.equals(moduleCode);
-    }
-
-    /**
-     * Records a date on which a student attended this class.
-     * Returns false when the date was already recorded.
-     */
-    public boolean addAttendance(Person person, LocalDate date) {
-        requireAllNonNull(person, date);
-        if (!students.contains(person)) {
-            return false;
-        }
-        boolean added = attendance.computeIfAbsent(person.getStudentNumber(), unused -> new HashSet<>()).add(date);
-        if (added) {
-            attendanceVersion.set(attendanceVersion.get() + 1);
-        }
-        return added;
-    }
-
-    /**
-     * Removes a previously recorded attendance date.
-     * Returns false when the date was not recorded.
-     */
-    public boolean removeAttendance(Person person, LocalDate date) {
-        requireAllNonNull(person, date);
-        Set<LocalDate> dates = attendance.get(person.getStudentNumber());
-        if (dates == null || !dates.remove(date)) {
-            return false;
-        }
-        if (dates.isEmpty()) {
-            attendance.remove(person.getStudentNumber());
-        }
-        attendanceVersion.set(attendanceVersion.get() + 1);
-        return true;
-    }
-
-    /** Returns the immutable attendance dates for the specified student. */
-    public Set<LocalDate> getAttendanceDates(Person person) {
-        requireNonNull(person);
-        return Collections.unmodifiableSet(attendance.getOrDefault(person.getStudentNumber(), Set.of()));
-    }
-
-    public int getAttendanceCount(Person person) {
-        return getAttendanceDates(person).size();
-    }
-
-    /** Returns a property that changes whenever attendance is added or removed. */
-    public javafx.beans.property.ReadOnlyIntegerProperty attendanceVersionProperty() {
-        return attendanceVersion;
-    }
-
-    /** Returns a defensive copy for persistence. */
-    public Map<StudentNumber, Set<LocalDate>> getAttendance() {
-        Map<StudentNumber, Set<LocalDate>> copy = new HashMap<>();
-        attendance.forEach((studentNumber, dates) -> copy.put(studentNumber, Set.copyOf(dates)));
-        return Collections.unmodifiableMap(copy);
     }
 
     @Override
@@ -228,4 +176,17 @@ public class AcademicClass implements StudentObserver {
         this.students.clear();
         this.students.addAll(replacements);
     }
+
+    /**
+     * Returns true if the other class has the same module code and class name.
+     */
+    public boolean isSameClass(AcademicClass otherClass) {
+        if (otherClass == this) {
+            return true;
+        }
+
+        return otherClass != null
+                && otherClass.hasIdentity(this.moduleCode, this.className);
+    }
+
 }

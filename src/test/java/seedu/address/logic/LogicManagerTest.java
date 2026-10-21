@@ -13,6 +13,7 @@ import static seedu.address.testutil.TypicalPersons.AMY;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -106,6 +107,19 @@ public class LogicManagerTest {
     @Test
     public void getFilteredAcademicClassList_returnsModelFilteredClassList() {
         assertEquals(model.getFilteredAcademicClassList(), logic.getFilteredAcademicClassList());
+    }
+
+    @Test
+    public void getAttendanceDetails_delegatesToModel() {
+        AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103"), new ClassName("F10-2"), 11);
+        model.addPerson(AMY);
+        model.addAcademicClass(academicClass);
+        model.assignStudentToClass(AMY, academicClass);
+        model.addAttendance(AMY, academicClass, LocalDate.of(2020, 1, 1));
+        model.setAttendanceDisplayClass(academicClass);
+
+        assertEquals(java.util.Optional.of(academicClass), logic.getAttendanceDisplayClass());
+        assertEquals(model.getAttendanceList(), logic.getAttendanceList());
     }
 
     /**

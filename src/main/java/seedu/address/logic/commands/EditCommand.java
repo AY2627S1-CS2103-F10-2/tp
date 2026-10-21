@@ -44,6 +44,7 @@ public class EditCommand extends Command {
             + "[" + PREFIX_EMAIL + "EMAIL] "
             + "[" + PREFIX_TELEGRAM + "TELEGRAM] "
             + "[" + PREFIX_TAG + "TAG]...\n"
+            + "Use " + PREFIX_TELEGRAM + " without a username to remove Telegram.\n"
             + "Example: " + COMMAND_WORD + " 1 "
             + PREFIX_TELEGRAM + "john_doe "
             + PREFIX_EMAIL + "johndoe@example.com";
@@ -106,8 +107,8 @@ public class EditCommand extends Command {
                 .orElse(personToEdit.getStudentNumber());
         Name updatedName = editPersonDescriptor.getName().orElse(personToEdit.getName());
         Email updatedEmail = editPersonDescriptor.getEmail().orElse(personToEdit.getEmail());
-        Telegram updatedTelegram = editPersonDescriptor.getTelegram()
-                .orElse(personToEdit.getTelegram().orElse(null));
+        Telegram updatedTelegram = editPersonDescriptor.isTelegramEdited()
+                ? editPersonDescriptor.getTelegram().orElse(null) : personToEdit.getTelegram().orElse(null);
         Set<Tag> updatedTags = editPersonDescriptor.getTags().orElse(personToEdit.getTags());
 
         return new Person(updatedStudentNumber, updatedName, updatedEmail, updatedTelegram, updatedTags);
@@ -139,12 +140,14 @@ public class EditCommand extends Command {
     /**
      * Stores the details to edit the person with. Each non-empty field value will replace the
      * corresponding field value of the person.
+     * Telegram can also be explicitly cleared by setting it to null.
      */
     public static class EditPersonDescriptor {
         private StudentNumber studentNumber;
         private Name name;
         private Email email;
         private Telegram telegram;
+        private boolean telegramEdited;
         private Set<Tag> tags;
 
         public EditPersonDescriptor() {}
@@ -157,7 +160,9 @@ public class EditCommand extends Command {
             setStudentNumber(toCopy.studentNumber);
             setName(toCopy.name);
             setEmail(toCopy.email);
-            setTelegram(toCopy.telegram);
+            if (toCopy.telegramEdited) {
+                setTelegram(toCopy.telegram);
+            }
             setTags(toCopy.tags);
         }
 
@@ -165,7 +170,7 @@ public class EditCommand extends Command {
          * Returns true if at least one field is edited.
          */
         public boolean isAnyFieldEdited() {
-            return CollectionUtil.isAnyNonNull(studentNumber, name, email, telegram, tags);
+            return telegramEdited || CollectionUtil.isAnyNonNull(studentNumber, name, email, tags);
         }
 
         public void setStudentNumber(StudentNumber studentNumber) {
@@ -192,8 +197,19 @@ public class EditCommand extends Command {
             return Optional.ofNullable(email);
         }
 
+        /**
+         * Marks Telegram for editing. A null value removes the existing username.
+         */
         public void setTelegram(Telegram telegram) {
             this.telegram = telegram;
+            this.telegramEdited = true;
+        }
+
+        /**
+         * Returns whether Telegram should be replaced or removed, rather than left unchanged.
+         */
+        public boolean isTelegramEdited() {
+            return telegramEdited;
         }
 
         public Optional<Telegram> getTelegram() {
@@ -232,6 +248,7 @@ public class EditCommand extends Command {
                     && Objects.equals(name, otherEditPersonDescriptor.name)
                     && Objects.equals(email, otherEditPersonDescriptor.email)
                     && Objects.equals(telegram, otherEditPersonDescriptor.telegram)
+                    && telegramEdited == otherEditPersonDescriptor.telegramEdited
                     && Objects.equals(tags, otherEditPersonDescriptor.tags);
         }
 
@@ -242,6 +259,7 @@ public class EditCommand extends Command {
                     .add("name", name)
                     .add("email", email)
                     .add("telegram", telegram)
+                    .add("telegramEdited", telegramEdited)
                     .add("tags", tags)
                     .toString();
         }

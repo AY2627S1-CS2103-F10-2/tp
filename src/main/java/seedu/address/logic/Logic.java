@@ -1,5 +1,6 @@
 package seedu.address.logic;
 
+import java.util.List;
 import java.util.Optional;
 
 import javafx.collections.ObservableList;
@@ -8,6 +9,7 @@ import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.academicclass.AcademicClass;
+import seedu.address.model.attendance.Attendance;
 import seedu.address.model.person.Person;
 
 /**
@@ -27,9 +29,10 @@ public interface Logic {
     ObservableList<Person> getFilteredPersonList();
 
     /** Returns the class whose attendance is displayed beside the person list, if any. */
-    default Optional<AcademicClass> getAttendanceDisplayClass() {
-        return Optional.empty();
-    }
+    Optional<AcademicClass> getAttendanceDisplayClass();
+
+    /** Returns attendance records used to render class attendance counts. */
+    List<Attendance> getAttendanceList();
 
     /** Returns an unmodifiable view of the list of academic classes */
     ObservableList<AcademicClass> getAcademicClassList();
