@@ -261,11 +261,66 @@ Format: `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]
 * Existing values will be updated to the input values.
 * When editing tags, all of the student's existing tags are removed; adding tags is not cumulative.
 * To remove all of a student's tags, enter `t/` without a tag after it.
+* To remove a student's Telegram username, enter `tg/` without a username after it. Omitting `tg/` keeps the existing username.
 * Student number, email, and Telegram username must remain unique after editing.
 
 Examples:
 *  `edit 1 tg/john_doe e/johndoe@example.com` edits the Telegram username and email address of the 1st student.
+*  `edit 1 tg/` removes the Telegram username of the 1st student.
 *  `edit 2 sn/A0234567Y n/Benjamin Lim t/` edits the student number and name of the 2nd student, and clears all existing tags.
+
+### Editing a class: `editclass`
+
+Changes an academic class's module code or class name. Use this when a class's details change but its existing student memberships should be kept.
+
+Format: `editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]`
+
+**Before you begin:** The academic class must exist. Run `listclass` and check its index in the displayed class list.
+
+* `INDEX` must be a positive integer, such as `1`, `2`, or `3`, and refer to a class in the displayed class list, not the student list.
+* At least one of `m/` or `c/` is required. Each supplied parameter must appear exactly once. You can enter them in either order after the index.
+* `MODULE_CODE` must start with a letter and contain only letters or digits.
+* `CLASS_NAME` may contain letters, digits, and hyphens (`-`), and must contain at least one letter or digit.
+* Leading and trailing spaces in field values are ignored, and letters are converted to uppercase. For example, `cs2103` becomes `CS2103`.
+* Supplied values replace the corresponding existing details. Omitted fields remain unchanged.
+* The resulting module code and class name must not identify another existing class. Different modules can have classes with the same name.
+* Student memberships are preserved. Student records, other classes, and memberships in other classes remain unchanged.
+* If the current student view lists members of the edited class, it follows the renamed class and remains alphabetical. Other student filters and their displayed order remain unchanged.
+* Subsequent commands that identify the class by module code and class name must use its updated details.
+
+Examples
+
+Suppose class `F10` in module `CS2103` is at index `1` in the displayed class list. Run:
+
+```text
+editclass 1 c/F11
+```
+
+Expected feedback:
+
+```text
+Edited class: CS2103-F11
+```
+
+You can also change both details, reverse the parameter order, and use lowercase values:
+
+```text
+editclass 1 c/f12 m/cs2101
+```
+
+This changes the class to `CS2101-F12` while keeping its assigned students. Editing a class to its existing details is also accepted and leaves its memberships unchanged.
+
+Common errors:
+
+* Missing or invalid index, or unexpected text before the parameters: `Invalid command format!` followed by the command usage.
+* Index outside the displayed class list: `The class index provided is invalid.`
+* No fields supplied: `At least one field to edit must be provided.`
+* Another class already has the resulting details: `A class with these details already exists!`
+* Repeated parameter: `Multiple values specified for the following single-valued field(s):` followed by the repeated prefixes.
+* Empty or invalid module code or class name: the corresponding validation error from `addclass`.
+* Unknown parameter: rejected as invalid command format or an invalid field value, depending on its position. Only `m/` and `c/` are supported.
+
+Rejected commands leave class details, memberships, and student counts unchanged.
 
 ### Locating students by name: `find`
 
@@ -469,6 +524,7 @@ Action     | Format, Examples
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
 **Delete Class** | `deleteclass m/MODULE_CODE c/CLASS_NAME`<br> e.g., `deleteclass m/CS2103T c/F10-2`
 **Edit**   | `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
+**Edit Class** | `editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]`<br> e.g., `editclass 1 m/CS2103 c/F11`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **List**   | `list`
 **List students by class** | `listbyclass m/MODULE_CODE c/CLASS_NAME`<br> e.g., `listbyclass m/CS2103 c/F10-2`

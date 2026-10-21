@@ -1,0 +1,66 @@
+@startuml
+!include style.puml
+skinparam ArrowFontStyle plain
+mainframe sd Add academic class (logic)
+
+box Logic LOGIC_COLOR_T1
+participant ":LogicManager" as LogicManager LOGIC_COLOR
+participant ":AddressBookParser" as AddressBookParser LOGIC_COLOR
+participant ":AddClassCommandParser" as AddClassCommandParser LOGIC_COLOR
+participant "c:AddClassCommand" as AddClassCommand LOGIC_COLOR
+end box
+
+box Model MODEL_COLOR_T1
+participant "m:Model" as Model MODEL_COLOR
+end box
+
+[-> LogicManager : execute(commandText)
+activate LogicManager
+
+LogicManager -> AddressBookParser : parseCommand(commandText)
+activate AddressBookParser
+
+create AddClassCommandParser
+AddressBookParser -> AddClassCommandParser
+activate AddClassCommandParser
+AddClassCommandParser --> AddressBookParser
+deactivate AddClassCommandParser
+
+AddressBookParser -> AddClassCommandParser : parse(arguments)
+activate AddClassCommandParser
+
+create AddClassCommand
+AddClassCommandParser -> AddClassCommand : AddClassCommand(a)
+activate AddClassCommand
+AddClassCommand --> AddClassCommandParser
+deactivate AddClassCommand
+
+AddClassCommandParser --> AddressBookParser : c
+deactivate AddClassCommandParser
+
+AddressBookParser --> LogicManager : c
+deactivate AddressBookParser
+
+LogicManager -> AddClassCommand : execute(m)
+activate AddClassCommand
+
+AddClassCommand -> Model : hasAcademicClass(a)
+activate Model
+Model --> AddClassCommand : classExists
+deactivate Model
+
+alt classExists
+    AddClassCommand --> LogicManager : throws CommandException
+    [<-- LogicManager : throws CommandException
+else class does not exist
+    AddClassCommand -> Model : addAcademicClass(a)
+    activate Model
+    Model --> AddClassCommand
+    deactivate Model
+
+    AddClassCommand --> LogicManager : result
+    [<-- LogicManager : result
+end
+deactivate AddClassCommand
+deactivate LogicManager
+@enduml
