@@ -253,7 +253,7 @@ Format: `addattendance sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME d/YYYY-MM-DD
 * The student and class must exist, and the student must currently be assigned to that class.
 * Supply each of `sn/`, `m/`, `c/` and `d/` exactly once, in any order. Unknown prefixes are rejected.
 * Outer whitespace in values is trimmed. Student numbers, module codes and class names are case-insensitive.
-* Use a valid calendar date with a four-digit year, two-digit month and two-digit day.
+* Use a valid calendar date with a year from `0001` to `9999`, a two-digit month and a two-digit day.
   Today and past dates are accepted; future dates are rejected using your computer's local date.
 * Recording the same date twice for the same student and class is rejected without changing the existing record.
   Other students and classes have separate attendance histories.
@@ -280,9 +280,9 @@ Format: `deleteattendance sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME d/YYYY-MM
 * The student does not need to be currently assigned to the class. You can correct retained history after unassignment.
 * Supply each of `sn/`, `m/`, `c/` and `d/` exactly once, in any order. Unknown prefixes are rejected.
 * Outer whitespace in values is trimmed. Student numbers, module codes and class names are case-insensitive.
-* Use a valid calendar date in `YYYY-MM-DD` format. Today and past dates are allowed; future dates are rejected
-  according to your computer's local date. This also applies if a saved date appears future after a clock or timezone
-  change: the record is retained, but cannot be removed through this command until that date is no longer future.
+* Use a valid calendar date in `YYYY-MM-DD` format, with a year from `0001` to `9999`.
+  An already-recorded date can be removed even if it appears future after a clock or timezone change.
+  This does not allow future attendance to be added. Unrecorded future dates are rejected.
 * An unrecorded date, including a date already removed, is rejected without changing existing data.
 * Only the specified date is removed. Other attendance dates, students, classes, memberships and current views
   are unchanged. Removing the last date leaves an attendance count of zero.

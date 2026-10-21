@@ -109,13 +109,13 @@ public class DeleteAttendanceCommandTest {
     }
 
     @Test
-    public void execute_savedFutureDate_preservesHistoryUnderExistingDatePolicy() {
+    public void execute_savedFutureDate_removesRecordedDateAfterClockRollback() throws Exception {
         AddressBook restored = new AddressBook(model.getAddressBook());
         restored.setAttendance(List.of(Attendance.fromRecordedDates(ALICE, academicClass,
                 Set.of(DATE, LocalDate.MAX))));
         model.setAddressBook(restored);
-        assertFailure(command(LocalDate.MAX), "Attendance date must not be in the future.");
-        assertEquals(Set.of(DATE, LocalDate.MAX), model.getAttendanceList().getFirst().getAttendedDates());
+        command(LocalDate.MAX).execute(model);
+        assertEquals(Set.of(DATE), model.getAttendanceList().getFirst().getAttendedDates());
     }
 
     @Test

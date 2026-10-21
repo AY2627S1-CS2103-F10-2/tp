@@ -92,7 +92,7 @@ public class DeleteAttendanceCommandParserTest {
 
     @Test
     public void parseCommand_invalidDates_rejectsWithoutNormalization() {
-        for (String date : List.of("2023-02-29", "1900-02-29", "2024-02-30", "2024-13-01",
+        for (String date : List.of("0000-01-01", "2023-02-29", "1900-02-29", "2024-02-30", "2024-13-01",
                 "2024-04-31", "2024-00-01", "2024-01-00", "2024-2-29", "24-02-29", "20240229", "29-02-2024",
                 "+2024-02-29", "10000-01-01", "2024-02-29T12:00:00", "today")) {
             assertThrows(ParseException.class, ParserUtil.MESSAGE_INVALID_ATTENDANCE_DATE, () ->

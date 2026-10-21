@@ -38,8 +38,8 @@ public interface Model {
 
     /**
      * Removes a recorded date, including history retained after unassignment.
-     * Returns false if no matching date exists.
-     * @throws IllegalArgumentException if an endpoint is missing or the date is in the future.
+     * Recorded dates remain removable after a clock rollback. Returns false for an unrecorded non-future date.
+     * @throws IllegalArgumentException if an endpoint is missing or an unrecorded date is in the future.
      * @throws NullPointerException if any argument is null.
      */
     boolean removeAttendance(Person person, AcademicClass academicClass, LocalDate date);
