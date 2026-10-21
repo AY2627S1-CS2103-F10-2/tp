@@ -194,6 +194,18 @@ public class ModelManagerTest {
     }
 
     @Test
+    public void attendanceDisplayClass_canBeSetAndCleared() {
+        AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103"), new ClassName("F10-2"));
+        modelManager.addAcademicClass(academicClass);
+
+        assertTrue(modelManager.getAttendanceDisplayClass().isEmpty());
+        modelManager.setAttendanceDisplayClass(academicClass);
+        assertEquals(Optional.of(academicClass), modelManager.getAttendanceDisplayClass());
+        modelManager.clearAttendanceDisplayClass();
+        assertTrue(modelManager.getAttendanceDisplayClass().isEmpty());
+    }
+
+    @Test
     public void getFilteredPersonList_modifyList_throwsUnsupportedOperationException() {
         assertThrows(UnsupportedOperationException.class, () -> modelManager.getFilteredPersonList().remove(0));
     }
