@@ -12,6 +12,7 @@ import static seedu.address.testutil.TypicalPersons.AMY;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -72,6 +73,29 @@ public class LogicManagerTest {
     public void execute_validCommand_success() throws Exception {
         String listCommand = ListCommand.COMMAND_WORD;
         assertCommandSuccess(listCommand, ListCommand.MESSAGE_SUCCESS, model);
+    }
+
+    @Test
+    public void execute_addAttendance_savesHistoryAndRejectsInvalidChanges() throws Exception {
+        logic.execute("add sn/A0123456X n/Alice e/alice@example.com");
+        logic.execute("addclass m/CS2103 c/F10-2");
+        logic.execute("assign sn/A0123456X m/CS2103 c/F10-2");
+        String attendanceCommand = "addattendance sn/A0123456X m/CS2103 c/F10-2 d/2024-02-29";
+        logic.execute(attendanceCommand);
+
+        Path savedFile = temporaryFolder.resolve("addressBook.json");
+        ReadOnlyAddressBook reloaded = new JsonAddressBookStorage(savedFile).readAddressBook().orElseThrow();
+        assertEquals(1, reloaded.getAttendanceList().size());
+        assertEquals(model.getAddressBook(), reloaded);
+        String savedContents = Files.readString(savedFile);
+
+        assertThrows(CommandException.class, () -> logic.execute(attendanceCommand));
+        String invalidDateCommand = attendanceCommand.replace("2024-02-29", "2024-02-30");
+        String futureDateCommand = attendanceCommand.replace("2024-02-29", "9999-12-31");
+        assertThrows(ParseException.class, () -> logic.execute(invalidDateCommand));
+        assertThrows(CommandException.class, () -> logic.execute(futureDateCommand));
+        assertEquals(savedContents, Files.readString(savedFile));
+        assertEquals(reloaded, model.getAddressBook());
     }
 
     @Test

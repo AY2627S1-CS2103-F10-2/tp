@@ -17,6 +17,9 @@ import seedu.address.model.person.StudentNumber;
 /** Records one attended date for a student currently assigned to a class. */
 public class AddAttendanceCommand extends Command {
     public static final String COMMAND_WORD = "addattendance";
+    public static final String MESSAGE_USAGE = COMMAND_WORD + ": Records attendance for an assigned student. "
+            + "Parameters: sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME d/YYYY-MM-DD\n"
+            + "Example: " + COMMAND_WORD + " sn/A0123456X m/CS2103 c/F10-2 d/2024-02-29";
     public static final String MESSAGE_SUCCESS = "Recorded attendance for student (%1$s) in %2$s on %3$s.";
     public static final String MESSAGE_STUDENT_NOT_FOUND = "Student (%1$s) cannot be found in the address book.";
     public static final String MESSAGE_CLASS_NOT_FOUND = "Class (%1$s-%2$s) cannot be found in the address book.";

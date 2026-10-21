@@ -244,6 +244,32 @@ Common errors:
 
 Rejected commands leave memberships and student counts unchanged.
 
+### Recording attendance: `addattendance`
+
+Records one attended date for a student in a particular module and class.
+
+Format: `addattendance sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME d/YYYY-MM-DD`
+
+* The student and class must exist, and the student must currently be assigned to that class.
+* Supply each of `sn/`, `m/`, `c/` and `d/` exactly once, in any order. Unknown prefixes are rejected.
+* Outer whitespace in values is trimmed. Student numbers, module codes and class names are case-insensitive.
+* Use a valid calendar date with a four-digit year, two-digit month and two-digit day.
+  Today and past dates are accepted; future dates are rejected using your computer's local date.
+* Recording the same date twice for the same student and class is rejected without changing the existing record.
+  Other students and classes have separate attendance histories.
+* Recording attendance does not change your current student or class list view.
+* Successful records are saved automatically and retained after restarting TAssist.
+  Unassigning a student keeps their history, but new dates cannot be recorded until they are assigned again.
+  Deleting the student or class removes the associated attendance history.
+
+Example (after creating the student and class):
+
+1. `assign sn/A0123456X m/CS2103 c/F10-2`
+2. `addattendance sn/A0123456X m/CS2103 c/F10-2 d/2024-02-29`
+
+TAssist displays a confirmation message when the date is recorded. This command does not add an attendance display
+to student cards.
+
 ### Editing a student: `edit`
 
 Edits an existing student in TAssist.
@@ -460,6 +486,7 @@ Action     | Format, Examples
 **Add Class** | `addclass m/MODULE_CODE c/CLASS_NAME` <br> e.g., `addclass m/CS2103T c/F10-2`
 **Assign** | `assign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME` <br> e.g., `assign sn/A0123456X m/CS2103T c/F10-2`
 **Clear**  | `clear`
+**Add attendance** | `addattendance sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME d/YYYY-MM-DD`<br> e.g., `addattendance sn/A0123456X m/CS2103 c/F10-2 d/2024-02-29`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
 **Delete Class** | `deleteclass m/MODULE_CODE c/CLASS_NAME`<br> e.g., `deleteclass m/CS2103T c/F10-2`
 **Edit**   | `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
