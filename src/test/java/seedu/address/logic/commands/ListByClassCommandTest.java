@@ -13,6 +13,7 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.commons.core.index.Index;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.ModelManager;
@@ -37,7 +38,7 @@ public class ListByClassCommandTest {
         model.addAcademicClass(createClassWithMembers("CS2100", "F10-2", Set.of(DANIEL)));
         model.addAcademicClass(createClassWithMembers("CS2103", "F11-2", Set.of(DANIEL)));
 
-        CommandResult result = new ListByClassCommand(new ModuleCode("CS2103"), new ClassName("F10-2")).execute(model);
+        CommandResult result = new ListByClassCommand(Index.fromOneBased(1)).execute(model);
 
         assertEquals(List.of(ALICE, BENSON), model.getFilteredPersonList());
         assertEquals("Listed 2 students taking CS2103 (F10-2).", result.getFeedbackToUser());
@@ -51,7 +52,7 @@ public class ListByClassCommandTest {
         model.addAcademicClass(createClassWithMembers("CS2103", "F10-2", Set.of(ALICE, BENSON)));
         model.updateFilteredPersonList(person -> person.isSamePerson(DANIEL));
 
-        new ListByClassCommand(new ModuleCode("CS2103"), new ClassName("F10-2")).execute(model);
+        new ListByClassCommand(Index.fromOneBased(1)).execute(model);
 
         assertEquals(List.of(ALICE, BENSON), model.getFilteredPersonList());
     }
@@ -60,7 +61,7 @@ public class ListByClassCommandTest {
     public void execute_caseAndWhitespaceVariations_matchesExactPair() throws CommandException {
         model.addAcademicClass(createClassWithMembers("CS2103", "F10-2", Set.of(ALICE)));
 
-        new ListByClassCommand(new ModuleCode(" cs2103 "), new ClassName(" f10-2 ")).execute(model);
+        new ListByClassCommand(Index.fromOneBased(1)).execute(model);
 
         assertEquals(List.of(ALICE), model.getFilteredPersonList());
     }
@@ -69,7 +70,7 @@ public class ListByClassCommandTest {
     public void execute_existingEmptyClass_displaysEmptyList() throws CommandException {
         model.addAcademicClass(new AcademicClass(new ModuleCode("CS2103"), new ClassName("F10-2")));
 
-        CommandResult result = new ListByClassCommand(new ModuleCode("CS2103"), new ClassName("F10-2")).execute(model);
+        CommandResult result = new ListByClassCommand(Index.fromOneBased(1)).execute(model);
 
         assertEquals(List.of(), model.getFilteredPersonList());
         assertEquals("Listed 0 students taking CS2103 (F10-2).", result.getFeedbackToUser());
@@ -80,8 +81,8 @@ public class ListByClassCommandTest {
         model.addAcademicClass(createClassWithMembers("CS2100", "F10-2", Set.of(ALICE)));
         model.updateFilteredPersonListAlphabetically(person -> person.isSamePerson(BENSON));
 
-        assertThrows(CommandException.class, ListByClassCommand.MESSAGE_CLASS_NOT_FOUND, () ->
-                new ListByClassCommand(new ModuleCode("CS2103"), new ClassName("F10-2")).execute(model));
+        assertThrows(CommandException.class, "The class index provided is invalid.", () ->
+                new ListByClassCommand(Index.fromOneBased(2)).execute(model));
 
         assertEquals(List.of(BENSON), model.getFilteredPersonList());
         assertEquals(List.of(BENSON, ALICE, DANIEL), model.getAddressBook().getPersonList());
@@ -91,8 +92,8 @@ public class ListByClassCommandTest {
     public void execute_sameModuleDifferentClass_throwsCommandException() {
         model.addAcademicClass(createClassWithMembers("CS2103", "F11-2", Set.of(ALICE)));
 
-        assertThrows(CommandException.class, ListByClassCommand.MESSAGE_CLASS_NOT_FOUND, () ->
-                new ListByClassCommand(new ModuleCode("CS2103"), new ClassName("F10-2")).execute(model));
+        assertThrows(CommandException.class, "The class index provided is invalid.", () ->
+                new ListByClassCommand(Index.fromOneBased(2)).execute(model));
 
         assertEquals(List.of(BENSON, ALICE, DANIEL), model.getFilteredPersonList());
     }
@@ -103,7 +104,7 @@ public class ListByClassCommandTest {
         Person renamedAlice = new PersonBuilder(ALICE).withName("Zoe Pauline").build();
         model.setPerson(ALICE, renamedAlice);
 
-        new ListByClassCommand(new ModuleCode("CS2103"), new ClassName("F10-2")).execute(model);
+        new ListByClassCommand(Index.fromOneBased(1)).execute(model);
 
         assertEquals(List.of(renamedAlice), model.getFilteredPersonList());
     }
@@ -113,38 +114,37 @@ public class ListByClassCommandTest {
         model.addAcademicClass(createClassWithMembers("CS2103", "F10-2", Set.of(ALICE, BENSON)));
         model.deletePerson(ALICE);
 
-        new ListByClassCommand(new ModuleCode("CS2103"), new ClassName("F10-2")).execute(model);
+        new ListByClassCommand(Index.fromOneBased(1)).execute(model);
 
         assertEquals(List.of(BENSON), model.getFilteredPersonList());
     }
 
     @Test
     public void execute_nullModel_throwsNullPointerException() {
-        ListByClassCommand command = new ListByClassCommand(new ModuleCode("CS2103"), new ClassName("F10-2"));
+        ListByClassCommand command = new ListByClassCommand(Index.fromOneBased(1));
         assertThrows(NullPointerException.class, () -> command.execute(null));
     }
 
     @Test
     public void constructor_nullArguments_throwsNullPointerException() {
-        assertThrows(NullPointerException.class, () -> new ListByClassCommand(null, new ClassName("F10-2")));
-        assertThrows(NullPointerException.class, () -> new ListByClassCommand(new ModuleCode("CS2103"), null));
+        assertThrows(NullPointerException.class, () -> new ListByClassCommand(null));
     }
 
     @Test
     public void equals() {
-        ListByClassCommand command = new ListByClassCommand(new ModuleCode("CS2103"), new ClassName("F10-2"));
+        ListByClassCommand command = new ListByClassCommand(Index.fromOneBased(1));
         assertTrue(command.equals(command));
-        assertTrue(command.equals(new ListByClassCommand(new ModuleCode("cs2103"), new ClassName("f10-2"))));
+        assertTrue(command.equals(new ListByClassCommand(Index.fromOneBased(1))));
         assertFalse(command.equals(null));
         assertFalse(command.equals("CS2103"));
-        assertFalse(command.equals(new ListByClassCommand(new ModuleCode("CS2100"), new ClassName("F10-2"))));
-        assertFalse(command.equals(new ListByClassCommand(new ModuleCode("CS2103"), new ClassName("F11-2"))));
+        assertFalse(command.equals(new ListByClassCommand(Index.fromOneBased(2))));
     }
 
     @Test
     public void toStringMethod() {
-        assertEquals(ListByClassCommand.class.getCanonicalName() + "{moduleCode=CS2103, className=F10-2}",
-                new ListByClassCommand(new ModuleCode("CS2103"), new ClassName("F10-2")).toString());
+        assertEquals(ListByClassCommand.class.getCanonicalName()
+                        + "{index=seedu.address.commons.core.index.Index{zeroBasedIndex=0}}",
+                new ListByClassCommand(Index.fromOneBased(1)).toString());
     }
 
     /**

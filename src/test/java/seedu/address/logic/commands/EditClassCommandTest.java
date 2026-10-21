@@ -171,7 +171,7 @@ public class EditClassCommandTest {
 
     @Test
     public void execute_afterListByClass_followsEditedClassFilter() throws Exception {
-        new ListByClassCommand(MODULE, NAME).execute(model);
+        new ListByClassCommand(Index.fromOneBased(1)).execute(model);
         command(null, NEW_NAME).execute(model);
         AcademicClass edited = model.getAcademicClassList().getFirst();
         model.unassignStudentFromClass(ALICE, edited);
