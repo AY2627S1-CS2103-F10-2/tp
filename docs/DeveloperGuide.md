@@ -163,17 +163,39 @@ This section describes some noteworthy details on how certain features are imple
 
 ### Adding an academic class
 
-The sequence diagram below shows a successful execution of `addclass m/CS2103 c/F10-2`, assuming the class does not already exist.
+#### Implementation
 
-<puml src="diagrams/AddClassSequenceDiagram.puml" alt="Sequence of parsing and executing the addclass command" />
+The `addclass` command creates an empty `AcademicClass`, identified by its `ModuleCode` and `ClassName`. `AddressBook` stores academic classes in a `UniqueAcademicClassList`, which rejects duplicate module code and class name pairs.
 
-1. `AddressBookParser` creates an `AddClassCommandParser` to parse the arguments. The parser checks for missing, unknown, or duplicate prefixes and an unexpected preamble, then uses `ParserUtil` to validate and construct the `ModuleCode` and `ClassName` values.
-1. The parser creates an empty `AcademicClass` and wraps it in an `AddClassCommand`.
-1. `LogicManager` executes the command. The command calls `Model#hasAcademicClass()` to check for an existing class with the same module code and class name. If one exists, it throws a `CommandException` without adding the class.
-1. Otherwise, the command calls `Model#addAcademicClass()`. `ModelManager` delegates to `AddressBook`, which updates its `UniqueAcademicClassList` and registers the class as a student observer.
-1. The command returns a successful `CommandResult`. `LogicManager` saves the updated address book through `Storage` before returning the result to the UI.
+Given below is an example usage scenario for `addclass m/CS2103 c/F10-2`, assuming the class does not already exist.
 
-The diagram omits the individual parsing helper calls, the internal model calls, and the storage calls. Invalid arguments cause a `ParseException` before the command is created.
+Step 1. The user enters `addclass m/CS2103 c/F10-2`. `LogicManager` passes this command text to `AddressBookParser`, which creates an `AddClassCommandParser`.
+
+Step 2. The command parser checks the arguments and uses `ParserUtil` to construct the `ModuleCode` and `ClassName`. It creates an empty `AcademicClass` and wraps it in an `AddClassCommand`.
+
+Step 3. `LogicManager` executes the command. The command calls `Model#hasAcademicClass()` to check for an existing class with the same identity, then calls `Model#addAcademicClass()` when the class is absent.
+
+The following sequence diagram shows how this operation goes through the `Logic` component. `commandText` is `"addclass m/CS2103 c/F10-2"`, `arguments` is `" m/CS2103 c/F10-2"`, and `a` is the class created by the command parser. The parsing helper calls, creation of `a`, and construction of the `CommandResult` are omitted for clarity.
+
+<puml src="diagrams/AddClassSequenceDiagram.puml" alt="Adding an academic class through the Logic component" />
+
+<box type="info" seamless>
+
+**Note:** The lifelines for `AddClassCommandParser` and `AddClassCommand` should end at their destroy markers (X), but due to a limitation of PlantUML, they continue to the end of the diagram.
+</box>
+
+Step 4. `ModelManager` delegates the addition to `AddressBook`. `AddressBook` copies the current academic class list, appends the new class, and passes the updated list to `UniqueAcademicClassList#setAcademicClasses()`. It then registers the class as a student observer so its membership can track student updates.
+
+Similarly, the model sequence diagram below expands the `addAcademicClass(a)` call from the logic diagram:
+
+<puml src="diagrams/AddClassSequenceDiagram-Model.puml" alt="Adding an academic class through the Model component" />
+
+Step 5. The command returns a successful `CommandResult` with the message `New class added: CS2103-F10-2`. `LogicManager` saves the updated address book through `Storage` before returning the result to the UI. Storage calls are omitted from the logic diagram.
+
+<box type="info" seamless>
+
+**Note:** These diagrams show a successful addition. Invalid arguments cause a `ParseException` before the command is created. If `Model#hasAcademicClass()` returns `true`, the command throws a `CommandException` without adding the class. Neither failure reaches the save operation.
+</box>
 
 ### \[Proposed\] Undo/redo feature
 
