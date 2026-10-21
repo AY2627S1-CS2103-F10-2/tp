@@ -17,6 +17,7 @@ commands while retaining the benefits of a graphical interface.
 - Create, list and remove module classes
 - Assign and unassign students from classes
 - List students assigned to a class
+- List classes assigned to a student by displayed index
 - Save successful changes automatically
 
 ## Documentation

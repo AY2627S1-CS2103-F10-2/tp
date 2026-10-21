@@ -658,6 +658,26 @@ testers are expected to do more *exploratory* testing.
       Expected: The class still shows 2 students. Its `studentNumbers` JSON list contains each assigned
       student number once. Repeating either assignment reports that the student is already assigned.
 
+### Listing classes by student
+
+1. Add students and classes using unused identifiers:
+   `add sn/A0999801X n/AlphaDemoAlice e/alpha.demo.alice@example.com`,
+   `add sn/A0999802Y n/AlphaDemoBob e/alpha.demo.bob@example.com`,
+   `addclass m/CS2103 c/DEMO-T01`, and `addclass m/CS2100 c/DEMO-L01`.
+2. Assign Alice to both classes using `assign sn/A0999801X m/CS2103 c/DEMO-T01` and
+   `assign sn/A0999801X m/CS2100 c/DEMO-L01`.
+3. Run `find AlphaDemoAlice`, then `listbystudent 1`.
+   Expected: both classes appear in creation order; feedback reports two classes and Alice's identity.
+   The student search results remain unchanged.
+4. Run `listbystudent 0`, `listbystudent 1 extra`, and `listbystudent 2`.
+   Expected: invalid-command or invalid-index feedback; both views remain unchanged.
+5. Run `unassign sn/A0999801X m/CS2103 c/DEMO-T01`.
+   Expected: only CS2100 DEMO-L01 remains in the Classes panel.
+6. Run `find AlphaDemoBob`, then `listbystudent 1`.
+   Expected: zero matching classes and an empty Classes panel.
+7. Run `listclass` to restore all classes, and `list` to restore all students.
+   Restart the app and repeat Alice's lookup to verify that memberships persist while display filters reset.
+
 ### Saving data
 
 1. Dealing with missing/corrupted data files
