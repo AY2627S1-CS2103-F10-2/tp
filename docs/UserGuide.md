@@ -270,6 +270,32 @@ Example (after creating the student and class):
 TAssist displays a confirmation message when the date is recorded. This command does not add an attendance display
 to student cards.
 
+### Removing attendance: `deleteattendance`
+
+Removes one previously recorded date for a student in a particular module and class.
+
+Format: `deleteattendance sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME d/YYYY-MM-DD`
+
+* The student and class must still exist, and the specified date must already be recorded for that pair.
+* The student does not need to be currently assigned to the class. You can correct retained history after unassignment.
+* Supply each of `sn/`, `m/`, `c/` and `d/` exactly once, in any order. Unknown prefixes are rejected.
+* Outer whitespace in values is trimmed. Student numbers, module codes and class names are case-insensitive.
+* Use a valid calendar date in `YYYY-MM-DD` format. Today and past dates are allowed; future dates are rejected
+  according to your computer's local date. This also applies if a saved date appears future after a clock or timezone
+  change: the record is retained, but cannot be removed through this command until that date is no longer future.
+* An unrecorded date, including a date already removed, is rejected without changing existing data.
+* Only the specified date is removed. Other attendance dates, students, classes, memberships and current views
+  are unchanged. Removing the last date leaves an attendance count of zero.
+* Successful removal is saved automatically and remains in effect after restarting TAssist.
+  You can record the removed date again with `addattendance` if the student is currently assigned to the class.
+
+Example (after recording attendance for this student and class):
+
+`deleteattendance sn/A0123456X m/CS2103 c/F10-2 d/2024-02-29`
+
+TAssist displays a confirmation message when the date is removed. Repeating this command reports that the date
+is not recorded.
+
 ### Editing a student: `edit`
 
 Edits an existing student in TAssist.
@@ -488,6 +514,7 @@ Action     | Format, Examples
 **Clear**  | `clear`
 **Add attendance** | `addattendance sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME d/YYYY-MM-DD`<br> e.g., `addattendance sn/A0123456X m/CS2103 c/F10-2 d/2024-02-29`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
+**Delete attendance** | `deleteattendance sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME d/YYYY-MM-DD`<br> e.g., `deleteattendance sn/A0123456X m/CS2103 c/F10-2 d/2024-02-29`
 **Delete Class** | `deleteclass m/MODULE_CODE c/CLASS_NAME`<br> e.g., `deleteclass m/CS2103T c/F10-2`
 **Edit**   | `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`

@@ -14,7 +14,9 @@ import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -102,6 +104,31 @@ public class LogicManagerTest {
     public void execute_storageThrowsIoException_throwsCommandException() {
         assertCommandFailureForExceptionFromStorage(DUMMY_IO_EXCEPTION, String.format(
                 LogicManager.FILE_OPS_ERROR_FORMAT, DUMMY_IO_EXCEPTION.getMessage()));
+    }
+
+    @Test
+    public void execute_deleteAttendanceWhileUnassigned_persistsRemainingDate() throws Exception {
+        logic.execute("add sn/A0123456X n/Alice e/alice@example.com");
+        logic.execute("addclass m/CS2103 c/F10-2");
+        logic.execute("assign sn/A0123456X m/CS2103 c/F10-2");
+        logic.execute("addattendance sn/A0123456X m/CS2103 c/F10-2 d/2024-02-28");
+        logic.execute("addattendance sn/A0123456X m/CS2103 c/F10-2 d/2024-02-29");
+        logic.execute("unassign sn/A0123456X m/CS2103 c/F10-2");
+        String deleteCommand = "deleteattendance sn/A0123456X m/CS2103 c/F10-2 d/2024-02-29";
+        logic.execute(deleteCommand);
+
+        Path savedFile = temporaryFolder.resolve("addressBook.json");
+        ReadOnlyAddressBook reloaded = new JsonAddressBookStorage(savedFile).readAddressBook().orElseThrow();
+        assertEquals(Set.of(LocalDate.of(2024, 2, 28)),
+                reloaded.getAttendanceList().getFirst().getAttendedDates());
+        assertEquals(Set.of(), reloaded.getAcademicClassList().getFirst().getStudents());
+        assertEquals(model.getAddressBook(), reloaded);
+        String savedContents = Files.readString(savedFile);
+        assertThrows(CommandException.class, () -> logic.execute(deleteCommand));
+        String invalidDateCommand = deleteCommand.replace("2024-02-29", "2024-02-30");
+        assertThrows(ParseException.class, () -> logic.execute(invalidDateCommand));
+        assertEquals(savedContents, Files.readString(savedFile));
+        assertEquals(reloaded, model.getAddressBook());
     }
 
     @Test
