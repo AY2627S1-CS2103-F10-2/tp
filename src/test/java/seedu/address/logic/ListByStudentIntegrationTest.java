@@ -26,6 +26,24 @@ public class ListByStudentIntegrationTest {
     public Path temporaryFolder;
 
     @Test
+    public void execute_clearAfterStudentLookup_newClassIsVisible() throws Exception {
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("addressbook.json"));
+        ModelManager model = new ModelManager();
+        LogicManager logic = createLogic(model, storage);
+        populate(logic);
+        logic.execute("listbystudent 1");
+        assertEquals(List.of("CS2103-DEMO-T01", "CS2100-DEMO-L01"), displayedClasses(model));
+
+        logic.execute("clear");
+        assertEquals(List.of(), displayedClasses(model));
+        assertEquals(List.of(), model.getFilteredPersonList());
+
+        logic.execute("addclass m/CS2106 c/NEW-T01");
+        assertEquals(List.of("CS2106-NEW-T01"), displayedClasses(model));
+        assertEquals(1, storage.readAddressBook().orElseThrow().getAcademicClassList().size());
+    }
+
+    @Test
     public void execute_filteredStudentLookupAndRestart_preservesStoredDataAndMemberships() throws Exception {
         Path file = temporaryFolder.resolve("addressbook.json");
         JsonAddressBookStorage storage = new JsonAddressBookStorage(file);
