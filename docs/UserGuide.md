@@ -33,7 +33,7 @@ TAssist is a **desktop application for NUS Teaching Assistants who need to manag
 
    * `add sn/A0123456X n/John Doe e/johnd@example.com tg/john_doe` : Adds a student named `John Doe`.
 
-   * `addclass m/CS2103T c/F10-2 l/11` : Creates a class with 11 total lessons.
+   * `addclass m/CS2103T c/F10-2 l/11` : Creates a class named `F10-2` for module `CS2103T` with 11 total lessons.
 
    * `delete 3` : Deletes the 3rd student shown in the current list.
 
