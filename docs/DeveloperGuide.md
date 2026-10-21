@@ -161,6 +161,38 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 
 This section describes some noteworthy details on how certain features are implemented.
 
+### Listing students by class
+
+The `listbyclass` command displays students assigned to a class identified by `ModuleCode` and `ClassName`.
+It changes the student view, not the stored student records, class memberships, or the current class view.
+
+The following sequence diagram traces `listbyclass m/CS2103 c/F10-2`, assuming the class exists and saving succeeds.
+It starts at `LogicManager`, omitting the UI caller. The input strings are defined in the diagram note.
+`m:ModelManager` is accessed through the `Model` interface.
+
+<puml src="diagrams/ListByClassSequenceDiagram.puml" alt="Successful ListByClass execution from command parsing through class lookup, student filtering and result creation" />
+
+1. `LogicManager` passes `commandText` to `AddressBookParser`, which creates a `ListByClassCommandParser`
+   and calls `parse(args)`. The command parser validates the arguments and creates a `ListByClassCommand`
+   with the parsed module code and class name.
+2. `LogicManager` calls `execute(model)` on the command. The command's lookup helper calls
+   `Model#findAcademicClass(moduleCode, className)` and unwraps the returned `Optional`.
+3. The command calls `Model#filterPersonsByClass(academicClass)`. `ModelManager` installs a membership predicate
+   and uses `PersonNameComparator` to display matching students alphabetically. Name comparison ignores case,
+   with original spelling as a tie-breaker. The underlying student storage order is unchanged.
+4. The command obtains the displayed list and uses its size and the class identity to construct the success message:
+   `Listed N students taking CS2103 (F10-2).` It returns a `CommandResult` to `LogicManager`.
+5. `LogicManager` saves the address book before returning the result, even though this command only changes the view.
+   The view filter itself is not persisted.
+
+The diagram omits parser validation helpers, the command's private lookup helper, model-internal filtering calls,
+list-size and class-field access, message formatting, and storage calls to keep the successful path readable.
+
+**Other outcomes:** Invalid arguments cause a `ParseException` before command creation. A nonexistent class causes
+a `CommandException` before the student filter changes. An existing class with no students is a successful lookup:
+the student view becomes empty and the result reports zero students. If saving fails after filtering,
+`LogicManager` reports a `CommandException`; the already-updated view is not rolled back.
+
 ### Adding an academic class
 
 #### Implementation
