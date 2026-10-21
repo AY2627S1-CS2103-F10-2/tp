@@ -1,0 +1,46 @@
+@startuml
+!include style.puml
+skinparam ArrowFontStyle plain
+mainframe sd Add academic class (model)
+
+box Model MODEL_COLOR_T1
+participant ":ModelManager" as ModelManager MODEL_COLOR
+participant ":AddressBook" as AddressBook MODEL_COLOR
+participant ":UniqueAcademicClassList" as UniqueAcademicClassList MODEL_COLOR
+end box
+
+[-> ModelManager : addAcademicClass(a)
+activate ModelManager
+
+ModelManager -> AddressBook : addAcademicClass(a)
+activate AddressBook
+
+AddressBook -> UniqueAcademicClassList : asUnmodifiableObservableList()
+activate UniqueAcademicClassList
+UniqueAcademicClassList --> AddressBook : classes
+deactivate UniqueAcademicClassList
+
+note over AddressBook
+Copy classes into updatedClasses
+and append a to the copy.
+end note
+
+AddressBook -> UniqueAcademicClassList : setAcademicClasses(updatedClasses)
+activate UniqueAcademicClassList
+note right of UniqueAcademicClassList
+Reject nulls and duplicates,
+then replace the list contents.
+end note
+UniqueAcademicClassList --> AddressBook
+deactivate UniqueAcademicClassList
+
+note over AddressBook
+Register a as a student observer.
+end note
+
+AddressBook --> ModelManager
+deactivate AddressBook
+
+[<-- ModelManager
+deactivate ModelManager
+@enduml
