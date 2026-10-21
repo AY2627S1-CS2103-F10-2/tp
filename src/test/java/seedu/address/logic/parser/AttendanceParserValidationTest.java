@@ -17,8 +17,8 @@ public class AttendanceParserValidationTest {
 
     @Test
     public void parse_missingOrUnexpectedArguments_reportsCorrectCommandUsage() {
-        for (String args : List.of("", " sn/A0123456X m/CS2103 c/F10-2",
-                " 1 sn/A0123456X m/CS2103 c/F10-2 d/2024-02-29")) {
+        for (String args : List.of("", " 1 m/CS2103 c/F10-2",
+                " 1 2 m/CS2103 c/F10-2 d/2024-02-29")) {
             assertThrows(ParseException.class,
                     String.format(MESSAGE_INVALID_COMMAND_FORMAT, AddAttendanceCommand.MESSAGE_USAGE), () ->
                     parser.parseCommand("addattendance" + args));
@@ -32,7 +32,7 @@ public class AttendanceParserValidationTest {
     public void parse_unknownPrefix_reportsSameFeedbackForBothCommands() {
         for (String command : List.of("addattendance", "deleteattendance")) {
             assertThrows(ParseException.class, "Unknown parameter: x/", () ->
-                    parser.parseCommand(command + " x/value sn/A0123456X m/CS2103 c/F10-2 d/2024-02-29"));
+                    parser.parseCommand(command + " 1 x/value m/CS2103 c/F10-2 d/2024-02-29"));
         }
     }
 }

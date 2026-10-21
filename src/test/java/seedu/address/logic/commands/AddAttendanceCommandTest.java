@@ -14,6 +14,8 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import seedu.address.commons.core.index.Index;
+import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.ModelManager;
@@ -22,7 +24,6 @@ import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
 import seedu.address.model.attendance.Attendance;
 import seedu.address.model.person.NameContainsKeywordsPredicate;
-import seedu.address.model.person.StudentNumber;
 
 /**
  * Tests attendance recording against the real model without changing memberships or views.
@@ -94,21 +95,21 @@ public class AddAttendanceCommandTest {
 
     @Test
     public void execute_missingStudent_rejectsWithoutMutation() {
-        StudentNumber missing = new StudentNumber("A9999999Z");
+        Index missing = Index.fromOneBased(3);
         assertFailureWithoutMutation(new AddAttendanceCommand(missing, MODULE, CLASS_NAME, DATE),
-                String.format(AddAttendanceCommand.MESSAGE_STUDENT_NOT_FOUND, missing));
+                Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
     }
 
     @Test
     public void execute_missingClass_rejectsWithoutMutation() {
         ModuleCode missing = new ModuleCode("CS9999");
-        assertFailureWithoutMutation(new AddAttendanceCommand(ALICE.getStudentNumber(), missing, CLASS_NAME, DATE),
+        assertFailureWithoutMutation(new AddAttendanceCommand(Index.fromOneBased(2), missing, CLASS_NAME, DATE),
                 String.format(AddAttendanceCommand.MESSAGE_CLASS_NOT_FOUND, missing, CLASS_NAME));
     }
 
     @Test
     public void execute_unassignedStudent_rejectsWithoutAssigning() {
-        assertFailureWithoutMutation(new AddAttendanceCommand(BENSON.getStudentNumber(), MODULE, CLASS_NAME, DATE),
+        assertFailureWithoutMutation(new AddAttendanceCommand(Index.fromOneBased(1), MODULE, CLASS_NAME, DATE),
                 String.format(AddAttendanceCommand.MESSAGE_NOT_ASSIGNED, BENSON.getStudentNumber(), academicClass));
     }
 
@@ -131,8 +132,8 @@ public class AddAttendanceCommandTest {
         model.assignStudentToClass(ALICE, otherModule);
         model.assignStudentToClass(BENSON, academicClass);
         command(DATE).execute(model);
-        new AddAttendanceCommand(BENSON.getStudentNumber(), MODULE, CLASS_NAME, DATE).execute(model);
-        new AddAttendanceCommand(ALICE.getStudentNumber(), otherModule.getModuleCode(), CLASS_NAME, DATE)
+        new AddAttendanceCommand(Index.fromOneBased(1), MODULE, CLASS_NAME, DATE).execute(model);
+        new AddAttendanceCommand(Index.fromOneBased(2), otherModule.getModuleCode(), CLASS_NAME, DATE)
                 .execute(model);
 
         List<Attendance> records = model.getAttendanceList();
@@ -145,20 +146,20 @@ public class AddAttendanceCommandTest {
 
     @Test
     public void execute_lowercaseIdentifiers_resolvesStoredEndpoints() throws Exception {
-        new AddAttendanceCommand(new StudentNumber(ALICE.getStudentNumber().toString().toLowerCase()),
+        new AddAttendanceCommand(Index.fromOneBased(2),
                 new ModuleCode("cs2103"), new ClassName("f10-2"), DATE).execute(model);
         assertSame(ALICE, model.getAttendanceList().getFirst().getStudent());
         assertSame(academicClass, model.getAttendanceList().getFirst().getAcademicClass());
     }
 
     @Test
-    public void execute_findView_preservesHiddenTargetAndClassFilter() throws Exception {
-        model.updateFilteredPersonList(new NameContainsKeywordsPredicate(List.of("Benson")));
+    public void execute_findView_preservesDisplayedTargetAndClassFilter() throws Exception {
+        model.updateFilteredPersonList(new NameContainsKeywordsPredicate(List.of("Alice")));
         model.updateFilteredAcademicClassList(unused -> false);
         var displayed = model.getFilteredPersonList();
         command(DATE).execute(model);
         assertSame(displayed, model.getFilteredPersonList());
-        assertEquals(List.of(BENSON), displayed);
+        assertEquals(List.of(ALICE), displayed);
         assertEquals(List.of(), model.getFilteredAcademicClassList());
         assertUnchangedStudentsAndMembership();
     }
@@ -180,12 +181,13 @@ public class AddAttendanceCommandTest {
     }
 
     @Test
-    public void execute_otherClassView_doesNotSwitchToAttendanceClass() throws Exception {
+    public void execute_otherClassView_rejectsUnassignedDisplayedStudent() throws Exception {
         AcademicClass otherClass = new AcademicClass(MODULE, new ClassName("F11-2"));
         model.addAcademicClass(otherClass);
         model.assignStudentToClass(BENSON, otherClass);
         model.filterPersonsByClass(otherClass);
-        command(DATE).execute(model);
+        assertFailureWithoutMutation(new AddAttendanceCommand(Index.fromOneBased(1), MODULE, CLASS_NAME, DATE),
+                String.format(AddAttendanceCommand.MESSAGE_NOT_ASSIGNED, BENSON.getStudentNumber(), academicClass));
         assertEquals(List.of(BENSON), model.getFilteredPersonList());
         assertEquals(Set.of(ALICE), academicClass.getStudents());
         assertEquals(Set.of(BENSON), otherClass.getStudents());
@@ -204,9 +206,9 @@ public class AddAttendanceCommandTest {
     @Test
     public void constructor_nullArguments_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> new AddAttendanceCommand(null, MODULE, CLASS_NAME, DATE));
-        assertThrows(NullPointerException.class, () -> new AddAttendanceCommand(ALICE.getStudentNumber(),
+        assertThrows(NullPointerException.class, () -> new AddAttendanceCommand(Index.fromOneBased(2),
                 null, CLASS_NAME, DATE));
-        assertThrows(NullPointerException.class, () -> new AddAttendanceCommand(ALICE.getStudentNumber(),
+        assertThrows(NullPointerException.class, () -> new AddAttendanceCommand(Index.fromOneBased(2),
                 MODULE, null, DATE));
         assertThrows(NullPointerException.class, () -> command(null));
     }
@@ -224,22 +226,23 @@ public class AddAttendanceCommandTest {
         assertFalse(original.equals(null));
         assertFalse(original.equals("addattendance"));
         assertFalse(original.equals(command(DATE.plusDays(1))));
-        assertFalse(original.equals(new AddAttendanceCommand(BENSON.getStudentNumber(), MODULE, CLASS_NAME, DATE)));
-        assertFalse(original.equals(new AddAttendanceCommand(ALICE.getStudentNumber(),
+        assertFalse(original.equals(new AddAttendanceCommand(Index.fromOneBased(1), MODULE, CLASS_NAME, DATE)));
+        assertFalse(original.equals(new AddAttendanceCommand(Index.fromOneBased(2),
                 new ModuleCode("CS2101"), CLASS_NAME, DATE)));
-        assertFalse(original.equals(new AddAttendanceCommand(ALICE.getStudentNumber(),
+        assertFalse(original.equals(new AddAttendanceCommand(Index.fromOneBased(2),
                 MODULE, new ClassName("F11-2"), DATE)));
     }
 
     @Test
     public void toString_containsTargetAndDate() {
-        String expected = AddAttendanceCommand.class.getCanonicalName() + "{studentNumber="
-                + ALICE.getStudentNumber() + ", moduleCode=CS2103, className=F10-2, date=2024-02-29}";
+        String expected = AddAttendanceCommand.class.getCanonicalName() + "{index="
+                + Index.fromOneBased(2) + ", moduleCode=CS2103, className=F10-2, date=2024-02-29}";
         assertEquals(expected, command(DATE).toString());
     }
 
     private AddAttendanceCommand command(LocalDate date) {
-        return new AddAttendanceCommand(ALICE.getStudentNumber(), MODULE, CLASS_NAME, date);
+        return new AddAttendanceCommand(Index.fromZeroBased(model.getFilteredPersonList().indexOf(ALICE)),
+                MODULE, CLASS_NAME, date);
     }
 
     private void assertFailureWithoutMutation(AddAttendanceCommand command, String message) {

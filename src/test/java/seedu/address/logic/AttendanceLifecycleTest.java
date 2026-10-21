@@ -25,6 +25,7 @@ import seedu.address.storage.StorageManager;
 /** Exercises attendance lifecycle operations through commands and real JSON storage. */
 public class AttendanceLifecycleTest {
     private static final String TARGET = " sn/A0123456X m/CS2103 c/F10-2";
+    private static final String ATTENDANCE_TARGET = " 1 m/CS2103 c/F10-2";
     private static final LocalDate DATE = LocalDate.of(2024, 2, 29);
     @TempDir
     public Path temporaryFolder;
@@ -43,20 +44,21 @@ public class AttendanceLifecycleTest {
         logic.execute("add sn/A0123456X n/Alice e/alice@example.com");
         logic.execute("addclass m/CS2103 c/F10-2");
         logic.execute("assign" + TARGET);
-        logic.execute("addattendance" + TARGET + " d/2024-02-29");
+        logic.execute("addattendance" + ATTENDANCE_TARGET + " d/2024-02-29");
     }
 
     @Test
     public void execute_unassignDeleteReassign_keepsRemainingHistoryAcrossReload() throws Exception {
-        logic.execute("addattendance" + TARGET + " d/2024-02-28");
+        logic.execute("addattendance" + ATTENDANCE_TARGET + " d/2024-02-28");
         logic.execute("unassign" + TARGET);
-        assertThrows(CommandException.class, () -> logic.execute("addattendance" + TARGET + " d/2024-03-01"));
-        logic.execute("deleteattendance" + TARGET + " d/2024-02-29");
+        assertThrows(CommandException.class, () ->
+                logic.execute("addattendance" + ATTENDANCE_TARGET + " d/2024-03-01"));
+        logic.execute("deleteattendance" + ATTENDANCE_TARGET + " d/2024-02-29");
         reload();
         assertDates(Set.of(LocalDate.of(2024, 2, 28)));
         assertEquals(Set.of(), model.getAcademicClassList().getFirst().getStudents());
         logic.execute("assign" + TARGET);
-        logic.execute("addattendance" + TARGET + " d/2024-02-29");
+        logic.execute("addattendance" + ATTENDANCE_TARGET + " d/2024-02-29");
         reload();
         assertDates(Set.of(LocalDate.of(2024, 2, 28), DATE));
     }
@@ -71,8 +73,7 @@ public class AttendanceLifecycleTest {
         assertSame(student, model.getAttendanceList().getFirst().getStudent());
         assertEquals(Set.of(student), model.getAcademicClassList().getFirst().getStudents());
         assertDates(Set.of(DATE));
-        assertThrows(CommandException.class, () -> logic.execute("deleteattendance" + TARGET + " d/2024-02-29"));
-        logic.execute("deleteattendance sn/A7654321Z m/CS2103 c/F10-2 d/2024-02-29");
+        logic.execute("deleteattendance 1 m/CS2103 c/F10-2 d/2024-02-29");
         reload();
         assertDates(Set.of());
     }
@@ -81,7 +82,7 @@ public class AttendanceLifecycleTest {
     public void execute_deleteStudent_removesOnlyTheirHistory() throws Exception {
         logic.execute("add sn/A9999999Z n/Bob e/bob@example.com");
         logic.execute("assign sn/A9999999Z m/CS2103 c/F10-2");
-        logic.execute("addattendance sn/A9999999Z m/CS2103 c/F10-2 d/2024-02-29");
+        logic.execute("addattendance 2 m/CS2103 c/F10-2 d/2024-02-29");
         logic.execute("delete 1");
         reload();
         assertDates(Set.of(DATE));
@@ -93,15 +94,16 @@ public class AttendanceLifecycleTest {
     public void execute_deleteAndRecreateClass_doesNotRestoreOldHistory() throws Exception {
         logic.execute("addclass m/CS2101 c/F10-2");
         logic.execute("assign sn/A0123456X m/CS2101 c/F10-2");
-        logic.execute("addattendance sn/A0123456X m/CS2101 c/F10-2 d/2024-02-29");
+        logic.execute("addattendance 1 m/CS2101 c/F10-2 d/2024-02-29");
         logic.execute("deleteclass m/CS2103 c/F10-2");
         reload();
         assertDates(Set.of(DATE));
         assertEquals("CS2101", model.getAttendanceList().getFirst().getAcademicClass().getModuleCode().toString());
         logic.execute("addclass m/CS2103 c/F10-2");
         logic.execute("assign" + TARGET);
-        assertThrows(CommandException.class, () -> logic.execute("deleteattendance" + TARGET + " d/2024-02-29"));
-        logic.execute("addattendance" + TARGET + " d/2024-02-29");
+        assertThrows(CommandException.class, () ->
+                logic.execute("deleteattendance" + ATTENDANCE_TARGET + " d/2024-02-29"));
+        logic.execute("addattendance" + ATTENDANCE_TARGET + " d/2024-02-29");
         reload();
         assertEquals(2, model.getAttendanceList().size());
     }
@@ -123,22 +125,24 @@ public class AttendanceLifecycleTest {
                 Set.of(DATE, LocalDate.of(9999, 12, 31)))));
         addressBookStorage.saveAddressBook(restored);
         reload();
-        logic.execute("deleteattendance" + TARGET + " d/9999-12-31");
+        logic.execute("deleteattendance" + ATTENDANCE_TARGET + " d/9999-12-31");
         reload();
         assertDates(Set.of(DATE));
-        assertThrows(CommandException.class, () -> logic.execute("addattendance" + TARGET + " d/9999-12-31"));
+        assertThrows(CommandException.class, () ->
+                logic.execute("addattendance" + ATTENDANCE_TARGET + " d/9999-12-31"));
         reload();
         assertDates(Set.of(DATE));
     }
 
     @Test
     public void execute_yearBoundaries_rejectsZeroAndAcceptsYearOne() throws Exception {
-        assertThrows(ParseException.class, () -> logic.execute("addattendance" + TARGET + " d/0000-01-01"));
-        assertThrows(ParseException.class, () -> logic.execute("deleteattendance" + TARGET + " d/0000-01-01"));
-        logic.execute("addattendance" + TARGET + " d/0001-01-01");
+        assertThrows(ParseException.class, () -> logic.execute("addattendance" + ATTENDANCE_TARGET + " d/0000-01-01"));
+        assertThrows(ParseException.class, () ->
+                logic.execute("deleteattendance" + ATTENDANCE_TARGET + " d/0000-01-01"));
+        logic.execute("addattendance" + ATTENDANCE_TARGET + " d/0001-01-01");
         reload();
         assertDates(Set.of(LocalDate.of(1, 1, 1), DATE));
-        logic.execute("deleteattendance" + TARGET + " d/0001-01-01");
+        logic.execute("deleteattendance" + ATTENDANCE_TARGET + " d/0001-01-01");
         reload();
         assertDates(Set.of(DATE));
     }
@@ -156,9 +160,11 @@ public class AttendanceLifecycleTest {
         assertEquals(1, model.getFilteredPersonList().size());
         assertDates(Set.of(DATE));
         assertSame(model.getAcademicClassList().getFirst(), model.getAttendanceList().getFirst().getAcademicClass());
-        assertThrows(CommandException.class, () -> logic.execute("addattendance" + TARGET + " d/2024-03-01"));
-        assertThrows(CommandException.class, () -> logic.execute("deleteattendance" + TARGET + " d/2024-02-29"));
-        String renamedTarget = " sn/A0123456X m/CS2101 c/F11-2";
+        assertThrows(CommandException.class, () ->
+                logic.execute("addattendance" + ATTENDANCE_TARGET + " d/2024-03-01"));
+        assertThrows(CommandException.class, () ->
+                logic.execute("deleteattendance" + ATTENDANCE_TARGET + " d/2024-02-29"));
+        String renamedTarget = " 1 m/CS2101 c/F11-2";
         assertThrows(CommandException.class, () -> logic.execute("addattendance" + renamedTarget + " d/2024-02-29"));
         logic.execute("addattendance" + renamedTarget + " d/2024-03-01");
         logic.execute("deleteattendance" + renamedTarget + " d/2024-02-29");
@@ -174,7 +180,7 @@ public class AttendanceLifecycleTest {
         reload();
         assertDates(Set.of(DATE));
         assertEquals(Set.of(), model.getAcademicClassList().getFirst().getStudents());
-        String renamedTarget = " sn/A0123456X m/CS2103 c/F11-2";
+        String renamedTarget = " 1 m/CS2103 c/F11-2";
         assertThrows(CommandException.class, () -> logic.execute("addattendance" + renamedTarget + " d/2024-03-01"));
         logic.execute("deleteattendance" + renamedTarget + " d/2024-02-29");
         reload();

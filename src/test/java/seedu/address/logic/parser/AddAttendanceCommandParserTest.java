@@ -8,15 +8,15 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.commons.core.index.Index;
 import seedu.address.logic.commands.AddAttendanceCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
-import seedu.address.model.person.StudentNumber;
 
 /** Tests attendance syntax through the production command router. */
 public class AddAttendanceCommandParserTest {
-    private static final String IDENTIFIERS = " sn/A0123456X m/CS2103 c/F10-2";
+    private static final String IDENTIFIERS = " 1 m/CS2103 c/F10-2";
     private static final String VALID_COMMAND = "addattendance" + IDENTIFIERS + " d/2024-02-29";
     private final AddressBookParser parser = new AddressBookParser();
 
@@ -34,7 +34,7 @@ public class AddAttendanceCommandParserTest {
     @Test
     public void parseCommand_reorderedPrefixesAndWhitespace_normalizesIdentifiers() throws Exception {
         assertEquals(expected(LocalDate.of(2024, 2, 29)), parser.parseCommand(
-                "  addattendance d/ 2024-02-29  c/ f10-2  sn/ a0123456x  m/ cs2103  "));
+                "  addattendance 1 d/ 2024-02-29  c/ f10-2  m/ cs2103  "));
     }
 
     @Test
@@ -45,7 +45,7 @@ public class AddAttendanceCommandParserTest {
 
     @Test
     public void parseCommand_missingPrefix_rejectsInput() {
-        for (String parameter : List.of("sn/A0123456X", "m/CS2103", "c/F10-2", "d/2024-02-29")) {
+        for (String parameter : List.of("1", "m/CS2103", "c/F10-2", "d/2024-02-29")) {
             assertThrows(ParseException.class, () -> parser.parseCommand(VALID_COMMAND.replace(parameter, "")));
         }
         assertThrows(ParseException.class, () -> parser.parseCommand("addattendance"));
@@ -53,14 +53,14 @@ public class AddAttendanceCommandParserTest {
 
     @Test
     public void parseCommand_emptyValue_rejectsInput() {
-        for (String value : List.of("A0123456X", "CS2103", "F10-2", "2024-02-29")) {
+        for (String value : List.of("1 ", "CS2103", "F10-2", "2024-02-29")) {
             assertThrows(ParseException.class, () -> parser.parseCommand(VALID_COMMAND.replace(value, "")));
         }
     }
 
     @Test
     public void parseCommand_repeatedPrefix_rejectsEvenIdenticalOrEmptyValues() {
-        for (String parameter : List.of("sn/A0123456X", "m/CS2103", "c/F10-2", "d/2024-02-29",
+        for (String parameter : List.of("1", "m/CS2103", "c/F10-2", "d/2024-02-29",
                 "sn/", "m/", "c/", "d/")) {
             assertThrows(ParseException.class, () -> parser.parseCommand(VALID_COMMAND + " " + parameter));
         }
@@ -84,8 +84,6 @@ public class AddAttendanceCommandParserTest {
 
     @Test
     public void parseCommand_invalidIdentifiers_reusesSharedValidation() {
-        assertThrows(ParseException.class, StudentNumber.MESSAGE_CONSTRAINTS, () ->
-                parser.parseCommand(VALID_COMMAND.replace("A0123456X", "bad!")));
         assertThrows(ParseException.class, ModuleCode.MESSAGE_CONSTRAINTS, () ->
                 parser.parseCommand(VALID_COMMAND.replace("CS2103", "2103")));
         assertThrows(ParseException.class, ClassName.MESSAGE_CONSTRAINTS, () ->
@@ -109,7 +107,7 @@ public class AddAttendanceCommandParserTest {
     }
 
     private AddAttendanceCommand expected(LocalDate date) {
-        return new AddAttendanceCommand(new StudentNumber("A0123456X"), new ModuleCode("CS2103"),
+        return new AddAttendanceCommand(Index.fromOneBased(1), new ModuleCode("CS2103"),
                 new ClassName("F10-2"), date);
     }
 }

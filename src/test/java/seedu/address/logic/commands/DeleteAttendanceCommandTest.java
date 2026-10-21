@@ -13,6 +13,8 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import seedu.address.commons.core.index.Index;
+import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.ModelManager;
@@ -21,7 +23,6 @@ import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
 import seedu.address.model.attendance.Attendance;
 import seedu.address.model.person.NameContainsKeywordsPredicate;
-import seedu.address.model.person.StudentNumber;
 
 /** Tests attendance deletion without changing students, memberships or active views. */
 public class DeleteAttendanceCommandTest {
@@ -57,7 +58,7 @@ public class DeleteAttendanceCommandTest {
     public void execute_lastDate_canBeRecordedAgain() throws Exception {
         command(DATE).execute(model);
         assertEquals(0, model.getAttendanceList().getFirst().getAttendanceCount());
-        new AddAttendanceCommand(ALICE.getStudentNumber(), MODULE, CLASS_NAME, DATE).execute(model);
+        new AddAttendanceCommand(Index.fromOneBased(2), MODULE, CLASS_NAME, DATE).execute(model);
         assertEquals(Set.of(DATE), model.getAttendanceList().getFirst().getAttendedDates());
     }
 
@@ -77,7 +78,7 @@ public class DeleteAttendanceCommandTest {
 
     @Test
     public void execute_noHistory_rejectsWithoutCreatingRecord() {
-        assertFailure(new DeleteAttendanceCommand(BENSON.getStudentNumber(), MODULE, CLASS_NAME, DATE),
+        assertFailure(new DeleteAttendanceCommand(Index.fromOneBased(1), MODULE, CLASS_NAME, DATE),
                 String.format(DeleteAttendanceCommand.MESSAGE_ATTENDANCE_NOT_FOUND,
                         BENSON.getStudentNumber(), academicClass, DATE));
     }
@@ -91,15 +92,15 @@ public class DeleteAttendanceCommandTest {
 
     @Test
     public void execute_missingStudent_rejectsWithoutMutation() {
-        StudentNumber missing = new StudentNumber("A9999999Z");
+        Index missing = Index.fromOneBased(3);
         assertFailure(new DeleteAttendanceCommand(missing, MODULE, CLASS_NAME, DATE),
-                String.format(DeleteAttendanceCommand.MESSAGE_STUDENT_NOT_FOUND, missing));
+                Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
     }
 
     @Test
     public void execute_missingClass_rejectsWithoutMutation() {
         ModuleCode missing = new ModuleCode("CS9999");
-        assertFailure(new DeleteAttendanceCommand(ALICE.getStudentNumber(), missing, CLASS_NAME, DATE),
+        assertFailure(new DeleteAttendanceCommand(Index.fromOneBased(2), missing, CLASS_NAME, DATE),
                 String.format(DeleteAttendanceCommand.MESSAGE_CLASS_NOT_FOUND, missing, CLASS_NAME));
     }
 
@@ -135,11 +136,11 @@ public class DeleteAttendanceCommandTest {
     }
 
     @Test
-    public void execute_findView_preservesFiltersAndHiddenTarget() throws Exception {
-        model.updateFilteredPersonList(new NameContainsKeywordsPredicate(List.of("Benson")));
+    public void execute_findView_preservesFiltersAndDisplayedTarget() throws Exception {
+        model.updateFilteredPersonList(new NameContainsKeywordsPredicate(List.of("Alice")));
         model.updateFilteredAcademicClassList(unused -> false);
         command(DATE).execute(model);
-        assertEquals(List.of(BENSON), model.getFilteredPersonList());
+        assertEquals(List.of(ALICE), model.getFilteredPersonList());
         assertEquals(List.of(), model.getFilteredAcademicClassList());
         assertEquals(Set.of(), model.getAttendanceList().getFirst().getAttendedDates());
     }
@@ -156,9 +157,9 @@ public class DeleteAttendanceCommandTest {
     @Test
     public void constructor_nullArguments_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> new DeleteAttendanceCommand(null, MODULE, CLASS_NAME, DATE));
-        assertThrows(NullPointerException.class, () -> new DeleteAttendanceCommand(ALICE.getStudentNumber(),
+        assertThrows(NullPointerException.class, () -> new DeleteAttendanceCommand(Index.fromOneBased(2),
                 null, CLASS_NAME, DATE));
-        assertThrows(NullPointerException.class, () -> new DeleteAttendanceCommand(ALICE.getStudentNumber(),
+        assertThrows(NullPointerException.class, () -> new DeleteAttendanceCommand(Index.fromOneBased(2),
                 MODULE, null, DATE));
         assertThrows(NullPointerException.class, () -> command(null));
     }
@@ -176,22 +177,23 @@ public class DeleteAttendanceCommandTest {
         assertFalse(original.equals(null));
         assertFalse(original.equals("deleteattendance"));
         assertFalse(original.equals(command(DATE.plusDays(1))));
-        assertFalse(original.equals(new DeleteAttendanceCommand(BENSON.getStudentNumber(), MODULE, CLASS_NAME, DATE)));
-        assertFalse(original.equals(new DeleteAttendanceCommand(ALICE.getStudentNumber(),
+        assertFalse(original.equals(new DeleteAttendanceCommand(Index.fromOneBased(1), MODULE, CLASS_NAME, DATE)));
+        assertFalse(original.equals(new DeleteAttendanceCommand(Index.fromOneBased(2),
                 new ModuleCode("CS2101"), CLASS_NAME, DATE)));
-        assertFalse(original.equals(new DeleteAttendanceCommand(ALICE.getStudentNumber(),
+        assertFalse(original.equals(new DeleteAttendanceCommand(Index.fromOneBased(2),
                 MODULE, new ClassName("F11-2"), DATE)));
     }
 
     @Test
     public void toString_containsTargetAndDate() {
-        assertEquals(DeleteAttendanceCommand.class.getCanonicalName() + "{studentNumber="
-                + ALICE.getStudentNumber() + ", moduleCode=CS2103, className=F10-2, date=2024-02-29}",
+        assertEquals(DeleteAttendanceCommand.class.getCanonicalName() + "{index="
+                + Index.fromOneBased(2) + ", moduleCode=CS2103, className=F10-2, date=2024-02-29}",
                 command(DATE).toString());
     }
 
     private DeleteAttendanceCommand command(LocalDate date) {
-        return new DeleteAttendanceCommand(ALICE.getStudentNumber(), MODULE, CLASS_NAME, date);
+        return new DeleteAttendanceCommand(Index.fromZeroBased(model.getFilteredPersonList().indexOf(ALICE)),
+                MODULE, CLASS_NAME, date);
     }
 
     private void assertFailure(DeleteAttendanceCommand command, String message) {
