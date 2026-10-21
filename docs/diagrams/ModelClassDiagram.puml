@@ -50,7 +50,7 @@ AddressBook *--> "1" UniqueAcademicClassList
 UniqueAcademicClassList --> "*" AcademicClass : all
 AcademicClass *--> "1" ModuleCode
 AcademicClass *--> "1" ClassName
-AcademicClass -right-> "*" Person : students
+AcademicClass "*" -right-> "*" Person : students
 
 UniqueAcademicClassList -[hidden]right-> UniquePersonList
 

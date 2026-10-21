@@ -1,6 +1,7 @@
 @startuml
 !include style.puml
 skinparam ArrowFontStyle plain
+mainframe sd Add academic class (logic)
 
 box Logic LOGIC_COLOR_T1
 participant ":LogicManager" as LogicManager LOGIC_COLOR
@@ -36,9 +37,6 @@ deactivate AddClassCommand
 
 AddClassCommandParser --> AddressBookParser : c
 deactivate AddClassCommandParser
-' Position the destroy marker below the end of the activation bar.
-AddClassCommandParser -[hidden]-> AddressBookParser
-destroy AddClassCommandParser
 
 AddressBookParser --> LogicManager : c
 deactivate AddressBookParser
@@ -48,20 +46,21 @@ activate AddClassCommand
 
 AddClassCommand -> Model : hasAcademicClass(a)
 activate Model
-Model --> AddClassCommand : false
+Model --> AddClassCommand : classExists
 deactivate Model
 
-AddClassCommand -> Model : addAcademicClass(a)
-activate Model
-Model --> AddClassCommand
-deactivate Model
+alt classExists
+    AddClassCommand --> LogicManager : throws CommandException
+    [<-- LogicManager : throws CommandException
+else class does not exist
+    AddClassCommand -> Model : addAcademicClass(a)
+    activate Model
+    Model --> AddClassCommand
+    deactivate Model
 
-AddClassCommand --> LogicManager : result
+    AddClassCommand --> LogicManager : result
+    [<-- LogicManager : result
+end
 deactivate AddClassCommand
-' Position the destroy marker below the end of the activation bar.
-AddClassCommand -[hidden]-> LogicManager
-destroy AddClassCommand
-
-[<-- LogicManager : result
 deactivate LogicManager
 @enduml

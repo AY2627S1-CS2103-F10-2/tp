@@ -179,11 +179,6 @@ The following sequence diagram shows how this operation goes through the `Logic`
 
 <puml src="diagrams/AddClassSequenceDiagram.puml" alt="Adding an academic class through the Logic component" />
 
-<box type="info" seamless>
-
-**Note:** The lifelines for `AddClassCommandParser` and `AddClassCommand` should end at their destroy markers (X), but due to a limitation of PlantUML, they continue to the end of the diagram.
-</box>
-
 Step 4. `ModelManager` delegates the addition to `AddressBook`. `AddressBook` copies the current academic class list, appends the new class, and passes the updated list to `UniqueAcademicClassList#setAcademicClasses()`. It then registers the class as a student observer so its membership can track student updates.
 
 Similarly, the model sequence diagram below expands the `addAcademicClass(a)` call from the logic diagram:
@@ -194,7 +189,7 @@ Step 5. The command returns a successful `CommandResult` with the message `New c
 
 <box type="info" seamless>
 
-**Note:** These diagrams show a successful addition. Invalid arguments cause a `ParseException` before the command is created. If `Model#hasAcademicClass()` returns `true`, the command throws a `CommandException` without adding the class. Neither failure reaches the save operation.
+**Note:** The logic diagram shows both successful addition and duplicate-class rejection. The model diagram expands only the successful addition. Invalid arguments cause a `ParseException` before the command is created. If `Model#hasAcademicClass()` returns `true`, the command throws a `CommandException` without adding the class. Neither failure reaches the save operation.
 </box>
 
 ### \[Proposed\] Undo/redo feature
