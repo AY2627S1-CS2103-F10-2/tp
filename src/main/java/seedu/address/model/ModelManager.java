@@ -38,6 +38,9 @@ public class ModelManager implements Model {
     private AcademicClass personFilterClass;
     private final FilteredList<AcademicClass> filteredAcademicClasses;
     private final ObservableList<AcademicClass> displayedAcademicClasses;
+    private Predicate<AcademicClass> academicClassFilter = PREDICATE_SHOW_ALL_ACADEMIC_CLASSES;
+    // Tracks the selected student's identity independently of changes to the displayed student index.
+    private StudentNumber classFilterStudentNumber;
 
     /**
      * Initializes a ModelManager with the given addressBook and userPrefs.
@@ -99,6 +102,8 @@ public class ModelManager implements Model {
     public void setAddressBook(ReadOnlyAddressBook addressBook) {
         this.addressBook.resetData(addressBook);
         updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
+        updateFilteredAcademicClassList(PREDICATE_SHOW_ALL_ACADEMIC_CLASSES);
+        logger.fine("Replaced address book and reset student and class filters");
     }
 
     @Override
@@ -133,6 +138,7 @@ public class ModelManager implements Model {
     @Override
     public void deletePerson(Person target) {
         addressBook.removePerson(target);
+        refreshFilteredAcademicClassList();
     }
 
     @Override
@@ -146,6 +152,12 @@ public class ModelManager implements Model {
         requireAllNonNull(target, editedPerson);
 
         addressBook.setPerson(target, editedPerson);
+        if (target.getStudentNumber().equals(classFilterStudentNumber)) {
+            classFilterStudentNumber = editedPerson.getStudentNumber();
+            logger.fine(() -> "Updated selected student for class filter from " + target.getStudentNumber()
+                    + " to " + editedPerson.getStudentNumber());
+        }
+        refreshFilteredAcademicClassList();
     }
 
     @Override
@@ -201,6 +213,8 @@ public class ModelManager implements Model {
         boolean isAssigned = addressBook.assignStudentToClass(person, academicClass);
         if (isAssigned) {
             refreshFilteredPersonList();
+            refreshFilteredAcademicClassList();
+            logger.fine(() -> "Assigned student " + person.getStudentNumber() + " to class " + academicClass);
         }
         return isAssigned;
     }
@@ -244,7 +258,22 @@ public class ModelManager implements Model {
     @Override
     public void updateFilteredAcademicClassList(Predicate<AcademicClass> predicate) {
         requireNonNull(predicate);
+        classFilterStudentNumber = null;
+        academicClassFilter = predicate;
         filteredAcademicClasses.setPredicate(predicate);
+        logger.fine(() -> "Updated class filter and cleared selected student; showing "
+                + filteredAcademicClasses.size() + " classes");
+    }
+
+    @Override
+    public void updateFilteredAcademicClassListByStudent(StudentNumber studentNumber) {
+        requireNonNull(studentNumber);
+        classFilterStudentNumber = studentNumber;
+        academicClassFilter = academicClass -> academicClass.getStudents().stream()
+                .anyMatch(student -> student.hasStudentNumber(classFilterStudentNumber));
+        filteredAcademicClasses.setPredicate(academicClassFilter);
+        logger.fine(() -> "Applied class filter for student " + studentNumber + "; showing "
+                + filteredAcademicClasses.size() + " classes");
     }
 
     @Override
@@ -252,6 +281,8 @@ public class ModelManager implements Model {
         boolean isUnassigned = addressBook.unassignStudentFromClass(person, academicClass);
         if (isUnassigned) {
             refreshFilteredPersonList();
+            refreshFilteredAcademicClassList();
+            logger.fine(() -> "Unassigned student " + person.getStudentNumber() + " from class " + academicClass);
         }
         return isUnassigned;
     }
@@ -263,6 +294,16 @@ public class ModelManager implements Model {
         // Wrap the original predicate, not the previous wrapper, to avoid accumulating nested calls.
         Predicate<Person> predicate = personFilter;
         filteredPersons.setPredicate(predicate::test);
+    }
+
+    /** Re-evaluates class membership filters after student or assignment changes. */
+    private void refreshFilteredAcademicClassList() {
+        Predicate<AcademicClass> predicate = academicClassFilter;
+        filteredAcademicClasses.setPredicate(predicate::test);
+        if (classFilterStudentNumber != null) {
+            logger.fine(() -> "Refreshed class filter for student " + classFilterStudentNumber + "; showing "
+                    + filteredAcademicClasses.size() + " classes");
+        }
     }
 
     @Override

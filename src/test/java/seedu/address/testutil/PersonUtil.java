@@ -49,8 +49,11 @@ public class PersonUtil {
                 sb.append(PREFIX_STUDENT_NUMBER).append(studentNumber.value).append(" "));
         descriptor.getName().ifPresent(name -> sb.append(PREFIX_NAME).append(name.fullName).append(" "));
         descriptor.getEmail().ifPresent(email -> sb.append(PREFIX_EMAIL).append(email.value).append(" "));
-        descriptor.getTelegram().ifPresent(telegram ->
-                sb.append(PREFIX_TELEGRAM).append(telegram.value).append(" "));
+        if (descriptor.isTelegramEdited()) {
+            sb.append(PREFIX_TELEGRAM);
+            descriptor.getTelegram().ifPresent(telegram -> sb.append(telegram.value));
+            sb.append(" ");
+        }
         if (descriptor.getTags().isPresent()) {
             Set<Tag> tags = descriptor.getTags().get();
             if (tags.isEmpty()) {

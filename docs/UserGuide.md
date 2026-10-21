@@ -35,6 +35,10 @@ TAssist is a **desktop application for NUS Teaching Assistants who need to manag
 
    * `addclass m/CS2103T c/F10-2` : Creates a class named `F10-2` for module `CS2103T`.
 
+   * `listclass` : Lists all classes.
+
+   * `listbystudent 1` : Lists the classes assigned to the 1st student shown in the current student list.
+
    * `delete 3` : Deletes the 3rd student shown in the current list.
 
    * `deleteclass m/CS2103T c/F10-2` : Deletes the class named `F10-2` for module `CS2103T`.
@@ -134,6 +138,7 @@ Format: `list`
 Expected output: `Listed all persons.`
 
 The student list displays each student's name, student number, email, optional Telegram username, and tags.
+This command leaves the current class filter unchanged. Use `listclass` to restore all classes as well.
 
 ### Listing students by class: `listbyclass`
 
@@ -180,9 +185,106 @@ The student list shows only Amy Test followed by Zoe Test, with the message
 After closing and reopening TAssist, run `listbyclass m/CS2103 c/TEST-103` again to display the saved
 memberships alphabetically. The filtered view itself is not saved. Run `list` to return to all students.
 
-**Known limitation:** Updating class memberships when assigned students are edited or deleted is deferred to v1.4.
-Avoid editing student numbers or deleting assigned students for now: stale membership references can prevent
-the saved data from loading on restart. Back up your data before experimenting with these operations.
+Editing a student updates their existing class memberships. Deleting a student removes their memberships
+while retaining the classes and other students.
+
+### Listing classes by student: `listbystudent`
+
+Shows the classes assigned to the student at the specified index in the displayed student list.
+Matching classes appear in the **Classes** panel. The feedback message reports their count and the selected student's
+name and student number.
+
+Format: `listbystudent INDEX`
+
+* `INDEX` must be a positive integer shown beside a student in the current Students panel.
+  After `find` or `listbyclass`, use the index in those results, not the student's original index.
+* The Classes panel shows all of that student's classes, in class creation order, even if classes were previously filtered.
+  Classes assigned only to other students and classes with no students are excluded.
+* A student with no assigned classes produces an empty Classes panel and a count of zero.
+* The displayed student list, student records, and memberships are unchanged.
+* The class view updates after assignments, unassignments, and edits to the selected student's number.
+  Deleting the selected student empties this view without deleting classes.
+* Changing the student search with `find` does not change the selected student's class view.
+  Run `listbystudent` again to select a student from the new search results.
+* Use `listclass` to show all classes again. `list` restores the student list only.
+* The filter is not saved across restarts; memberships are saved.
+
+Examples:
+
+* `listbystudent 1` shows classes for the first student in the current student list.
+* `find AlphaDemoAlice`, followed by `listbystudent 1`, shows classes for the first student in that search result.
+
+**Example walkthrough**
+
+Use unused student numbers, email addresses, and module/class pairs for this walkthrough. Enter each command separately.
+If you already created these demonstration records, reuse them and skip the corresponding creation commands.
+
+```text
+add sn/A0999801X n/AlphaDemoAlice e/alpha.demo.alice@example.com
+add sn/A0999802Y n/AlphaDemoBob e/alpha.demo.bob@example.com
+addclass m/CS2103 c/DEMO-T01
+addclass m/CS2100 c/DEMO-L01
+addclass m/CS2106 c/DEMO-BOB
+addclass m/CS2103 c/DEMO-EMPTY
+assign sn/A0999801X m/CS2103 c/DEMO-T01
+assign sn/A0999801X m/CS2100 c/DEMO-L01
+assign sn/A0999802Y m/CS2106 c/DEMO-BOB
+find AlphaDemoAlice
+listbystudent 1
+```
+
+Expected feedback: `Listed 2 classes for AlphaDemoAlice (A0999801X).`
+The Classes panel shows `CS2103 DEMO-T01` followed by `CS2100 DEMO-L01`.
+Bob's `CS2106 DEMO-BOB` class and the empty `CS2103 DEMO-EMPTY` class are hidden.
+The Students panel still shows Alice's search result.
+
+To select Bob instead, run:
+
+```text
+find AlphaDemoBob
+listbystudent 1
+```
+
+Only `CS2106 DEMO-BOB` appears. Bob is index `1` in the search results, regardless of his index before searching.
+
+To check a student with no memberships and see the view update automatically, run:
+
+```text
+unassign sn/A0999802Y m/CS2106 c/DEMO-BOB
+listbystudent 1
+```
+
+The Classes panel becomes empty after unassignment. The listing command reports:
+`Listed 0 classes for AlphaDemoBob (A0999802Y).`
+Restore the assignment with `assign sn/A0999802Y m/CS2106 c/DEMO-BOB`; Bob's class reappears automatically.
+
+**Common errors**
+
+| Input | Expected result |
+| --- | --- |
+| `listbystudent`, `listbystudent 0`, `listbystudent -1`, or `listbystudent abc` | Invalid command format, followed by the usage and an example. Supply one positive integer. |
+| `listbystudent 1 extra` | Invalid command format. Extra arguments are rejected. |
+| `listbystudent 2` when only one student is displayed | `The person index provided is invalid.` Use an index visible in the Students panel. |
+
+Rejected commands preserve both displayed lists. Selecting a valid student with no classes is a successful operation.
+
+### Listing all classes: `listclass`
+
+Shows all academic classes in creation order and clears the class filter set by `listbystudent`.
+The displayed student list is unchanged.
+
+Format: `listclass`
+
+Expected output: `Listed all classes.` Extra arguments are rejected.
+
+The student and class filters can be reset independently:
+
+| Command | Students panel | Classes panel |
+| --- | --- | --- |
+| `list` | Shows all students | Keeps the current class filter |
+| `listclass` | Keeps the current student filter | Shows all classes, including empty classes |
+
+Run `list` followed by `listclass` to restore both complete lists.
 
 ### Creating a class: `addclass`
 
@@ -321,10 +423,12 @@ Format: `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]
 * Existing values will be updated to the input values.
 * When editing tags, all of the student's existing tags are removed; adding tags is not cumulative.
 * To remove all of a student's tags, enter `t/` without a tag after it.
+* To remove a student's Telegram username, enter `tg/` without a username after it. Omitting `tg/` keeps the existing username.
 * Student number, email, and Telegram username must remain unique after editing.
 
 Examples:
 *  `edit 1 tg/john_doe e/johndoe@example.com` edits the Telegram username and email address of the 1st student.
+*  `edit 1 tg/` removes the Telegram username of the 1st student.
 *  `edit 2 sn/A0234567Y n/Benjamin Lim t/` edits the student number and name of the 2nd student, and clears all existing tags.
 
 ### Editing a class: `editclass`
@@ -553,7 +657,6 @@ The following MVP commands are planned or specified, but are not currently accep
 * `addstudent sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM]`: use `add sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM]` instead.
 * `deletestudent sn/STUDENT_NUMBER`: use `delete INDEX` instead.
 * `liststudent`: use `list` instead.
-* `listclass`
 
 If any of these command words are entered, TAssist displays `Unknown command.`
 
@@ -590,6 +693,8 @@ Action     | Format, Examples
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **List**   | `list`
 **List students by class** | `listbyclass m/MODULE_CODE c/CLASS_NAME`<br> e.g., `listbyclass m/CS2103 c/F10-2`
+**List classes by student** | `listbystudent INDEX`<br> e.g., `listbystudent 1`
+**List all classes** | `listclass`
 **Unassign** | `unassign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME`<br> e.g., `unassign sn/A1111111H m/CS2103 c/F10`
 **Help**   | `help`
 **Exit**   | `exit`
