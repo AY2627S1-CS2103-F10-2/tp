@@ -1,0 +1,89 @@
+@startuml
+!include style.puml
+skinparam ArrowFontStyle plain
+
+box Logic LOGIC_COLOR_T1
+participant ":LogicManager" as LogicManager LOGIC_COLOR
+participant ":AddressBookParser" as AddressBookParser LOGIC_COLOR
+participant ":AddClassCommandParser" as AddClassCommandParser LOGIC_COLOR
+participant "d:AddClassCommand" as AddClassCommand LOGIC_COLOR
+participant "r:CommandResult" as CommandResult LOGIC_COLOR
+end box
+
+box Model MODEL_COLOR_T1
+participant "a:AcademicClass" as AcademicClass MODEL_COLOR
+participant "m:Model" as Model MODEL_COLOR
+end box
+
+[-> LogicManager : execute("addclass m/CS2103 c/F10-2")
+activate LogicManager
+
+LogicManager -> AddressBookParser : parseCommand("addclass m/CS2103 c/F10-2")
+activate AddressBookParser
+
+create AddClassCommandParser
+AddressBookParser -> AddClassCommandParser
+activate AddClassCommandParser
+AddClassCommandParser --> AddressBookParser
+deactivate AddClassCommandParser
+
+AddressBookParser -> AddClassCommandParser : parse(" m/CS2103 c/F10-2")
+activate AddClassCommandParser
+
+note over AddClassCommandParser
+Validate prefixes and arguments.
+Use ParserUtil to parse ModuleCode
+and ClassName as moduleCode and className.
+end note
+
+create AcademicClass
+AddClassCommandParser -> AcademicClass : AcademicClass(moduleCode, className)
+activate AcademicClass
+AcademicClass --> AddClassCommandParser : a
+deactivate AcademicClass
+
+create AddClassCommand
+AddClassCommandParser -> AddClassCommand : AddClassCommand(a)
+activate AddClassCommand
+AddClassCommand --> AddClassCommandParser
+deactivate AddClassCommand
+
+AddClassCommandParser --> AddressBookParser : d
+deactivate AddClassCommandParser
+' Position the destroy marker below the end of the activation bar.
+AddClassCommandParser -[hidden]-> AddressBookParser
+destroy AddClassCommandParser
+
+AddressBookParser --> LogicManager : d
+deactivate AddressBookParser
+
+LogicManager -> AddClassCommand : execute(m)
+activate AddClassCommand
+
+AddClassCommand -> Model : hasAcademicClass(a)
+activate Model
+Model --> AddClassCommand : false
+deactivate Model
+
+AddClassCommand -> Model : addAcademicClass(a)
+activate Model
+Model --> AddClassCommand
+deactivate Model
+
+create CommandResult
+AddClassCommand -> CommandResult : CommandResult(message)
+activate CommandResult
+CommandResult --> AddClassCommand
+deactivate CommandResult
+
+AddClassCommand --> LogicManager : r
+deactivate AddClassCommand
+
+note over LogicManager
+Save the updated address book
+through Storage (calls omitted).
+end note
+
+[<-- LogicManager : r
+deactivate LogicManager
+@enduml

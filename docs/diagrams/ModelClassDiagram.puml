@@ -20,7 +20,10 @@ Class Name
 Class Phone
 Class Tag
 
-Class I #FFFFFF
+Class UniqueAcademicClassList
+Class AcademicClass
+Class ModuleCode
+Class ClassName
 }
 
 Class HiddenOutside #FFFFFF
@@ -36,19 +39,25 @@ ModelManager -right-> "1" UserPrefs
 UserPrefs .up.|> ReadOnlyUserPrefs
 
 AddressBook *--> "1" UniquePersonList
-UniquePersonList --> "~* all" Person
+UniquePersonList --> "*" Person : all
 Person *--> Name
 Person *--> Phone
 Person *--> Email
 Person *--> Address
 Person *--> "*" Tag
 
-Person -[hidden]up--> I
-UniquePersonList -[hidden]right-> I
+AddressBook *--> "1" UniqueAcademicClassList
+UniqueAcademicClassList --> "*" AcademicClass : all
+AcademicClass *--> "1" ModuleCode
+AcademicClass *--> "1" ClassName
+AcademicClass -right-> "*" Person : students
+
+UniqueAcademicClassList -[hidden]right-> UniquePersonList
 
 Name -[hidden]right-> Phone
 Phone -[hidden]right-> Address
 Address -[hidden]right-> Email
 
-ModelManager --> "~* filtered" Person
+ModelManager --> "*" Person : filtered
+ModelManager --> "*" AcademicClass : filtered
 @enduml

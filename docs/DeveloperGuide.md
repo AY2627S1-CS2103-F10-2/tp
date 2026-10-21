@@ -119,13 +119,15 @@ How the parsing works:
 ### Model component
 **API** : [`Model.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/model/Model.java)
 
-<puml src="diagrams/ModelClassDiagram.puml" width="450" />
+<puml src="diagrams/ModelClassDiagram.puml" width="800" />
 
 
 The `Model` component,
 
 * stores the address book data i.e., all `Person` objects (which are contained in a `UniquePersonList` object).
+* stores all `AcademicClass` objects in a `UniqueAcademicClassList`. Each class is identified by its `ModuleCode` and `ClassName` and references its assigned students as `Person` objects. Students can belong to multiple classes.
 * stores the `Person` objects selected by the current filter, such as search results, in a separate _filtered_ list. It exposes this list as an unmodifiable `ObservableList<Person>` that the UI can observe and bind to, so the UI updates when the list changes.
+* exposes the academic classes selected by the current filter as an unmodifiable `ObservableList<AcademicClass>` for the UI to observe.
 * stores a `UserPrefs` object that represents the user’s preferences (currently, just the GUI settings). This is exposed to the outside as a `ReadOnlyUserPrefs` object.
 * does not depend on any of the other three components (as the `Model` represents data entities of the domain, they should make sense on their own without depending on other components)
 
@@ -158,6 +160,20 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 ## **Implementation**
 
 This section describes some noteworthy details on how certain features are implemented.
+
+### Adding an academic class
+
+The sequence diagram below shows a successful execution of `addclass m/CS2103 c/F10-2`, assuming the class does not already exist.
+
+<puml src="diagrams/AddClassSequenceDiagram.puml" alt="Sequence of parsing and executing the addclass command" />
+
+1. `AddressBookParser` creates an `AddClassCommandParser` to parse the arguments. The parser checks for missing, unknown, or duplicate prefixes and an unexpected preamble, then uses `ParserUtil` to validate and construct the `ModuleCode` and `ClassName` values.
+1. The parser creates an empty `AcademicClass` and wraps it in an `AddClassCommand`.
+1. `LogicManager` executes the command. The command calls `Model#hasAcademicClass()` to check for an existing class with the same module code and class name. If one exists, it throws a `CommandException` without adding the class.
+1. Otherwise, the command calls `Model#addAcademicClass()`. `ModelManager` delegates to `AddressBook`, which updates its `UniqueAcademicClassList` and registers the class as a student observer.
+1. The command returns a successful `CommandResult`. `LogicManager` saves the updated address book through `Storage` before returning the result to the UI.
+
+The diagram omits the individual parsing helper calls, the internal model calls, and the storage calls. Invalid arguments cause a `ParseException` before the command is created.
 
 ### \[Proposed\] Undo/redo feature
 
