@@ -1,11 +1,13 @@
 package seedu.address.model;
 
+import java.util.List;
 import java.util.Optional;
 
 import javafx.collections.ObservableList;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
+import seedu.address.model.attendance.Attendance;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.StudentNumber;
 
@@ -13,6 +15,9 @@ import seedu.address.model.person.StudentNumber;
  * Unmodifiable view of an address book
  */
 public interface ReadOnlyAddressBook {
+
+    /** Returns an unmodifiable list of date-history snapshots with shared student/class references. */
+    List<Attendance> getAttendanceList();
 
     /**
      * Returns an unmodifiable view of the persons list.
