@@ -1,6 +1,7 @@
 package seedu.address.ui;
 
 import java.util.Comparator;
+import java.util.List;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -8,6 +9,7 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import seedu.address.model.academicclass.AcademicClass;
+import seedu.address.model.attendance.Attendance;
 import seedu.address.model.person.Person;
 
 /**
@@ -53,6 +55,12 @@ public class PersonCard extends UiPart<Region> {
 
     /** Creates a card and optionally shows this student's attendance for a class. */
     public PersonCard(Person person, int displayedIndex, AcademicClass attendanceClass) {
+        this(person, displayedIndex, attendanceClass, List.of());
+    }
+
+    /** Creates a card and optionally shows this student's attendance for a class. */
+    public PersonCard(Person person, int displayedIndex, AcademicClass attendanceClass,
+            List<Attendance> attendanceRecords) {
         super(FXML);
         this.person = person;
         id.setText(displayedIndex + ". ");
@@ -69,17 +77,21 @@ public class PersonCard extends UiPart<Region> {
             attendance.setVisible(false);
             attendance.setManaged(false);
         } else {
-            updateAttendance(attendanceClass);
-            attendanceClass.attendanceVersionProperty().addListener((observable, oldValue, newValue) ->
-                    updateAttendance(attendanceClass));
+            updateAttendance(attendanceClass, attendanceRecords);
         }
         person.getTags().stream()
                 .sorted(Comparator.comparing(tag -> tag.tagName))
                 .forEach(tag -> tags.getChildren().add(new Label(tag.tagName)));
     }
 
-    private void updateAttendance(AcademicClass attendanceClass) {
-        attendance.setText(String.format("%d/%d", attendanceClass.getAttendanceCount(person),
+    private void updateAttendance(AcademicClass attendanceClass, List<Attendance> attendanceRecords) {
+        int attendedLessons = attendanceRecords.stream()
+                .filter(record -> record.getStudent().isSamePerson(person)
+                        && record.getAcademicClass().isSameClass(attendanceClass))
+                .mapToInt(Attendance::getAttendanceCount)
+                .findFirst()
+                .orElse(0);
+        attendance.setText(String.format("%d/%d", attendedLessons,
                 attendanceClass.getTotalLessons()));
     }
 }

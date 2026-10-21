@@ -38,7 +38,8 @@ public class AddClassCommandParser implements Parser<AddClassCommand> {
     public AddClassCommand parse(String args) throws ParseException {
         rejectUnknownPrefixes(args);
 
-        ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(args, PREFIX_MODULE_CODE, PREFIX_CLASS_NAME);
+        ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(args, PREFIX_MODULE_CODE, PREFIX_CLASS_NAME,
+                PREFIX_TOTAL_LESSONS);
 
         if (!argMultimap.getPreamble().isEmpty()) {
             throw new ParseException(String.format(Messages.MESSAGE_INVALID_COMMAND_FORMAT,
@@ -58,12 +59,7 @@ public class AddClassCommandParser implements Parser<AddClassCommand> {
         ClassName className = ParserUtil.parseClassName(argMultimap.getValue(PREFIX_CLASS_NAME).get());
         int totalLessons = argMultimap.getValue(PREFIX_TOTAL_LESSONS).isPresent()
                 ? ParserUtil.parsePositiveInteger(argMultimap.getValue(PREFIX_TOTAL_LESSONS).get()) : 0;
-        AcademicClass academicClass;
-        try {
-            academicClass = new AcademicClass(moduleCode, className, totalLessons);
-        } catch (IllegalArgumentException e) {
-            throw new ParseException(e.getMessage());
-        }
+        AcademicClass academicClass = new AcademicClass(moduleCode, className, totalLessons);
 
         return new AddClassCommand(academicClass);
     }

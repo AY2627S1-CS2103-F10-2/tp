@@ -27,6 +27,7 @@ import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
 import seedu.address.model.academicclass.exceptions.AcademicClassNotFoundException;
 import seedu.address.model.academicclass.exceptions.DuplicateAcademicClassException;
+import seedu.address.model.attendance.Attendance;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.StudentNumber;
 import seedu.address.model.person.exceptions.DuplicatePersonException;
@@ -422,6 +423,11 @@ public class AddressBookTest {
         AddressBookStub(Collection<Person> persons, Collection<AcademicClass> academicClasses) {
             this.persons.setAll(persons);
             this.academicClasses.setAll(academicClasses);
+        }
+
+        @Override
+        public List<Attendance> getAttendanceList() {
+            return List.of();
         }
 
         @Override

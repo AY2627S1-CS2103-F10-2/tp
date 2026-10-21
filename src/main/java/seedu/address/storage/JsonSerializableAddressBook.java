@@ -12,6 +12,7 @@ import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.academicclass.AcademicClass;
+import seedu.address.model.attendance.Attendance;
 import seedu.address.model.person.Person;
 
 /**
@@ -26,16 +27,26 @@ class JsonSerializableAddressBook {
 
     private final List<JsonAdaptedPerson> persons = new ArrayList<>();
     private final List<JsonAdaptedAcademicClass> classes = new ArrayList<>();
+    private final List<JsonAdaptedAttendance> attendance = new ArrayList<>();
 
     /**
      * Constructs a {@code JsonSerializableAddressBook} with the given persons and academic classes.
      */
+    public JsonSerializableAddressBook(List<JsonAdaptedPerson> persons, List<JsonAdaptedAcademicClass> classes) {
+        this(persons, classes, null);
+    }
+
+    /** Creates JSON data; absent attendance in older files defaults to an empty list. */
     @JsonCreator
     public JsonSerializableAddressBook(@JsonProperty("persons") List<JsonAdaptedPerson> persons,
-            @JsonProperty("classes") List<JsonAdaptedAcademicClass> classes) {
+            @JsonProperty("classes") List<JsonAdaptedAcademicClass> classes,
+            @JsonProperty("attendance") List<JsonAdaptedAttendance> attendance) {
         this.persons.addAll(persons);
         if (classes != null) {
             this.classes.addAll(classes);
+        }
+        if (attendance != null) {
+            this.attendance.addAll(attendance);
         }
     }
 
@@ -49,6 +60,7 @@ class JsonSerializableAddressBook {
         classes.addAll(source.getAcademicClassList().stream()
                 .map(JsonAdaptedAcademicClass::new)
                 .collect(Collectors.toList()));
+        attendance.addAll(source.getAttendanceList().stream().map(JsonAdaptedAttendance::new).toList());
     }
 
     /**
@@ -73,7 +85,23 @@ class JsonSerializableAddressBook {
             jsonAdaptedAcademicClass.restoreStudents(academicClass, addressBook);
             addressBook.addAcademicClass(academicClass);
         }
+        restoreAttendance(addressBook);
         return addressBook;
+    }
+
+    private void restoreAttendance(AddressBook addressBook) throws IllegalValueException {
+        List<Attendance> records = new ArrayList<>();
+        for (JsonAdaptedAttendance record : attendance) {
+            if (record == null) {
+                throw new IllegalValueException("Attendance record must not be null.");
+            }
+            records.add(record.toModelType(addressBook));
+        }
+        try {
+            addressBook.setAttendance(records);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalValueException("Invalid attendance associations: " + e.getMessage());
+        }
     }
 
 }
