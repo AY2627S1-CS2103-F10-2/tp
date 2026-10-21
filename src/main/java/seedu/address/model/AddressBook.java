@@ -197,6 +197,26 @@ public class AddressBook implements ReadOnlyAddressBook {
                 ? record.copyFor(editedPerson, record.getAcademicClass()) : record);
     }
 
+    public void setAcademicClass(AcademicClass target, AcademicClass editedClass) {
+        requireNonNull(editedClass);
+        academicClasses.setAcademicClass(target, editedClass);
+        removeStudentObserver(target);
+        addStudentObserver(editedClass);
+
+        replaceOldAttendanceClassWithNew(target, editedClass);
+    }
+
+    /**
+     * Rebinds all attendance history for {@code oldClass} to {@code newClass}, preserving students and dates.
+     * This includes history for students who are no longer assigned to the class.
+     */
+    private void replaceOldAttendanceClassWithNew(AcademicClass oldClass, AcademicClass newClass) {
+        attendanceRecords.replaceAll(attendance ->
+                attendance.getAcademicClass().equals(oldClass)
+                        ? attendance.copyFor(attendance.getStudent(), newClass)
+                        : attendance);
+    }
+
     /**
      * Removes {@code key} from this {@code AddressBook}.
      * {@code key} must exist in the address book.
