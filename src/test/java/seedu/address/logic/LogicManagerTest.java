@@ -161,7 +161,7 @@ public class LogicManagerTest {
 
     @Test
     public void getAttendanceDetails_delegatesToModel() {
-        AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103"), new ClassName("F10-2"), 11);
+        AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103"), new ClassName("F10-2"));
         model.addPerson(AMY);
         model.addAcademicClass(academicClass);
         model.assignStudentToClass(AMY, academicClass);

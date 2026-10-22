@@ -24,7 +24,6 @@ public class AcademicClass implements StudentObserver {
     // Identity fields
     private final ModuleCode moduleCode;
     private final ClassName className;
-    private final int totalLessons;
 
     // Data fields
     private final ObservableSet<Person> students = FXCollections.observableSet(new HashSet<>());
@@ -35,21 +34,9 @@ public class AcademicClass implements StudentObserver {
      * Every field must be present and not null.
      */
     public AcademicClass(ModuleCode moduleCode, ClassName className) {
-        this(moduleCode, className, 0);
-    }
-
-    /**
-     * Creates a class with a configured total number of lessons.
-     * A value of zero is retained for classes created by older data files.
-     */
-    public AcademicClass(ModuleCode moduleCode, ClassName className, int totalLessons) {
         requireAllNonNull(moduleCode, className);
-        if (totalLessons < 0) {
-            throw new IllegalArgumentException("Total lessons cannot be negative.");
-        }
         this.moduleCode = moduleCode;
         this.className = className;
-        this.totalLessons = totalLessons;
     }
 
     /**
@@ -59,7 +46,7 @@ public class AcademicClass implements StudentObserver {
      * @throws NullPointerException if any argument is null
      */
     public AcademicClass(ModuleCode moduleCode, ClassName className, AcademicClass toCopy) {
-        this(moduleCode, className, toCopy.getTotalLessons());
+        this(moduleCode, className);
         this.students.addAll(toCopy.getStudents());
     }
 
@@ -70,10 +57,6 @@ public class AcademicClass implements StudentObserver {
 
     public ClassName getClassName() {
         return className;
-    }
-
-    public int getTotalLessons() {
-        return totalLessons;
     }
 
     /**

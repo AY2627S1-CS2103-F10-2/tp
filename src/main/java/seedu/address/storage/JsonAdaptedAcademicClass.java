@@ -25,14 +25,13 @@ class JsonAdaptedAcademicClass {
 
     private final String moduleCode;
     private final String className;
-    private final int totalLessons;
     private final List<String> studentNumbers = new ArrayList<>();
 
     /**
      * Constructs a {@code JsonAdaptedAcademicClass} with the given academic class details.
      */
     public JsonAdaptedAcademicClass(String moduleCode, String className) {
-        this(moduleCode, className, 0, null);
+        this(moduleCode, className, null);
     }
 
     /**
@@ -41,19 +40,12 @@ class JsonAdaptedAcademicClass {
     @JsonCreator
     public JsonAdaptedAcademicClass(@JsonProperty("moduleCode") String moduleCode,
             @JsonProperty("className") String className,
-            @JsonProperty("totalLessons") Integer totalLessons,
             @JsonProperty("studentNumbers") List<String> studentNumbers) {
         this.moduleCode = moduleCode;
         this.className = className;
-        this.totalLessons = totalLessons == null ? 0 : totalLessons;
         if (studentNumbers != null) {
             this.studentNumbers.addAll(studentNumbers);
         }
-    }
-
-    /** Backwards-compatible constructor for class files that only contain membership. */
-    public JsonAdaptedAcademicClass(String moduleCode, String className, List<String> studentNumbers) {
-        this(moduleCode, className, 0, studentNumbers);
     }
 
     /**
@@ -62,7 +54,6 @@ class JsonAdaptedAcademicClass {
     public JsonAdaptedAcademicClass(AcademicClass source) {
         moduleCode = source.getModuleCode().value;
         className = source.getClassName().value;
-        totalLessons = source.getTotalLessons();
         source.getStudents().stream().map(person -> person.getStudentNumber().value)
                 .sorted().forEach(studentNumbers::add);
     }
@@ -95,9 +86,6 @@ class JsonAdaptedAcademicClass {
             throw new IllegalValueException(String.format(MISSING_FIELD_MESSAGE_FORMAT,
                     ModuleCode.class.getSimpleName()));
         }
-        if (totalLessons < 0) {
-            throw new IllegalValueException("Total lessons cannot be negative.");
-        }
         if (moduleCode.trim().isEmpty()) {
             throw new IllegalValueException(ModuleCode.MESSAGE_EMPTY);
         }
@@ -118,6 +106,6 @@ class JsonAdaptedAcademicClass {
         }
         final ClassName modelClassName = new ClassName(className);
 
-        return new AcademicClass(modelModuleCode, modelClassName, totalLessons);
+        return new AcademicClass(modelModuleCode, modelClassName);
     }
 }

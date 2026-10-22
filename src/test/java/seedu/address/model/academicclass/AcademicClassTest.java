@@ -45,21 +45,6 @@ public class AcademicClassTest {
     }
 
     @Test
-    public void constructor_totalLessons_preservesConfiguredValue() {
-        AcademicClass academicClass = new AcademicClass(CS2103T, F10_2, 11);
-        AcademicClass copy = new AcademicClass(ST2334, T24, academicClass);
-
-        assertEquals(11, academicClass.getTotalLessons());
-        assertEquals(11, copy.getTotalLessons());
-    }
-
-    @Test
-    public void constructor_negativeTotalLessons_throwsIllegalArgumentException() {
-        assertThrows(IllegalArgumentException.class, ()
-                -> new AcademicClass(CS2103T, F10_2, -1));
-    }
-
-    @Test
     public void constructor_copyWithNullArguments_throwsNullPointerException() {
         AcademicClass original = new AcademicClass(CS2103T, F10_2);
         assertThrows(NullPointerException.class, () -> new AcademicClass(null, T24, original));

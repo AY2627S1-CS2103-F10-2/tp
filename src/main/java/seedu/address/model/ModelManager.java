@@ -94,6 +94,9 @@ public class ModelManager implements Model {
         boolean added = addressBook.addAttendance(person, academicClass, date);
         logger.info((added ? "Added" : "Skipped duplicate") + " attendance for class "
                 + academicClass.getModuleCode() + " (" + academicClass.getClassName() + ")");
+        if (added) {
+            refreshFilteredPersonList();
+        }
         return added;
     }
 
@@ -102,6 +105,9 @@ public class ModelManager implements Model {
         boolean removed = addressBook.removeAttendance(person, academicClass, date);
         logger.info((removed ? "Removed" : "Could not remove") + " attendance for class "
                 + academicClass.getModuleCode() + " (" + academicClass.getClassName() + ")");
+        if (removed) {
+            refreshFilteredPersonList();
+        }
         return removed;
     }
 
@@ -178,11 +184,16 @@ public class ModelManager implements Model {
 
         boolean isViewingTargetClass = personFilterClass != null
                 && personFilterClass.isSameClass(target);
+        boolean isDisplayingTargetClass = attendanceDisplayClass != null
+                && attendanceDisplayClass.isSameClass(target);
 
         addressBook.setAcademicClass(target, editedClass);
 
         if (isViewingTargetClass) {
             filterPersonsByClass(editedClass);
+        }
+        if (isDisplayingTargetClass) {
+            setAttendanceDisplayClass(editedClass);
         }
 
     }

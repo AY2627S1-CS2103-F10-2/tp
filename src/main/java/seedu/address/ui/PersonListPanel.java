@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.ListCell;
@@ -42,6 +43,10 @@ public class PersonListPanel extends UiPart<Region> {
         this.attendanceClassSupplier = attendanceClassSupplier;
         this.attendanceListSupplier = attendanceListSupplier;
         personListView.setItems(personList);
+        personList.addListener((ListChangeListener<Person>) change -> {
+            logger.fine("Refreshing person cards after the displayed person list changed.");
+            personListView.refresh();
+        });
         personListView.setCellFactory(listView -> new PersonListViewCell());
     }
 

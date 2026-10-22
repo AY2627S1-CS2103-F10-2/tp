@@ -14,6 +14,5 @@ public class CliSyntax {
     public static final Prefix PREFIX_TAG = new Prefix("t/");
     public static final Prefix PREFIX_MODULE_CODE = new Prefix("m/");
     public static final Prefix PREFIX_CLASS_NAME = new Prefix("c/");
-    public static final Prefix PREFIX_TOTAL_LESSONS = new Prefix("l/");
 
 }

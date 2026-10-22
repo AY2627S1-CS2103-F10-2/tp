@@ -35,31 +35,6 @@ public class JsonAdaptedAcademicClassTest {
     }
 
     @Test
-    public void toModelType_totalLessons_preservesConfiguredValue() throws Exception {
-        JsonAdaptedAcademicClass jsonAdaptedAcademicClass = new JsonAdaptedAcademicClass(
-                VALID_MODULE_CODE, VALID_CLASS_NAME, 11, null);
-
-        assertEquals(11, jsonAdaptedAcademicClass.toModelType().getTotalLessons());
-    }
-
-    @Test
-    public void toModelType_missingTotalLessons_defaultsToZero() throws Exception {
-        JsonAdaptedAcademicClass jsonAdaptedAcademicClass = new JsonAdaptedAcademicClass(
-                VALID_MODULE_CODE, VALID_CLASS_NAME, null, null);
-
-        assertEquals(0, jsonAdaptedAcademicClass.toModelType().getTotalLessons());
-    }
-
-    @Test
-    public void toModelType_negativeTotalLessons_throwsIllegalValueException() {
-        JsonAdaptedAcademicClass jsonAdaptedAcademicClass = new JsonAdaptedAcademicClass(
-                VALID_MODULE_CODE, VALID_CLASS_NAME, -1, null);
-
-        assertThrows(IllegalValueException.class, "Total lessons cannot be negative.",
-                jsonAdaptedAcademicClass::toModelType);
-    }
-
-    @Test
     public void toModelType_invalidModuleCode_throwsIllegalValueException() {
         JsonAdaptedAcademicClass jsonAdaptedAcademicClass = new JsonAdaptedAcademicClass(INVALID_MODULE_CODE,
                 VALID_CLASS_NAME);

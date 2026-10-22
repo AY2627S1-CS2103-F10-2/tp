@@ -2,6 +2,7 @@ package seedu.address.ui;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -73,6 +74,8 @@ public class PersonCard extends UiPart<Region> {
             telegram.setVisible(false);
             telegram.setManaged(false);
         }
+        attendance.setWrapText(true);
+        attendance.setMaxWidth(Double.MAX_VALUE);
         if (attendanceClass == null) {
             attendance.setVisible(false);
             attendance.setManaged(false);
@@ -85,13 +88,16 @@ public class PersonCard extends UiPart<Region> {
     }
 
     private void updateAttendance(AcademicClass attendanceClass, List<Attendance> attendanceRecords) {
-        int attendedLessons = attendanceRecords.stream()
+        Attendance attendanceRecord = attendanceRecords.stream()
                 .filter(record -> record.getStudent().isSamePerson(person)
                         && record.getAcademicClass().isSameClass(attendanceClass))
-                .mapToInt(Attendance::getAttendanceCount)
                 .findFirst()
-                .orElse(0);
-        attendance.setText(String.format("%d/%d", attendedLessons,
-                attendanceClass.getTotalLessons()));
+                .orElse(null);
+        String attendedDates = attendanceRecord == null || attendanceRecord.getAttendedDates().isEmpty()
+                ? "No attendance recorded"
+                : attendanceRecord.getAttendedDates().stream()
+                        .map(Object::toString)
+                        .collect(Collectors.joining(", "));
+        attendance.setText(attendedDates);
     }
 }

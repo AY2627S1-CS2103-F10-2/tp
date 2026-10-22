@@ -47,7 +47,6 @@ public class ListByClassCommand extends Command {
         AcademicClass academicClass = lastShownList.get(index.getZeroBased());
         model.filterPersonsByClass(academicClass);
         model.setAttendanceDisplayClass(academicClass);
-        model.refreshFilteredPersonList();
         logger.info("Listed " + model.getFilteredPersonList().size() + " students for academic class "
                 + academicClass.getModuleCode() + " (" + academicClass.getClassName() + ")");
         return new CommandResult(String.format(MESSAGE_SUCCESS, model.getFilteredPersonList().size(),

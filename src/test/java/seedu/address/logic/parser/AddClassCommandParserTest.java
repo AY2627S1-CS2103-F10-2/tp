@@ -1,6 +1,5 @@
 package seedu.address.logic.parser;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.parser.AddClassCommandParser.MESSAGE_DUPLICATE_PARAMETER;
 import static seedu.address.logic.parser.AddClassCommandParser.MESSAGE_MISSING_CLASS_NAME;
@@ -10,12 +9,10 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_CLASS_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_MODULE_CODE;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseFailure;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseSuccess;
-import static seedu.address.logic.parser.ParserUtil.MESSAGE_INVALID_POSITIVE_INTEGER;
 
 import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.commands.AddClassCommand;
-import seedu.address.model.ModelManager;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
@@ -35,22 +32,6 @@ public class AddClassCommandParserTest {
 
         // leading and trailing spaces accepted
         assertParseSuccess(parser, " m/   CS2103 c/   F10-2 ", new AddClassCommand(expectedAcademicClass));
-    }
-
-    @Test
-    public void parse_totalLessons_successfullyStoresValue() throws Exception {
-        AddClassCommand command = parser.parse(" m/CS2103 c/F10-2 l/11");
-        ModelManager model = new ModelManager();
-
-        command.execute(model);
-
-        assertEquals(11, model.getAcademicClassList().getFirst().getTotalLessons());
-    }
-
-    @Test
-    public void parse_invalidTotalLessons_failure() {
-        assertParseFailure(parser, " m/CS2103 c/F10-2 l/0", MESSAGE_INVALID_POSITIVE_INTEGER);
-        assertParseFailure(parser, " m/CS2103 c/F10-2 l/eleven", MESSAGE_INVALID_POSITIVE_INTEGER);
     }
 
     @Test

@@ -72,10 +72,10 @@ public class PersonCardTest {
     }
 
     @Test
-    public void constructor_withAttendance_displaysAttendanceRate() {
+    public void constructor_withAttendance_displaysAttendanceDates() {
         Person person = new PersonBuilder().build();
         AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103"),
-                new ClassName("F10-2"), 11);
+                new ClassName("F10-2"));
         Attendance attendance = new Attendance(person, academicClass);
         attendance.addDate(LocalDate.of(2020, 1, 1));
         attendance.addDate(LocalDate.of(2020, 1, 2));
@@ -84,22 +84,36 @@ public class PersonCardTest {
             PersonCard card = new PersonCard(person, 1, academicClass, List.of(attendance));
 
             Label attendanceLabel = getLabel(card, "attendance");
-            assertEquals("2/11", attendanceLabel.getText());
+            assertEquals("2020-01-01, 2020-01-02", attendanceLabel.getText());
+            assertTrue(attendanceLabel.getStyleClass().contains("cell_small_label"));
+            assertTrue(attendanceLabel.isWrapText());
             assertTrue(attendanceLabel.isVisible());
             assertTrue(attendanceLabel.isManaged());
         });
     }
 
     @Test
-    public void constructor_withNonMatchingAttendance_displaysZeroAttendance() {
+    public void constructor_withoutAttendance_displaysEmptyAttendanceMessage() {
         Person person = new PersonBuilder().build();
         AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103"),
-                new ClassName("F10-2"), 11);
+                new ClassName("F10-2"));
+        runOnFxThreadAndWait(() -> {
+            PersonCard card = new PersonCard(person, 1, academicClass, List.of());
+
+            assertEquals("No attendance recorded", getLabel(card, "attendance").getText());
+        });
+    }
+
+    @Test
+    public void constructor_withNonMatchingAttendance_displaysEmptyAttendanceMessage() {
+        Person person = new PersonBuilder().build();
+        AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103"),
+                new ClassName("F10-2"));
         Attendance differentStudentAttendance = new Attendance(new PersonBuilder().withName("Other Student")
                 .withStudentNumber("A9999999Z").build(), academicClass);
         differentStudentAttendance.addDate(LocalDate.of(2020, 1, 1));
         AcademicClass differentClass = new AcademicClass(new ModuleCode("CS2103"),
-                new ClassName("F11-2"), 11);
+                new ClassName("F11-2"));
         Attendance differentClassAttendance = new Attendance(person, differentClass);
         differentClassAttendance.addDate(LocalDate.of(2020, 1, 1));
 
@@ -107,7 +121,7 @@ public class PersonCardTest {
             PersonCard card = new PersonCard(person, 1, academicClass,
                     List.of(differentStudentAttendance, differentClassAttendance));
 
-            assertEquals("0/11", getLabel(card, "attendance").getText());
+            assertEquals("No attendance recorded", getLabel(card, "attendance").getText());
         });
     }
 

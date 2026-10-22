@@ -12,7 +12,7 @@
 <HBox id="cardPane" fx:id="cardPane" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
   <GridPane HBox.hgrow="ALWAYS">
     <columnConstraints>
-      <ColumnConstraints hgrow="SOMETIMES" minWidth="10" prefWidth="150" />
+      <ColumnConstraints hgrow="ALWAYS" minWidth="10" prefWidth="150" />
     </columnConstraints>
     <VBox alignment="CENTER_LEFT" minHeight="105" GridPane.columnIndex="0">
       <padding>
@@ -30,12 +30,8 @@
       <FlowPane fx:id="tags" />
       <Label fx:id="studentNumber" styleClass="cell_small_label" text="\$studentNumber" />
       <Label fx:id="email" styleClass="cell_small_label" text="\$email" />
+      <Label fx:id="attendance" styleClass="cell_small_label" text="No attendance recorded" wrapText="true" />
       <Label fx:id="telegram" styleClass="cell_small_label" text="\$telegram" />
     </VBox>
   </GridPane>
-  <Label fx:id="attendance" styleClass="cell_big_label" text="0/0">
-    <HBox.margin>
-      <Insets right="15" />
-    </HBox.margin>
-  </Label>
 </HBox>
