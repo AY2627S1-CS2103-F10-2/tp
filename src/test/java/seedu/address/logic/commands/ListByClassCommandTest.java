@@ -261,8 +261,8 @@ public class ListByClassCommandTest {
 
     @Test
     public void constructor_nonPositiveThreshold_throwsIllegalArgumentException() {
-        assertThrows(IllegalArgumentException.class,
-                () -> new ListByClassCommand(Index.fromOneBased(1), Optional.of(0)));
+        assertThrows(IllegalArgumentException.class, () ->
+                new ListByClassCommand(Index.fromOneBased(1), Optional.of(0)));
     }
 
     @Test

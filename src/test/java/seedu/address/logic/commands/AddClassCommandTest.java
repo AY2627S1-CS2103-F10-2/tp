@@ -203,6 +203,12 @@ public class AddClassCommandTest {
         }
 
         @Override
+        public void filterPersonsByClassAndDisplayAttendance(AcademicClass academicClass,
+                Optional<Integer> threshold) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
         public boolean hasAcademicClass(AcademicClass academicClass) {
             throw new AssertionError("This method should not be called.");
         }
