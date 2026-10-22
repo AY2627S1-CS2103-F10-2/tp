@@ -142,6 +142,12 @@ public interface Model {
      */
     void filterPersonsByClass(AcademicClass academicClass, Optional<Integer> threshold);
 
+    /** Filters by class and sets that class as the attendance context in one refresh. */
+    default void filterPersonsByClassAndDisplayAttendance(AcademicClass academicClass, Optional<Integer> threshold) {
+        filterPersonsByClass(academicClass, threshold);
+        setAttendanceDisplayClass(academicClass);
+    }
+
     /**
      * Adds the given academic class.
      * {@code academicClass} must not already exist in the address book.

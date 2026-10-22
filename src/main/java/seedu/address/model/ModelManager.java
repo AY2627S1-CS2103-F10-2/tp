@@ -5,6 +5,7 @@ import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
@@ -37,6 +38,7 @@ public class ModelManager implements Model {
     private Predicate<Person> personFilter = PREDICATE_SHOW_ALL_PERSONS;
     private AcademicClass personFilterClass;
     private Optional<Integer> personFilterThreshold = Optional.empty();
+    private Map<StudentNumber, Integer> personFilterAttendanceCounts = Map.of();
     private final FilteredList<AcademicClass> filteredAcademicClasses;
     private final ObservableList<AcademicClass> displayedAcademicClasses;
     private AcademicClass attendanceDisplayClass;
@@ -191,10 +193,11 @@ public class ModelManager implements Model {
 
         addressBook.setAcademicClass(target, editedClass);
 
-        if (isViewingTargetClass) {
+        if (isViewingTargetClass && isDisplayingTargetClass) {
+            filterPersonsByClassAndDisplayAttendance(editedClass, activeThreshold);
+        } else if (isViewingTargetClass) {
             filterPersonsByClass(editedClass, activeThreshold);
-        }
-        if (isDisplayingTargetClass) {
+        } else if (isDisplayingTargetClass) {
             setAttendanceDisplayClass(editedClass);
         }
 
@@ -218,16 +221,30 @@ public class ModelManager implements Model {
 
     @Override
     public void filterPersonsByClass(AcademicClass academicClass, Optional<Integer> threshold) {
+        applyClassFilter(academicClass, threshold, false);
+    }
+
+    @Override
+    public void filterPersonsByClassAndDisplayAttendance(AcademicClass academicClass, Optional<Integer> threshold) {
+        applyClassFilter(academicClass, threshold, true);
+    }
+
+    private void applyClassFilter(AcademicClass academicClass, Optional<Integer> threshold,
+            boolean displayAttendance) {
         requireAllNonNull(academicClass, threshold);
         if (threshold.isPresent() && threshold.get() <= 0) {
             throw new IllegalArgumentException("Attendance threshold must be a positive integer.");
         }
-        updateFilteredPersonListAlphabetically(person ->
-                addressBook.findAcademicClass(academicClass.getModuleCode(), academicClass.getClassName())
-                        .map(storedClass -> isClassMemberWithinThreshold(person, storedClass, threshold))
-                        .orElse(false));
+        personFilterAttendanceCounts = threshold.isPresent()
+                ? addressBook.getAttendanceCounts(academicClass) : Map.of();
         personFilterClass = academicClass;
         personFilterThreshold = threshold;
+        attendanceDisplayClass = displayAttendance ? academicClass : null;
+        personFilter = person -> addressBook
+                .findAcademicClass(academicClass.getModuleCode(), academicClass.getClassName())
+                .map(storedClass -> isClassMemberWithinThreshold(person, storedClass, threshold)).orElse(false);
+        filteredPersons.setPredicate(personFilter);
+        sortedPersons.setComparator(new PersonNameComparator());
     }
 
     private boolean isClassMemberWithinThreshold(Person person, AcademicClass storedClass,
@@ -237,16 +254,8 @@ public class ModelManager implements Model {
         if (!isMember) {
             return false;
         }
-        return threshold.map(limit -> getAttendanceCount(person, storedClass) < limit).orElse(true);
-    }
-
-    private int getAttendanceCount(Person person, AcademicClass academicClass) {
-        return addressBook.getAttendanceList().stream()
-                .filter(record -> record.getStudent().isSamePerson(person)
-                        && record.getAcademicClass().isSameClass(academicClass))
-                .mapToInt(Attendance::getAttendanceCount)
-                .findFirst()
-                .orElse(0);
+        return threshold.map(limit -> personFilterAttendanceCounts
+                .getOrDefault(person.getStudentNumber(), 0) < limit).orElse(true);
     }
 
     @Override
@@ -313,6 +322,7 @@ public class ModelManager implements Model {
         clearAttendanceDisplayClass();
         this.personFilterClass = null;
         this.personFilterThreshold = Optional.empty();
+        this.personFilterAttendanceCounts = Map.of();
         personFilter = predicate;
         filteredPersons.setPredicate(predicate);
         sortedPersons.setComparator(null);
@@ -361,6 +371,9 @@ public class ModelManager implements Model {
      */
     @Override
     public void refreshFilteredPersonList() {
+        if (personFilterClass != null && personFilterThreshold.isPresent()) {
+            personFilterAttendanceCounts = addressBook.getAttendanceCounts(personFilterClass);
+        }
         // Wrap the original predicate, not the previous wrapper, to avoid accumulating nested calls.
         Predicate<Person> predicate = personFilter;
         filteredPersons.setPredicate(predicate::test);

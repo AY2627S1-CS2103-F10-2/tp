@@ -66,8 +66,7 @@ public class ListByClassCommand extends Command {
             throw new CommandException(Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX);
         }
         AcademicClass academicClass = lastShownList.get(index.getZeroBased());
-        model.filterPersonsByClass(academicClass, threshold);
-        model.setAttendanceDisplayClass(academicClass);
+        model.filterPersonsByClassAndDisplayAttendance(academicClass, threshold);
         int count = model.getFilteredPersonList().size();
         logger.info("Listed " + count + " students for academic class "
                 + academicClass.getModuleCode() + " (" + academicClass.getClassName() + ")"
