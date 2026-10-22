@@ -9,6 +9,7 @@ import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.BENSON;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -210,6 +211,45 @@ public class ModelManagerTest {
     public void getFilteredAcademicClassList_modifyList_throwsUnsupportedOperationException() {
         assertThrows(UnsupportedOperationException.class, () ->
                 modelManager.getFilteredAcademicClassList().remove(0));
+    }
+
+    @Test
+    public void filterPersonsByClass_invalidThreshold_throwsIllegalArgumentException() {
+        AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103"), new ClassName("F10-2"));
+        modelManager.addAcademicClass(academicClass);
+        assertThrows(IllegalArgumentException.class, () ->
+                modelManager.filterPersonsByClass(academicClass, Optional.of(0)));
+        assertThrows(IllegalArgumentException.class, () ->
+                modelManager.filterPersonsByClass(academicClass, Optional.of(-1)));
+    }
+
+    @Test
+    public void setAcademicClass_withActiveThreshold_preservesThresholdUntilPersonFilterReset() {
+        AcademicClass original = new AcademicClass(new ModuleCode("CS2103"), new ClassName("F10-2"));
+        modelManager.addPerson(ALICE);
+        modelManager.addPerson(BENSON);
+        modelManager.addAcademicClass(original);
+        modelManager.assignStudentToClass(ALICE, original);
+        modelManager.assignStudentToClass(BENSON, original);
+        modelManager.addAttendance(ALICE, original, LocalDate.of(2024, 1, 1));
+        modelManager.addAttendance(BENSON, original, LocalDate.of(2024, 1, 1));
+        modelManager.addAttendance(BENSON, original, LocalDate.of(2024, 1, 2));
+
+        modelManager.filterPersonsByClass(original, Optional.of(2));
+        assertEquals(List.of(ALICE), modelManager.getFilteredPersonList());
+
+        AcademicClass renamed = new AcademicClass(
+                new ModuleCode("CS2103"), new ClassName("F11-2"), original);
+        modelManager.setAcademicClass(original, renamed);
+        assertEquals(List.of(ALICE), modelManager.getFilteredPersonList());
+
+        // Resetting person filter clears active threshold
+        modelManager.updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
+        modelManager.filterPersonsByClass(renamed);
+        AcademicClass renamedAgain = new AcademicClass(
+                new ModuleCode("CS2103"), new ClassName("F12-2"), renamed);
+        modelManager.setAcademicClass(renamed, renamedAgain);
+        assertEquals(List.of(ALICE, BENSON), modelManager.getFilteredPersonList());
     }
 
     @Test

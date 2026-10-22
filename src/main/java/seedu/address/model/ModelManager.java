@@ -36,6 +36,7 @@ public class ModelManager implements Model {
     private final ObservableList<Person> displayedPersons;
     private Predicate<Person> personFilter = PREDICATE_SHOW_ALL_PERSONS;
     private AcademicClass personFilterClass;
+    private Optional<Integer> personFilterThreshold = Optional.empty();
     private final FilteredList<AcademicClass> filteredAcademicClasses;
     private final ObservableList<AcademicClass> displayedAcademicClasses;
     private AcademicClass attendanceDisplayClass;
@@ -184,13 +185,14 @@ public class ModelManager implements Model {
 
         boolean isViewingTargetClass = personFilterClass != null
                 && personFilterClass.isSameClass(target);
+        Optional<Integer> activeThreshold = personFilterThreshold;
         boolean isDisplayingTargetClass = attendanceDisplayClass != null
                 && attendanceDisplayClass.isSameClass(target);
 
         addressBook.setAcademicClass(target, editedClass);
 
         if (isViewingTargetClass) {
-            filterPersonsByClass(editedClass);
+            filterPersonsByClass(editedClass, activeThreshold);
         }
         if (isDisplayingTargetClass) {
             setAttendanceDisplayClass(editedClass);
@@ -225,6 +227,7 @@ public class ModelManager implements Model {
                         .map(storedClass -> isClassMemberWithinThreshold(person, storedClass, threshold))
                         .orElse(false));
         personFilterClass = academicClass;
+        personFilterThreshold = threshold;
     }
 
     private boolean isClassMemberWithinThreshold(Person person, AcademicClass storedClass,
@@ -309,6 +312,7 @@ public class ModelManager implements Model {
         requireNonNull(predicate);
         clearAttendanceDisplayClass();
         this.personFilterClass = null;
+        this.personFilterThreshold = Optional.empty();
         personFilter = predicate;
         filteredPersons.setPredicate(predicate);
         sortedPersons.setComparator(null);
