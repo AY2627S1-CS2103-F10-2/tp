@@ -37,8 +37,7 @@ public class ListByClassCommand extends Command {
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
         AcademicClass academicClass = findAcademicClass(model);
-        model.updateFilteredPersonListAlphabetically(person -> academicClass.getStudents().stream()
-                .anyMatch(member -> member.isSamePerson(person)));
+        model.filterPersonsByClass(academicClass);
         return new CommandResult(String.format(MESSAGE_SUCCESS, model.getFilteredPersonList().size(),
                 academicClass.getModuleCode(), academicClass.getClassName()));
     }

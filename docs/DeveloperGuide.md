@@ -119,13 +119,15 @@ How the parsing works:
 ### Model component
 **API** : [`Model.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/model/Model.java)
 
-<puml src="diagrams/ModelClassDiagram.puml" width="450" />
+<puml src="diagrams/ModelClassDiagram.puml" width="800" />
 
 
 The `Model` component,
 
 * stores the address book data i.e., all `Person` objects (which are contained in a `UniquePersonList` object).
+* stores all `AcademicClass` objects in a `UniqueAcademicClassList`. Each class is identified by its `ModuleCode` and `ClassName` and references its assigned students as `Person` objects. Students can belong to multiple classes.
 * stores the `Person` objects selected by the current filter, such as search results, in a separate _filtered_ list. It exposes this list as an unmodifiable `ObservableList<Person>` that the UI can observe and bind to, so the UI updates when the list changes.
+* exposes the academic classes selected by the current filter as an unmodifiable `ObservableList<AcademicClass>` for the UI to observe.
 * stores a `UserPrefs` object that represents the user’s preferences (currently, just the GUI settings). This is exposed to the outside as a `ReadOnlyUserPrefs` object.
 * does not depend on any of the other three components (as the `Model` represents data entities of the domain, they should make sense on their own without depending on other components)
 
@@ -158,6 +160,91 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 ## **Implementation**
 
 This section describes some noteworthy details on how certain features are implemented.
+
+### Arrow key command history navigation
+
+Arrow key navigation lets users recall previously executed commands without executing them again. `CommandBox` delegates
+history storage and navigation to its `CommandHistory`, which holds two separate lists and tracks the draft and the
+current browsing position.
+
+Up moves towards older entries and Down moves towards the draft (newer entries). 
+Navigation stops at either boundary, and empty history leaves the input unchanged. 
+Modified arrow keys (such as Shift+Up or Ctrl+Down) do not trigger history navigation. 
+History lasts only for the current session and does not survive between restarts.
+
+<puml src="diagrams/CommandHistoryObjects.puml" alt="CommandBox linked to CommandHistory, its draft and position, and its original and working command lists" />
+
+| Field | Purpose |
+| --- | --- |
+| `commands` | Stores up to 20 successful commands in execution order, oldest first. Editing past commands does not change these entries. |
+| `workingCommands` | Holds a working copy of the history. Temporary edits remain available until the next non-blank command submission, whether it succeeds or fails. |
+| `draft` | Preserves the input from before the user started browsing history. Moving Down past the newest entry restores it. It is separate from the lists because it has not been successfully executed. |
+| `position` | Identifies the selected entry in `workingCommands`, using a zero-based index. A value equal to the list size represents the draft. |
+
+In the diagram, `position = 2` selects `list`. With four history entries, position 4 represents the draft. Moving Down past `find Alice` restores `addclass m/CS2103 n/f`.
+
+#### Preserving temporary edits with two command lists
+
+`commands` preserves the successfully executed commands. `workingCommands` is a separate list that preserves temporary
+edits while browsing history. These partial object diagrams show only the two lists, with entries numbered from zero.
+
+**Step 1: Recall.** After executing `help`, `find Carol`, `list`, and `find Alice`, the user presses Up to recall `find Alice`.
+Both lists contain the same commands.
+
+<puml src="diagrams/CommandHistoryBeforeEdit.puml" alt="CommandHistory with identical original and working lists before editing a recalled command" />
+
+**Step 2: Edit and navigate away.** The user changes the input to `find Bob` without executing it, then presses Up to recall
+`list`. Before moving, `saveCurrentInput()` saves `find Bob` in `workingCommands`. The original list still contains `find Alice`.
+
+<puml src="diagrams/CommandHistoryAfterEdit.puml" alt="CommandHistory with a temporary edit in the working list while the original list remains unchanged" />
+
+Pressing Down now recalls **`find Bob`**, so the user can continue editing it. Using a single list would either overwrite
+the original history entry or lose the temporary edit. After a successful or failed submission, `resetNavigation()`
+rebuilds `workingCommands` from `commands`, discarding temporary browsing edits.
+
+A successful submission first adds the command to `commands` and clears the draft. A failed submission preserves the
+failed input as the draft without adding it to history. Both cases reset `position` to the draft position.
+
+### Adding an academic class
+
+#### Implementation
+
+The `addclass` command creates an empty `AcademicClass`, identified by its `ModuleCode` and `ClassName`. `AddressBook` stores academic classes in a `UniqueAcademicClassList`, which rejects duplicate module code and class name pairs.
+
+Given below is an example usage scenario for `addclass m/CS2103 c/F10-2`, assuming the class does not already exist.
+
+Step 1. The user enters `addclass m/CS2103 c/F10-2`. `LogicManager` passes this command text to `AddressBookParser`, which creates an `AddClassCommandParser`.
+
+Step 2. The command parser checks the arguments and uses `ParserUtil` to construct the `ModuleCode` and `ClassName`. It creates an empty `AcademicClass` and wraps it in an `AddClassCommand`.
+
+Step 3. `LogicManager` executes the command. The command calls `Model#hasAcademicClass()` to check for an existing class with the same identity, then calls `Model#addAcademicClass()` when the class is absent.
+
+The following sequence diagram shows how this operation goes through the `Logic` component. `commandText` is `"addclass m/CS2103 c/F10-2"`, `arguments` is `" m/CS2103 c/F10-2"`, and `a` is the class created by the command parser. The parsing helper calls, creation of `a`, and construction of the `CommandResult` are omitted for clarity.
+
+<puml src="diagrams/AddClassSequenceDiagram.puml" alt="Adding an academic class through the Logic component" />
+
+Step 4. `ModelManager` delegates the addition to `AddressBook`. `AddressBook` copies the current academic class list, appends the new class, and passes the updated list to `UniqueAcademicClassList#setAcademicClasses()`. It then registers the class as a student observer so its membership can track student updates.
+
+Similarly, the model sequence diagram below expands the `addAcademicClass(a)` call from the logic diagram:
+
+<puml src="diagrams/AddClassSequenceDiagram-Model.puml" alt="Adding an academic class through the Model component" />
+
+Step 5. The command returns a successful `CommandResult` with the message `New class added: CS2103-F10-2`. `LogicManager` saves the updated address book through `Storage` before returning the result to the UI. Storage calls are omitted from the logic diagram.
+
+<box type="info" seamless>
+
+**Note:** The logic diagram shows both successful addition and duplicate-class rejection. The model diagram expands only the successful addition. Invalid arguments cause a `ParseException` before the command is created. If `Model#hasAcademicClass()` returns `true`, the command throws a `CommandException` without adding the class. Neither failure reaches the save operation.
+</box>
+
+### Deleting an academic class
+
+The `deleteclass` command identifies an existing class by its module code and class name. `AddressBookParser` delegates argument validation to `DeleteClassCommandParser`, which creates a `DeleteClassCommand`. The command looks up the class through `Model#getAddressBook()` and calls `Model#deleteAcademicClass()` before returning a successful `CommandResult`.
+
+The following diagram shows a successful run of `deleteclass m/CS2103 c/F10-2`, assuming that class exists. The class is removed and the returned feedback is `Deleted class: CS2103-F10-2`. Parsing helpers, result construction, and storage calls are omitted for clarity; `LogicManager` saves the updated address book before returning the result to the UI.
+
+<puml src="diagrams/DeleteClassSequenceDiagram-Logic.puml" alt="Deleting an academic class through the Logic component" />
+
+Invalid arguments cause a `ParseException` before command creation. If the class is absent, the command throws a `CommandException` without deleting anything. These error paths are omitted from the diagram.
 
 ### Assigning and unassigning students
 
@@ -717,6 +804,26 @@ testers are expected to do more *exploratory* testing.
    1. Close and reopen the app after the successful assignments.<br>
       Expected: The class still shows 2 students. Its `studentNumbers` JSON list contains each assigned
       student number once. Repeating either assignment reports that the student is already assigned.
+
+### Listing classes by student
+
+1. Add students and classes using unused identifiers:
+   `add sn/A0999801X n/AlphaDemoAlice e/alpha.demo.alice@example.com`,
+   `add sn/A0999802Y n/AlphaDemoBob e/alpha.demo.bob@example.com`,
+   `addclass m/CS2103 c/DEMO-T01`, and `addclass m/CS2100 c/DEMO-L01`.
+2. Assign Alice to both classes using `assign sn/A0999801X m/CS2103 c/DEMO-T01` and
+   `assign sn/A0999801X m/CS2100 c/DEMO-L01`.
+3. Run `find AlphaDemoAlice`, then `listbystudent 1`.
+   Expected: both classes appear in creation order; feedback reports two classes and Alice's identity.
+   The student search results remain unchanged.
+4. Run `listbystudent 0`, `listbystudent 1 extra`, and `listbystudent 2`.
+   Expected: invalid-command or invalid-index feedback; both views remain unchanged.
+5. Run `unassign sn/A0999801X m/CS2103 c/DEMO-T01`.
+   Expected: only CS2100 DEMO-L01 remains in the Classes panel.
+6. Run `find AlphaDemoBob`, then `listbystudent 1`.
+   Expected: zero matching classes and an empty Classes panel.
+7. Run `listclass` to restore all classes, and `list` to restore all students.
+   Restart the app and repeat Alice's lookup to verify that memberships persist while display filters reset.
 
 ### Saving data
 

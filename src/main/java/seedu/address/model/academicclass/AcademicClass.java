@@ -39,6 +39,18 @@ public class AcademicClass implements StudentObserver {
         this.className = className;
     }
 
+    /**
+     * Creates a class with the given identity and an independent copy of {@code toCopy}'s memberships.
+     * Immutable person records are shared between the two membership sets.
+     *
+     * @throws NullPointerException if any argument is null
+     */
+    public AcademicClass(ModuleCode moduleCode, ClassName className, AcademicClass toCopy) {
+        this(moduleCode, className);
+        this.students.addAll(toCopy.getStudents());
+    }
+
+
     public ModuleCode getModuleCode() {
         return moduleCode;
     }
@@ -147,4 +159,17 @@ public class AcademicClass implements StudentObserver {
         this.students.clear();
         this.students.addAll(replacements);
     }
+
+    /**
+     * Returns true if the other class has the same module code and class name.
+     */
+    public boolean isSameClass(AcademicClass otherClass) {
+        if (otherClass == this) {
+            return true;
+        }
+
+        return otherClass != null
+                && otherClass.hasIdentity(this.moduleCode, this.className);
+    }
+
 }

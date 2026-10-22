@@ -1,5 +1,7 @@
 package seedu.address.model;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -8,6 +10,7 @@ import seedu.address.commons.core.GuiSettings;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
+import seedu.address.model.attendance.Attendance;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.StudentNumber;
 
@@ -21,6 +24,25 @@ public interface Model {
 
     /** {@code Predicate} that always evaluates to true for academic classes. */
     Predicate<AcademicClass> PREDICATE_SHOW_ALL_ACADEMIC_CLASSES = unused -> true;
+
+    /** Returns snapshots with isolated date sets and shared canonical student/class references. */
+    List<Attendance> getAttendanceList();
+
+    /**
+     * Records attendance for existing endpoints, returning false for a duplicate date.
+     * Current-membership eligibility is checked by the command, not this storage API.
+     * @throws IllegalArgumentException if an endpoint is missing or the date is in the future.
+     * @throws NullPointerException if any argument is null.
+     */
+    boolean addAttendance(Person person, AcademicClass academicClass, LocalDate date);
+
+    /**
+     * Removes a recorded date, including history retained after unassignment.
+     * Recorded dates remain removable after a clock rollback. Returns false for an unrecorded non-future date.
+     * @throws IllegalArgumentException if an endpoint is missing or an unrecorded date is in the future.
+     * @throws NullPointerException if any argument is null.
+     */
+    boolean removeAttendance(Person person, AcademicClass academicClass, LocalDate date);
 
     /**
      * Returns the user prefs.
@@ -88,6 +110,8 @@ public interface Model {
      */
     void setPerson(Person target, Person editedPerson);
 
+    void setAcademicClass(AcademicClass target, AcademicClass editedClass);
+
     /**
      * Returns true if an academic class with the same module code and class name exists in the address book.
      */
@@ -98,6 +122,13 @@ public interface Model {
      * @throws NullPointerException if either identifier is null.
      */
     Optional<AcademicClass> findAcademicClass(ModuleCode moduleCode, ClassName className);
+
+    /**
+     * Displays the given class's students alphabetically and tracks the selected class.
+     *
+     * @throws NullPointerException if {@code academicClass} is null
+     */
+    void filterPersonsByClass(AcademicClass academicClass);
 
     /**
      * Adds the given academic class.
@@ -149,6 +180,14 @@ public interface Model {
      * @throws NullPointerException if {@code predicate} is null.
      */
     void updateFilteredAcademicClassList(Predicate<AcademicClass> predicate);
+
+    /**
+     * Shows classes containing the selected student, preserving class insertion order.
+     * Keeps this view updated after membership changes and edits to the student's number.
+     * Leaves the displayed student list unchanged.
+     * @throws NullPointerException if {@code studentNumber} is null.
+     */
+    void updateFilteredAcademicClassListByStudent(StudentNumber studentNumber);
 
     /**
      * Unassigns the stored student from the stored academic class with the given identities.

@@ -202,6 +202,30 @@ public class EditCommandParserTest {
     }
 
     @Test
+    public void parse_resetTelegram_success() {
+        EditPersonDescriptor descriptor = new EditPersonDescriptor();
+        descriptor.setTelegram(null);
+        EditCommand expectedCommand = new EditCommand(INDEX_FIRST_PERSON, descriptor);
+
+        assertParseSuccess(parser, "1 tg/", expectedCommand);
+        assertParseSuccess(parser, "1 tg/   ", expectedCommand);
+    }
+
+    @Test
+    public void parse_resetTelegramWithOtherField_success() {
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withEmail(VALID_EMAIL_AMY).build();
+        descriptor.setTelegram(null);
+        assertParseSuccess(parser, "1 tg/" + EMAIL_DESC_AMY, new EditCommand(INDEX_FIRST_PERSON, descriptor));
+    }
+
+    @Test
+    public void parse_repeatedEmptyTelegram_failure() {
+        assertParseFailure(parser, "1 tg/ tg/", Messages.getErrorMessageForDuplicatePrefixes(PREFIX_TELEGRAM));
+        assertParseFailure(parser, "1 tg/" + TELEGRAM_DESC_AMY,
+                Messages.getErrorMessageForDuplicatePrefixes(PREFIX_TELEGRAM));
+    }
+
+    @Test
     public void parse_resetTags_success() {
         Index targetIndex = INDEX_THIRD_PERSON;
         String userInput = targetIndex.getOneBased() + TAG_EMPTY;

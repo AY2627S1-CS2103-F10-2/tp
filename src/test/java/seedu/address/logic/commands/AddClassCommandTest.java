@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +24,7 @@ import seedu.address.model.ReadOnlyUserPrefs;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
+import seedu.address.model.attendance.Attendance;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.StudentNumber;
 
@@ -91,6 +93,21 @@ public class AddClassCommandTest {
      */
     private class ModelStub implements Model {
         @Override
+        public List<Attendance> getAttendanceList() {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public boolean addAttendance(Person person, AcademicClass academicClass, LocalDate date) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public boolean removeAttendance(Person person, AcademicClass academicClass, LocalDate date) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
         public Optional<Person> findPersonByStudentNumber(StudentNumber studentNumber) {
             throw new AssertionError("This method should not be called.");
         }
@@ -156,6 +173,16 @@ public class AddClassCommandTest {
         }
 
         @Override
+        public void setAcademicClass(AcademicClass target, AcademicClass editedClass) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public void filterPersonsByClass(AcademicClass academicClass) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
         public boolean hasAcademicClass(AcademicClass academicClass) {
             throw new AssertionError("This method should not be called.");
         }
@@ -208,6 +235,11 @@ public class AddClassCommandTest {
 
         @Override
         public void updateFilteredAcademicClassList(Predicate<AcademicClass> predicate) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public void updateFilteredAcademicClassListByStudent(StudentNumber studentNumber) {
             throw new AssertionError("This method should not be called.");
         }
     }

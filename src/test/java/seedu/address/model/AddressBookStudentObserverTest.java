@@ -28,6 +28,56 @@ public class AddressBookStudentObserverTest {
     private final AddressBook addressBook = new AddressBook();
 
     @Test
+    public void setAcademicClass_sameIdentity_registersReplacementInsteadOfOriginal() {
+        AcademicClass original = classWithAlice("OB1");
+        AcademicClass replacement = new AcademicClass(original.getModuleCode(), original.getClassName(), original);
+        addressBook.addPerson(ALICE);
+        addressBook.addAcademicClass(original);
+
+        addressBook.setAcademicClass(original, replacement);
+        addressBook.removePerson(ALICE);
+
+        assertTrue(replacement.getStudents().isEmpty());
+        assertEquals(Set.of(ALICE), original.getStudents());
+        assertSame(replacement, addressBook.getAcademicClassList().getFirst());
+    }
+
+    @Test
+    public void setAcademicClass_duplicateReplacement_keepsOriginalObserverRegistered() {
+        AcademicClass original = classWithAlice("OB1");
+        AcademicClass other = classWithAlice("OB2");
+        AcademicClass rejected = new AcademicClass(other.getModuleCode(), other.getClassName(), original);
+        addressBook.addPerson(ALICE);
+        addressBook.addAcademicClass(original);
+        addressBook.addAcademicClass(other);
+
+        assertThrows(DuplicateAcademicClassException.class, () -> addressBook.setAcademicClass(original, rejected));
+        addressBook.removePerson(ALICE);
+
+        assertTrue(original.getStudents().isEmpty());
+        assertTrue(other.getStudents().isEmpty());
+        assertEquals(Set.of(ALICE), rejected.getStudents());
+        assertSame(original, addressBook.getAcademicClassList().getFirst());
+    }
+
+    @Test
+    public void setAcademicClass_invalidArguments_preserveClassesAndObservers() {
+        AcademicClass original = classWithAlice("OB1");
+        AcademicClass missing = classWithAlice("OB2");
+        addressBook.addPerson(ALICE);
+        addressBook.addAcademicClass(original);
+
+        assertThrows(NullPointerException.class, () -> addressBook.setAcademicClass(null, missing));
+        assertThrows(NullPointerException.class, () -> addressBook.setAcademicClass(original, null));
+        assertThrows(AcademicClassNotFoundException.class, () -> addressBook.setAcademicClass(missing, original));
+        addressBook.removePerson(ALICE);
+
+        assertSame(original, addressBook.getAcademicClassList().getFirst());
+        assertTrue(original.getStudents().isEmpty());
+        assertEquals(Set.of(ALICE), missing.getStudents());
+    }
+
+    @Test
     public void removeAcademicClass_existingClass_stopsNotificationsAndPreservesPersons() {
         AcademicClass removedClass = classWithAlice("OB1");
         AcademicClass remainingClass = classWithAlice("OB2");

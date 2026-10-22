@@ -78,6 +78,25 @@ public class ModelManagerTest {
     }
 
     @Test
+    public void setAddressBook_afterStudentClassFilter_showsReplacementClassesAfterMembershipChanges() {
+        modelManager.addPerson(ALICE);
+        modelManager.updateFilteredAcademicClassListByStudent(ALICE.getStudentNumber());
+        AcademicClass replacementClass = new AcademicClass(new ModuleCode("CS2106"), new ClassName("T01"));
+        AddressBook replacement = new AddressBookBuilder().withPerson(BENSON).build();
+        replacement.addAcademicClass(replacementClass);
+        var displayedClasses = modelManager.getFilteredAcademicClassList();
+
+        modelManager.setAddressBook(replacement);
+        assertEquals(List.of(replacementClass), displayedClasses);
+
+        // Refreshing memberships must not restore the previous student's filter.
+        assertTrue(modelManager.assignStudentToClass(BENSON, replacementClass));
+        assertEquals(List.of(replacementClass), displayedClasses);
+        assertTrue(modelManager.unassignStudentFromClass(BENSON, replacementClass));
+        assertEquals(List.of(replacementClass), displayedClasses);
+    }
+
+    @Test
     public void setGuiSettings_nullGuiSettings_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> modelManager.setGuiSettings(null));
     }
