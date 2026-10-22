@@ -16,9 +16,10 @@ participant "m:ModelManager" as Model MODEL_COLOR
 end box
 
 note over LogicManager, AddressBookParser
-commandText = "listbyclass m/CS2103 c/F10-2"
-args = " m/CS2103 c/F10-2"
-The specified class exists.
+commandText = "listbyclass 1"
+args = " 1"
+The displayed class list contains CS2103 (F10-2)
+at index 1.
 end note
 
 [-> LogicManager : execute(commandText)
@@ -34,8 +35,11 @@ deactivate Parser
 
 AddressBookParser -> Parser : parse(args)
 activate Parser
+note right of Parser
+ParserUtil.parseIndex(args) produces index.
+end note
 create Command
-Parser -> Command : ListByClassCommand(moduleCode, className)
+Parser -> Command : ListByClassCommand(index)
 activate Command
 Command --> Parser
 deactivate Command
@@ -46,10 +50,14 @@ deactivate AddressBookParser
 
 LogicManager -> Command : execute(m)
 activate Command
-Command -> Model : findAcademicClass(moduleCode, className)
+Command -> Model : getFilteredAcademicClassList()
 activate Model
-Model --> Command : Optional.of(academicClass)
+Model --> Command : lastShownList
 deactivate Model
+note right of Command
+Check index against lastShownList.size().
+academicClass = lastShownList.get(index.getZeroBased()).
+end note
 
 Command -> Model : filterPersonsByClass(academicClass)
 activate Model
@@ -57,6 +65,15 @@ note right of Model
 Filter students by class membership
 and sort by name.
 The class view is unchanged.
+end note
+Model --> Command
+deactivate Model
+
+Command -> Model : setAttendanceDisplayClass(academicClass)
+activate Model
+note right of Model
+Set the class used to display attendance
+and refresh the student view.
 end note
 Model --> Command
 deactivate Model
