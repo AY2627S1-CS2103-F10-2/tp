@@ -253,6 +253,28 @@ public class ModelManagerTest {
     }
 
     @Test
+    public void setAcademicClass_displayedButNotFilteredClass_preservesPersonFilterAndUpdatesDisplayContext() {
+        AcademicClass displayedClass = new AcademicClass(new ModuleCode("CS2103"), new ClassName("F10-2"));
+        AcademicClass filteredClass = new AcademicClass(new ModuleCode("CS2101"), new ClassName("T01"));
+        modelManager.addPerson(ALICE);
+        modelManager.addPerson(BENSON);
+        modelManager.addAcademicClass(displayedClass);
+        modelManager.addAcademicClass(filteredClass);
+        modelManager.assignStudentToClass(ALICE, displayedClass);
+        modelManager.assignStudentToClass(BENSON, filteredClass);
+
+        modelManager.filterPersonsByClass(filteredClass);
+        modelManager.setAttendanceDisplayClass(displayedClass);
+        AcademicClass renamedClass = new AcademicClass(
+                displayedClass.getModuleCode(), new ClassName("F11-2"), displayedClass);
+
+        modelManager.setAcademicClass(displayedClass, renamedClass);
+
+        assertEquals(List.of(BENSON), modelManager.getFilteredPersonList());
+        assertEquals(Optional.of(renamedClass), modelManager.getAttendanceDisplayClass());
+    }
+
+    @Test
     public void attendanceDisplayClass_canBeSetAndCleared() {
         AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103"), new ClassName("F10-2"));
         modelManager.addAcademicClass(academicClass);
