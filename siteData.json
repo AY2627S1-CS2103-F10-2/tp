@@ -52,6 +52,7 @@
         "storage-component": "Storage component",
         "common-classes": "Common classes",
         "implementation": "Implementation",
+        "arrow-key-command-history-navigation": "Arrow key command history navigation",
         "adding-an-academic-class": "Adding an academic class",
         "deleting-an-academic-class": "Deleting an academic class",
         "proposed-undo-redo-feature": "[Proposed] Undo/redo feature",
