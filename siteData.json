@@ -124,6 +124,8 @@
         "listing-all-classes-listclass": "Listing all classes: listclass",
         "creating-a-class-addclass": "Creating a class: addclass",
         "assigning-a-student-to-a-class-assign": "Assigning a student to a class: assign",
+        "recording-attendance-addattendance": "Recording attendance: addattendance",
+        "removing-attendance-deleteattendance": "Removing attendance: deleteattendance",
         "editing-a-student-edit": "Editing a student: edit",
         "editing-a-class-editclass": "Editing a class: editclass",
         "locating-students-by-name-find": "Locating students by name: find",
