@@ -38,8 +38,8 @@ public interface Model {
 
     /**
      * Removes a recorded date, including history retained after unassignment.
-     * Returns false if no matching date exists.
-     * @throws IllegalArgumentException if an endpoint is missing or the date is in the future.
+     * Recorded dates remain removable after a clock rollback. Returns false for an unrecorded non-future date.
+     * @throws IllegalArgumentException if an endpoint is missing or an unrecorded date is in the future.
      * @throws NullPointerException if any argument is null.
      */
     boolean removeAttendance(Person person, AcademicClass academicClass, LocalDate date);
@@ -194,6 +194,14 @@ public interface Model {
      * @throws NullPointerException if {@code predicate} is null.
      */
     void updateFilteredAcademicClassList(Predicate<AcademicClass> predicate);
+
+    /**
+     * Shows classes containing the selected student, preserving class insertion order.
+     * Keeps this view updated after membership changes and edits to the student's number.
+     * Leaves the displayed student list unchanged.
+     * @throws NullPointerException if {@code studentNumber} is null.
+     */
+    void updateFilteredAcademicClassListByStudent(StudentNumber studentNumber);
 
     /**
      * Unassigns the stored student from the stored academic class with the given identities.

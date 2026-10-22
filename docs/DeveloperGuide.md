@@ -192,6 +192,16 @@ Step 5. The command returns a successful `CommandResult` with the message `New c
 **Note:** The logic diagram shows both successful addition and duplicate-class rejection. The model diagram expands only the successful addition. Invalid arguments cause a `ParseException` before the command is created. If `Model#hasAcademicClass()` returns `true`, the command throws a `CommandException` without adding the class. Neither failure reaches the save operation.
 </box>
 
+### Deleting an academic class
+
+The `deleteclass` command identifies an existing class by its module code and class name. `AddressBookParser` delegates argument validation to `DeleteClassCommandParser`, which creates a `DeleteClassCommand`. The command looks up the class through `Model#getAddressBook()` and calls `Model#deleteAcademicClass()` before returning a successful `CommandResult`.
+
+The following diagram shows a successful run of `deleteclass m/CS2103 c/F10-2`, assuming that class exists. The class is removed and the returned feedback is `Deleted class: CS2103-F10-2`. Parsing helpers, result construction, and storage calls are omitted for clarity; `LogicManager` saves the updated address book before returning the result to the UI.
+
+<puml src="diagrams/DeleteClassSequenceDiagram-Logic.puml" alt="Deleting an academic class through the Logic component" />
+
+Invalid arguments cause a `ParseException` before command creation. If the class is absent, the command throws a `CommandException` without deleting anything. These error paths are omitted from the diagram.
+
 ### \[Proposed\] Undo/redo feature
 
 #### Proposed Implementation
@@ -657,6 +667,26 @@ testers are expected to do more *exploratory* testing.
    1. Close and reopen the app after the successful assignments.<br>
       Expected: The class still shows 2 students. Its `studentNumbers` JSON list contains each assigned
       student number once. Repeating either assignment reports that the student is already assigned.
+
+### Listing classes by student
+
+1. Add students and classes using unused identifiers:
+   `add sn/A0999801X n/AlphaDemoAlice e/alpha.demo.alice@example.com`,
+   `add sn/A0999802Y n/AlphaDemoBob e/alpha.demo.bob@example.com`,
+   `addclass m/CS2103 c/DEMO-T01`, and `addclass m/CS2100 c/DEMO-L01`.
+2. Assign Alice to both classes using `assign sn/A0999801X m/CS2103 c/DEMO-T01` and
+   `assign sn/A0999801X m/CS2100 c/DEMO-L01`.
+3. Run `find AlphaDemoAlice`, then `listbystudent 1`.
+   Expected: both classes appear in creation order; feedback reports two classes and Alice's identity.
+   The student search results remain unchanged.
+4. Run `listbystudent 0`, `listbystudent 1 extra`, and `listbystudent 2`.
+   Expected: invalid-command or invalid-index feedback; both views remain unchanged.
+5. Run `unassign sn/A0999801X m/CS2103 c/DEMO-T01`.
+   Expected: only CS2100 DEMO-L01 remains in the Classes panel.
+6. Run `find AlphaDemoBob`, then `listbystudent 1`.
+   Expected: zero matching classes and an empty Classes panel.
+7. Run `listclass` to restore all classes, and `list` to restore all students.
+   Restart the app and repeat Alice's lookup to verify that memberships persist while display filters reset.
 
 ### Saving data
 

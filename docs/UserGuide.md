@@ -35,6 +35,10 @@ TAssist is a **desktop application for NUS Teaching Assistants who need to manag
 
    * `addclass m/CS2103T c/F10-2 l/11` : Creates a class named `F10-2` for module `CS2103T` with 11 total lessons.
 
+   * `listclass` : Lists all classes.
+
+   * `listbystudent 1` : Lists the classes assigned to the 1st student shown in the current student list.
+
    * `delete 3` : Deletes the 3rd student shown in the current list.
 
    * `deleteclass m/CS2103T c/F10-2` : Deletes the class named `F10-2` for module `CS2103T`.
@@ -134,6 +138,7 @@ Format: `list`
 Expected output: `Listed all persons.`
 
 The student list displays each student's name, student number, email, optional Telegram username, and tags.
+This command leaves the current class filter unchanged. Use `listclass` to restore all classes as well.
 
 ### Listing students by class: `listbyclass`
 
@@ -178,9 +183,106 @@ The student list shows only Amy Test followed by Zoe Test, with the message
 After closing and reopening TAssist, check the class list and run `listbyclass 1` again to display the saved
 memberships alphabetically. The filtered view itself is not saved. Run `list` to return to all students.
 
-**Known limitation:** Updating class memberships when assigned students are edited or deleted is deferred to v1.4.
-Avoid editing student numbers or deleting assigned students for now: stale membership references can prevent
-the saved data from loading on restart. Back up your data before experimenting with these operations.
+Editing a student updates their existing class memberships. Deleting a student removes their memberships
+while retaining the classes and other students.
+
+### Listing classes by student: `listbystudent`
+
+Shows the classes assigned to the student at the specified index in the displayed student list.
+Matching classes appear in the **Classes** panel. The feedback message reports their count and the selected student's
+name and student number.
+
+Format: `listbystudent INDEX`
+
+* `INDEX` must be a positive integer shown beside a student in the current Students panel.
+  After `find` or `listbyclass`, use the index in those results, not the student's original index.
+* The Classes panel shows all of that student's classes, in class creation order, even if classes were previously filtered.
+  Classes assigned only to other students and classes with no students are excluded.
+* A student with no assigned classes produces an empty Classes panel and a count of zero.
+* The displayed student list, student records, and memberships are unchanged.
+* The class view updates after assignments, unassignments, and edits to the selected student's number.
+  Deleting the selected student empties this view without deleting classes.
+* Changing the student search with `find` does not change the selected student's class view.
+  Run `listbystudent` again to select a student from the new search results.
+* Use `listclass` to show all classes again. `list` restores the student list only.
+* The filter is not saved across restarts; memberships are saved.
+
+Examples:
+
+* `listbystudent 1` shows classes for the first student in the current student list.
+* `find AlphaDemoAlice`, followed by `listbystudent 1`, shows classes for the first student in that search result.
+
+**Example walkthrough**
+
+Use unused student numbers, email addresses, and module/class pairs for this walkthrough. Enter each command separately.
+If you already created these demonstration records, reuse them and skip the corresponding creation commands.
+
+```text
+add sn/A0999801X n/AlphaDemoAlice e/alpha.demo.alice@example.com
+add sn/A0999802Y n/AlphaDemoBob e/alpha.demo.bob@example.com
+addclass m/CS2103 c/DEMO-T01
+addclass m/CS2100 c/DEMO-L01
+addclass m/CS2106 c/DEMO-BOB
+addclass m/CS2103 c/DEMO-EMPTY
+assign sn/A0999801X m/CS2103 c/DEMO-T01
+assign sn/A0999801X m/CS2100 c/DEMO-L01
+assign sn/A0999802Y m/CS2106 c/DEMO-BOB
+find AlphaDemoAlice
+listbystudent 1
+```
+
+Expected feedback: `Listed 2 classes for AlphaDemoAlice (A0999801X).`
+The Classes panel shows `CS2103 DEMO-T01` followed by `CS2100 DEMO-L01`.
+Bob's `CS2106 DEMO-BOB` class and the empty `CS2103 DEMO-EMPTY` class are hidden.
+The Students panel still shows Alice's search result.
+
+To select Bob instead, run:
+
+```text
+find AlphaDemoBob
+listbystudent 1
+```
+
+Only `CS2106 DEMO-BOB` appears. Bob is index `1` in the search results, regardless of his index before searching.
+
+To check a student with no memberships and see the view update automatically, run:
+
+```text
+unassign sn/A0999802Y m/CS2106 c/DEMO-BOB
+listbystudent 1
+```
+
+The Classes panel becomes empty after unassignment. The listing command reports:
+`Listed 0 classes for AlphaDemoBob (A0999802Y).`
+Restore the assignment with `assign sn/A0999802Y m/CS2106 c/DEMO-BOB`; Bob's class reappears automatically.
+
+**Common errors**
+
+| Input | Expected result |
+| --- | --- |
+| `listbystudent`, `listbystudent 0`, `listbystudent -1`, or `listbystudent abc` | Invalid command format, followed by the usage and an example. Supply one positive integer. |
+| `listbystudent 1 extra` | Invalid command format. Extra arguments are rejected. |
+| `listbystudent 2` when only one student is displayed | `The person index provided is invalid.` Use an index visible in the Students panel. |
+
+Rejected commands preserve both displayed lists. Selecting a valid student with no classes is a successful operation.
+
+### Listing all classes: `listclass`
+
+Shows all academic classes in creation order and clears the class filter set by `listbystudent`.
+The displayed student list is unchanged.
+
+Format: `listclass`
+
+Expected output: `Listed all classes.` Extra arguments are rejected.
+
+The student and class filters can be reset independently:
+
+| Command | Students panel | Classes panel |
+| --- | --- | --- |
+| `list` | Shows all students | Keeps the current class filter |
+| `listclass` | Keeps the current student filter | Shows all classes, including empty classes |
+
+Run `list` followed by `listclass` to restore both complete lists.
 
 ### Creating a class: `addclass`
 
@@ -249,6 +351,75 @@ Common errors:
 
 Rejected commands leave memberships and student counts unchanged.
 
+### Recording attendance: `addattendance`
+
+Records one attended date for a student in a particular module and class.
+
+Format: `addattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD`
+
+* The student and class must exist, and the student must currently be assigned to that class.
+* `STUDENT_INDEX` selects a student in the current displayed student list, including `find` and `listbyclass` results.
+  `CLASS_INDEX` selects a class in the current displayed class list, including `listbystudent` results.
+* Put the student index first and the class index second, followed by exactly one `d/` date.
+  Both indices must be positive integers within their respective displayed lists.
+  Missing, extra, zero, negative, non-integer and out-of-range indices are rejected.
+* Check both displayed indices again after changing views, editing data or changing class membership,
+  including when recalling an old command. The same indices may now refer to a different student or class.
+* Student-number input (`sn/`), module/class prefixes (`m/`, `c/`) and other unknown prefixes are rejected.
+  Extra whitespace between the indices and around the date is accepted.
+* Use a valid calendar date with a year from `0001` to `9999`, a two-digit month and a two-digit day.
+  Today and past dates are accepted; future dates are rejected using your computer's local date.
+* Recording the same date twice for the same student and class is rejected without changing the existing record.
+  Other students and classes have separate attendance histories.
+* Recording attendance does not change your current student or class list view.
+* Successful records are saved automatically and retained after restarting TAssist.
+  Unassigning a student keeps their history, but new dates cannot be recorded until they are assigned again.
+  Deleting the student or class removes the associated attendance history.
+
+Example (after creating the student and class):
+
+1. `assign sn/A0123456X m/CS2103 c/F10-2`
+2. Run `list` and `listclass`. Check the student's index (assumed to be `1`) and the class's index (assumed to be `2`).
+3. `addattendance 1 2 d/2024-02-29`
+
+TAssist displays a confirmation message when the date is recorded. This command does not add an attendance display
+to student cards.
+
+### Removing attendance: `deleteattendance`
+
+Removes one previously recorded date for a student in a particular module and class.
+
+Format: `deleteattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD`
+
+* The student and class must still exist, and the specified date must already be recorded for that pair.
+* The student does not need to be currently assigned to the class. You can correct retained history after unassignment.
+  If the student disappeared from `listbyclass`, run `list`. If the class is hidden by `listbystudent`, run `listclass`.
+  Use their newly displayed indices.
+* `STUDENT_INDEX` selects a student in the current displayed student list, including `find` and `listbyclass` results.
+  `CLASS_INDEX` selects a class in the current displayed class list, including `listbystudent` results.
+* Put the student index first and the class index second, followed by exactly one `d/` date.
+  Both indices must be positive integers within their respective displayed lists.
+  Missing, extra, zero, negative, non-integer and out-of-range indices are rejected.
+* Check both displayed indices again after changing views, editing data or changing class membership,
+  including when recalling an old command. The same indices may now refer to a different student or class.
+* Student-number input (`sn/`), module/class prefixes (`m/`, `c/`) and other unknown prefixes are rejected.
+  Extra whitespace between the indices and around the date is accepted.
+* Use a valid calendar date in `YYYY-MM-DD` format, with a year from `0001` to `9999`.
+  An already-recorded date can be removed even if it appears future after a clock or timezone change.
+  This does not allow future attendance to be added. Unrecorded future dates are rejected.
+* An unrecorded date, including a date already removed, is rejected without changing existing data.
+* Only the specified date is removed. Other attendance dates, students, classes, memberships and current views
+  are unchanged. Removing the last date leaves an attendance count of zero.
+* Successful removal is saved automatically and remains in effect after restarting TAssist.
+  You can record the removed date again with `addattendance` if the student is currently assigned to the class.
+
+Example (after recording attendance for student index `1` in class index `2` in the current displayed lists):
+
+`deleteattendance 1 2 d/2024-02-29`
+
+TAssist displays a confirmation message when the date is removed. Repeating this command reports that the date
+is not recorded.
+
 ### Editing a student: `edit`
 
 Edits an existing student in TAssist.
@@ -284,6 +455,8 @@ Format: `editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]`
 * Supplied values replace the corresponding existing details. Omitted fields remain unchanged.
 * The resulting module code and class name must not identify another existing class. Different modules can have classes with the same name.
 * Student memberships are preserved. Student records, other classes, and memberships in other classes remain unchanged.
+* Attendance history is preserved, including records for students who are no longer assigned to the class.
+  Check the class's displayed index before using subsequent attendance commands.
 * If the current student view lists members of the edited class, it follows the renamed class and remains alphabetical. Other student filters and their displayed order remain unchanged.
 * Subsequent commands that identify the class by module code and class name must use its updated details.
 
@@ -492,7 +665,6 @@ The following MVP commands are planned or specified, but are not currently accep
 * `addstudent sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM]`: use `add sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM]` instead.
 * `deletestudent sn/STUDENT_NUMBER`: use `delete INDEX` instead.
 * `liststudent`: use `list` instead.
-* `listclass`
 
 If any of these command words are entered, TAssist displays `Unknown command.`
 
@@ -520,13 +692,17 @@ Action     | Format, Examples
 **Add Class** | `addclass m/MODULE_CODE c/CLASS_NAME` <br> e.g., `addclass m/CS2103T c/F10-2`
 **Assign** | `assign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME` <br> e.g., `assign sn/A0123456X m/CS2103T c/F10-2`
 **Clear**  | `clear`
+**Add attendance** | `addattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD`<br> e.g., `addattendance 1 2 d/2024-02-29`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
+**Delete attendance** | `deleteattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD`<br> e.g., `deleteattendance 1 2 d/2024-02-29`
 **Delete Class** | `deleteclass m/MODULE_CODE c/CLASS_NAME`<br> e.g., `deleteclass m/CS2103T c/F10-2`
 **Edit**   | `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
 **Edit Class** | `editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]`<br> e.g., `editclass 1 m/CS2103 c/F11`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **List**   | `list`
 **List students by class** | `listbyclass INDEX`<br> e.g., `listbyclass 1`
+**List classes by student** | `listbystudent INDEX`<br> e.g., `listbystudent 1`
+**List all classes** | `listclass`
 **Unassign** | `unassign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME`<br> e.g., `unassign sn/A1111111H m/CS2103 c/F10`
 **Help**   | `help`
 **Exit**   | `exit`

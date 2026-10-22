@@ -24,6 +24,7 @@ import seedu.address.logic.commands.ExitCommand;
 import seedu.address.logic.commands.FindCommand;
 import seedu.address.logic.commands.HelpCommand;
 import seedu.address.logic.commands.ListByClassCommand;
+import seedu.address.logic.commands.ListByStudentCommand;
 import seedu.address.logic.commands.ListClassCommand;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
@@ -39,6 +40,12 @@ import seedu.address.testutil.PersonUtil;
 public class AddressBookParserTest {
 
     private final AddressBookParser parser = new AddressBookParser();
+
+    @Test
+    public void parseCommand_listByStudent() throws Exception {
+        assertEquals(new ListByStudentCommand(INDEX_FIRST_PERSON), parser.parseCommand("listbystudent 1"));
+        assertThrows(ParseException.class, () -> parser.parseCommand("listbystudent"));
+    }
 
     @Test
     public void parseCommand_listByClass() throws Exception {
