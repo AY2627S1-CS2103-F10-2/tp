@@ -1,0 +1,61 @@
+@startuml
+skin rose
+skinparam ActivityFontSize 15
+skinparam ArrowFontSize 12
+
+start
+:Parse and validate the
+assign or unassign arguments;
+
+' Guards are on the outgoing branches, matching CommitActivityDiagram.puml.
+if () then ([invalid arguments])
+    :Report input error;
+    stop
+else ([valid arguments])
+endif
+
+:Find student by student number;
+if () then ([student absent])
+    :Report student not found;
+    stop
+else ([student exists])
+endif
+
+:Find class by module code
+and class name;
+if () then ([class absent])
+    :Report class not found;
+    stop
+else ([class exists])
+endif
+
+:Attempt the requested
+membership update through Model;
+note right
+assign adds the stored student to the set.
+unassign removes the stored student.
+No student or class record is deleted.
+end note
+
+if () then ([membership unchanged])
+    :Report already assigned (assign)
+    or not assigned (unassign);
+    stop
+else ([membership changed])
+endif
+
+:Create success CommandResult;
+:Save the address book;
+if () then ([saving fails])
+    :Report save error;
+    note right
+    The in-memory membership change
+    is not rolled back.
+    end note
+    stop
+else ([saving succeeds])
+endif
+
+:Return success CommandResult;
+stop
+@enduml
