@@ -59,7 +59,8 @@ public class PersonListPanelTest {
     @Test
     public void updateItem_emptyCell_clearsGraphicAndText() {
         runOnFxThreadAndWait(() -> {
-            PersonListPanel panel = new PersonListPanel(FXCollections.observableArrayList());
+            PersonListPanel panel = new PersonListPanel(FXCollections.observableArrayList(),
+                    Optional::empty, List::of);
             PersonListPanel.PersonListViewCell cell = panel.new PersonListViewCell();
 
             cell.updateItem(null, false);
