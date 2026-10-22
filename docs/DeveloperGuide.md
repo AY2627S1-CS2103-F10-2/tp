@@ -192,6 +192,16 @@ Step 5. The command returns a successful `CommandResult` with the message `New c
 **Note:** The logic diagram shows both successful addition and duplicate-class rejection. The model diagram expands only the successful addition. Invalid arguments cause a `ParseException` before the command is created. If `Model#hasAcademicClass()` returns `true`, the command throws a `CommandException` without adding the class. Neither failure reaches the save operation.
 </box>
 
+### Deleting an academic class
+
+The `deleteclass` command identifies an existing class by its module code and class name. `AddressBookParser` delegates argument validation to `DeleteClassCommandParser`, which creates a `DeleteClassCommand`. The command looks up the class through `Model#getAddressBook()` and calls `Model#deleteAcademicClass()` before returning a successful `CommandResult`.
+
+The following diagram shows a successful run of `deleteclass m/CS2103 c/F10-2`, assuming that class exists. The class is removed and the returned feedback is `Deleted class: CS2103-F10-2`. Parsing helpers, result construction, and storage calls are omitted for clarity; `LogicManager` saves the updated address book before returning the result to the UI.
+
+<puml src="diagrams/DeleteClassSequenceDiagram-Logic.puml" alt="Deleting an academic class through the Logic component" />
+
+Invalid arguments cause a `ParseException` before command creation. If the class is absent, the command throws a `CommandException` without deleting anything. These error paths are omitted from the diagram.
+
 ### \[Proposed\] Undo/redo feature
 
 #### Proposed Implementation
