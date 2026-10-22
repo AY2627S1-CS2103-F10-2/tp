@@ -5,7 +5,9 @@ import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -305,6 +307,18 @@ public class AddressBook implements ReadOnlyAddressBook {
     public List<Attendance> getAttendanceList() {
         return attendanceRecords.stream()
                 .map(record -> record.copyFor(record.getStudent(), record.getAcademicClass())).toList();
+    }
+
+    /** Returns attendance date counts for one class without copying the records or their dates. */
+    public Map<StudentNumber, Integer> getAttendanceCounts(AcademicClass academicClass) {
+        requireNonNull(academicClass);
+        Map<StudentNumber, Integer> counts = new HashMap<>();
+        for (Attendance record : attendanceRecords) {
+            if (record.getAcademicClass().isSameClass(academicClass)) {
+                counts.put(record.getStudent().getStudentNumber(), record.getAttendanceCount());
+            }
+        }
+        return counts;
     }
 
     /** Records a valid date against canonical stored endpoints; membership eligibility is caller policy. */

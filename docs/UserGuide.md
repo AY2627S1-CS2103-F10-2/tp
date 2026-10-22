@@ -145,24 +145,34 @@ This command leaves the current class filter unchanged. Use `listclass` to resto
 Shows only students assigned to the class at the specified displayed index, alphabetically by name using the existing
 student cards.
 Each card also shows the dates on which that student attended the class.
+Optionally, specify `t/THRESHOLD` to filter for class members with fewer than `THRESHOLD` recorded attendance dates in that class.
 
-Format: `listbyclass INDEX`
+Format: `listbyclass INDEX [t/THRESHOLD]`
 
 * `INDEX` must be a positive integer referring to a class in the displayed class list.
+* `THRESHOLD` (optional) must be a positive integer.
+  * When `t/THRESHOLD` is provided, only students assigned to the selected class with **fewer than `THRESHOLD` recorded attendance dates** for that class are displayed.
+  * Students with no recorded attendance for that class count as having `0` attendance dates (for example, `t/1` displays only students with `0` recorded dates, and `t/5` displays students with `0` to `4` recorded dates while excluding students with `5` or more dates).
+  * Attendance recorded for other classes does not affect the count for the selected class.
+  * Omitting `t/THRESHOLD` lists all students assigned to the class and clears any active attendance threshold restriction.
 * The class list index is independent of the student list index.
-* An invalid or out-of-range index is rejected without changing the student list.
+* An invalid or out-of-range index or threshold is rejected without changing the student list.
 * Names are sorted ignoring case, with original spelling used to break ties.
-* An existing class with no students shows an empty student list and a count of zero.
+* Adding or deleting attendance dates, or assigning/unassigning students, immediately updates the displayed list against the active class and threshold filter.
+* An existing class with no matching students shows an empty student list and a count of zero.
 * Deleting the class currently being displayed empties the student list without deleting student records.
   If you recreate the class, subsequent assignments update this view using the new class membership.
+* Renaming the class currently being displayed with `editclass` preserves both the class view and any active `t/THRESHOLD` attendance filter.
 * This command changes only the displayed student list, not student records, class memberships, or the class list.
 * Use `list` to show all students again. `list` and `find` display results in their original insertion order.
 
 Examples:
 
-* Check the class list displayed in the UI, then run `listbyclass INDEX` for the desired class.
+* Check the class list displayed in the UI, then run `listbyclass 1` to list all students in the 1st displayed class, or `listbyclass 1 t/5` to list only students in the 1st displayed class with fewer than 5 recorded attendance dates.
 
-The result message includes the student count and class, for example: `Listed 2 students taking CS2103 (F10-2).`
+The result message includes the student count and class (and the threshold when specified), for example:
+* `Listed 2 students taking CS2103 (F10-2).`
+* `Listed 1 students taking CS2103 (F10-2) with fewer than 5 recorded attendance dates.`
 
 Classes created with `addclass` start empty. Use `assign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME`
 to assign an existing student before listing the class. Memberships are saved across restarts.
@@ -699,7 +709,7 @@ Action     | Format, Examples
 **Edit Class** | `editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]`<br> e.g., `editclass 1 m/CS2103 c/F11`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **List**   | `list`
-**List students by class** | `listbyclass INDEX`<br> e.g., `listbyclass 1`
+**List students by class** | `listbyclass INDEX [t/THRESHOLD]`<br> e.g., `listbyclass 1`, `listbyclass 1 t/5`
 **List classes by student** | `listbystudent INDEX`<br> e.g., `listbystudent 1`
 **List all classes** | `listclass`
 **Unassign** | `unassign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME`<br> e.g., `unassign sn/A1111111H m/CS2103 c/F10`
