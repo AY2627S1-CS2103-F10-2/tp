@@ -38,6 +38,7 @@ public class ModelManager implements Model {
     private AcademicClass personFilterClass;
     private final FilteredList<AcademicClass> filteredAcademicClasses;
     private final ObservableList<AcademicClass> displayedAcademicClasses;
+    private AcademicClass attendanceDisplayClass;
     private Predicate<AcademicClass> academicClassFilter = PREDICATE_SHOW_ALL_ACADEMIC_CLASSES;
     // Tracks the selected student's identity independently of changes to the displayed student index.
     private StudentNumber classFilterStudentNumber;
@@ -90,12 +91,24 @@ public class ModelManager implements Model {
 
     @Override
     public boolean addAttendance(Person person, AcademicClass academicClass, LocalDate date) {
-        return addressBook.addAttendance(person, academicClass, date);
+        boolean added = addressBook.addAttendance(person, academicClass, date);
+        logger.info((added ? "Added" : "Skipped duplicate") + " attendance for class "
+                + academicClass.getModuleCode() + " (" + academicClass.getClassName() + ")");
+        if (added) {
+            refreshFilteredPersonList();
+        }
+        return added;
     }
 
     @Override
     public boolean removeAttendance(Person person, AcademicClass academicClass, LocalDate date) {
-        return addressBook.removeAttendance(person, academicClass, date);
+        boolean removed = addressBook.removeAttendance(person, academicClass, date);
+        logger.info((removed ? "Removed" : "Could not remove") + " attendance for class "
+                + academicClass.getModuleCode() + " (" + academicClass.getClassName() + ")");
+        if (removed) {
+            refreshFilteredPersonList();
+        }
+        return removed;
     }
 
     @Override
@@ -120,6 +133,11 @@ public class ModelManager implements Model {
     @Override
     public Optional<Person> findPersonByStudentNumber(StudentNumber studentNumber) {
         return addressBook.findPersonByStudentNumber(studentNumber);
+    }
+
+    @Override
+    public Optional<AcademicClass> getAttendanceDisplayClass() {
+        return Optional.ofNullable(attendanceDisplayClass);
     }
 
 
@@ -166,11 +184,16 @@ public class ModelManager implements Model {
 
         boolean isViewingTargetClass = personFilterClass != null
                 && personFilterClass.isSameClass(target);
+        boolean isDisplayingTargetClass = attendanceDisplayClass != null
+                && attendanceDisplayClass.isSameClass(target);
 
         addressBook.setAcademicClass(target, editedClass);
 
         if (isViewingTargetClass) {
             filterPersonsByClass(editedClass);
+        }
+        if (isDisplayingTargetClass) {
+            setAttendanceDisplayClass(editedClass);
         }
 
     }
@@ -220,6 +243,21 @@ public class ModelManager implements Model {
     }
 
     @Override
+    public void setAttendanceDisplayClass(AcademicClass academicClass) {
+        requireNonNull(academicClass);
+        attendanceDisplayClass = academicClass;
+        logger.info("Displaying attendance for class " + academicClass.getModuleCode() + " ("
+                + academicClass.getClassName() + ")");
+        refreshFilteredPersonList();
+    }
+
+    @Override
+    public void clearAttendanceDisplayClass() {
+        attendanceDisplayClass = null;
+        logger.fine("Cleared attendance display class");
+    }
+
+    @Override
     public ObservableList<AcademicClass> getAcademicClassList() {
         return addressBook.getAcademicClassList();
     }
@@ -243,6 +281,7 @@ public class ModelManager implements Model {
     @Override
     public void updateFilteredPersonList(Predicate<Person> predicate) {
         requireNonNull(predicate);
+        clearAttendanceDisplayClass();
         this.personFilterClass = null;
         personFilter = predicate;
         filteredPersons.setPredicate(predicate);
@@ -290,7 +329,8 @@ public class ModelManager implements Model {
     /**
      * Re-evaluates membership-dependent predicates without changing the current display order.
      */
-    private void refreshFilteredPersonList() {
+    @Override
+    public void refreshFilteredPersonList() {
         // Wrap the original predicate, not the previous wrapper, to avoid accumulating nested calls.
         Predicate<Person> predicate = personFilter;
         filteredPersons.setPredicate(predicate::test);

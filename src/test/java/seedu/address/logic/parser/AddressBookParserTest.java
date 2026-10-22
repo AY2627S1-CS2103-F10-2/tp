@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.commons.core.index.Index;
 import seedu.address.logic.commands.AddClassCommand;
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.ClearCommand;
@@ -48,8 +49,8 @@ public class AddressBookParserTest {
 
     @Test
     public void parseCommand_listByClass() throws Exception {
-        assertEquals(new ListByClassCommand(new ModuleCode("CS2103"), new ClassName("F10-2")),
-                parser.parseCommand("listbyclass m/CS2103 c/F10-2"));
+        assertEquals(new ListByClassCommand(Index.fromOneBased(1)),
+                parser.parseCommand("listbyclass 1"));
     }
 
     @Test

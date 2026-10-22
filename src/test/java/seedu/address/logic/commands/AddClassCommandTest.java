@@ -98,6 +98,21 @@ public class AddClassCommandTest {
         }
 
         @Override
+        public Optional<AcademicClass> getAttendanceDisplayClass() {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public void setAttendanceDisplayClass(AcademicClass academicClass) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public void clearAttendanceDisplayClass() {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
         public boolean addAttendance(Person person, AcademicClass academicClass, LocalDate date) {
             throw new AssertionError("This method should not be called.");
         }

@@ -155,7 +155,7 @@ public class AttendanceLifecycleTest {
 
     @Test
     public void execute_renameClass_attendanceCommandsUseNewIdentityAcrossReload() throws Exception {
-        logic.execute("listbyclass m/CS2103 c/F10-2");
+        logic.execute("listbyclass 1");
         logic.execute("editclass 1 m/CS2101 c/F11-2");
         assertEquals(1, model.getFilteredPersonList().size());
         assertDates(Set.of(DATE));

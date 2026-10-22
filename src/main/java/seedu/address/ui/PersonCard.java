@@ -1,12 +1,16 @@
 package seedu.address.ui;
 
 import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
+import seedu.address.model.academicclass.AcademicClass;
+import seedu.address.model.attendance.Attendance;
 import seedu.address.model.person.Person;
 
 /**
@@ -39,12 +43,25 @@ public class PersonCard extends UiPart<Region> {
     @FXML
     private Label telegram;
     @FXML
+    private Label attendance;
+    @FXML
     private FlowPane tags;
 
     /**
      * Creates a {@code PersonCard} with the given {@code Person} and index to display.
      */
     public PersonCard(Person person, int displayedIndex) {
+        this(person, displayedIndex, null);
+    }
+
+    /** Creates a card and optionally shows this student's attendance for a class. */
+    public PersonCard(Person person, int displayedIndex, AcademicClass attendanceClass) {
+        this(person, displayedIndex, attendanceClass, List.of());
+    }
+
+    /** Creates a card and optionally shows this student's attendance for a class. */
+    public PersonCard(Person person, int displayedIndex, AcademicClass attendanceClass,
+            List<Attendance> attendanceRecords) {
         super(FXML);
         this.person = person;
         id.setText(displayedIndex + ". ");
@@ -57,8 +74,30 @@ public class PersonCard extends UiPart<Region> {
             telegram.setVisible(false);
             telegram.setManaged(false);
         }
+        attendance.setWrapText(true);
+        attendance.setMaxWidth(Double.MAX_VALUE);
+        if (attendanceClass == null) {
+            attendance.setVisible(false);
+            attendance.setManaged(false);
+        } else {
+            updateAttendance(attendanceClass, attendanceRecords);
+        }
         person.getTags().stream()
                 .sorted(Comparator.comparing(tag -> tag.tagName))
                 .forEach(tag -> tags.getChildren().add(new Label(tag.tagName)));
+    }
+
+    private void updateAttendance(AcademicClass attendanceClass, List<Attendance> attendanceRecords) {
+        Attendance attendanceRecord = attendanceRecords.stream()
+                .filter(record -> record.getStudent().isSamePerson(person)
+                        && record.getAcademicClass().isSameClass(attendanceClass))
+                .findFirst()
+                .orElse(null);
+        String attendedDates = attendanceRecord == null || attendanceRecord.getAttendedDates().isEmpty()
+                ? "No attendance recorded"
+                : attendanceRecord.getAttendedDates().stream()
+                        .map(Object::toString)
+                        .collect(Collectors.joining(", "));
+        attendance.setText(attendedDates);
     }
 }

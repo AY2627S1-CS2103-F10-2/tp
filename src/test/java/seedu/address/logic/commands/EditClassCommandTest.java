@@ -11,6 +11,7 @@ import static seedu.address.testutil.TypicalPersons.BENSON;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -171,9 +172,10 @@ public class EditClassCommandTest {
 
     @Test
     public void execute_afterListByClass_followsEditedClassFilter() throws Exception {
-        new ListByClassCommand(MODULE, NAME).execute(model);
+        new ListByClassCommand(Index.fromOneBased(1)).execute(model);
         command(null, NEW_NAME).execute(model);
         AcademicClass edited = model.getAcademicClassList().getFirst();
+        assertEquals(Optional.of(edited), model.getAttendanceDisplayClass());
         model.unassignStudentFromClass(ALICE, edited);
         assertEquals(List.of(BENSON), model.getFilteredPersonList());
         assertEquals(Set.of(BENSON), edited.getStudents());

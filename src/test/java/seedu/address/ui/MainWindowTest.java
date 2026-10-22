@@ -3,6 +3,8 @@ package seedu.address.ui;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -20,6 +22,7 @@ import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.academicclass.AcademicClass;
+import seedu.address.model.attendance.Attendance;
 import seedu.address.model.person.Person;
 
 public class MainWindowTest {
@@ -80,6 +83,16 @@ public class MainWindowTest {
         @Override
         public ObservableList<Person> getFilteredPersonList() {
             return FXCollections.observableArrayList();
+        }
+
+        @Override
+        public Optional<AcademicClass> getAttendanceDisplayClass() {
+            return Optional.empty();
+        }
+
+        @Override
+        public List<Attendance> getAttendanceList() {
+            return List.of();
         }
 
         @Override

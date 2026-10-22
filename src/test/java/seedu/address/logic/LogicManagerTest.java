@@ -159,6 +159,19 @@ public class LogicManagerTest {
         assertEquals(model.getFilteredAcademicClassList(), logic.getFilteredAcademicClassList());
     }
 
+    @Test
+    public void getAttendanceDetails_delegatesToModel() {
+        AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103"), new ClassName("F10-2"));
+        model.addPerson(AMY);
+        model.addAcademicClass(academicClass);
+        model.assignStudentToClass(AMY, academicClass);
+        model.addAttendance(AMY, academicClass, LocalDate.of(2020, 1, 1));
+        model.setAttendanceDisplayClass(academicClass);
+
+        assertEquals(java.util.Optional.of(academicClass), logic.getAttendanceDisplayClass());
+        assertEquals(model.getAttendanceList(), logic.getAttendanceList());
+    }
+
     /**
      * Executes the command and confirms that
      * - no exceptions are thrown <br>

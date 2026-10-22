@@ -79,6 +79,9 @@ public interface Model {
      */
     Optional<Person> findPersonByStudentNumber(StudentNumber studentNumber);
 
+    /** Returns the class whose attendance is currently shown beside the person list, if any. */
+    Optional<AcademicClass> getAttendanceDisplayClass();
+
 
     /**
      * Returns true if a person with the same email (ignoring case) as {@code person} exists in the address book.
@@ -151,6 +154,12 @@ public interface Model {
      */
     boolean assignStudentToClass(Person person, AcademicClass academicClass);
 
+    /** Sets the class whose attendance should be rendered beside displayed students. */
+    void setAttendanceDisplayClass(AcademicClass academicClass);
+
+    /** Clears the attendance context shown beside displayed students. */
+    void clearAttendanceDisplayClass();
+
     /**
      * Returns an unmodifiable view of the academic class list.
      */
@@ -174,6 +183,11 @@ public interface Model {
      * @throws NullPointerException if {@code predicate} is null.
      */
     void updateFilteredPersonListAlphabetically(Predicate<Person> predicate);
+
+    /** Refreshes the displayed person list without changing its filter or ordering. */
+    default void refreshFilteredPersonList() {
+        // Optional for model implementations that do not expose a live UI list.
+    }
 
     /**
      * Updates the academic class filter while preserving insertion order.

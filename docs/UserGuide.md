@@ -142,27 +142,25 @@ This command leaves the current class filter unchanged. Use `listclass` to resto
 
 ### Listing students by class: `listbyclass`
 
-Shows only students assigned to the specified module and class, alphabetically by name using the existing student cards.
+Shows only students assigned to the class at the specified displayed index, alphabetically by name using the existing
+student cards.
+Each card also shows the dates on which that student attended the class.
 
-Format: `listbyclass m/MODULE_CODE c/CLASS_NAME`
+Format: `listbyclass INDEX`
 
-* Both parameters are required exactly once and can appear in either order. Unknown parameters are rejected.
-* Surrounding spaces are ignored. Module and class names must match an existing pair, ignoring case.
-* Module codes must start with an ASCII letter and contain only ASCII letters or digits.
-* Class names must contain at least one ASCII letter or digit, and may contain only ASCII letters, digits, or hyphens.
-* Empty or invalid values produce the same validation errors as `addclass` and `assign`, without changing the student list.
+* `INDEX` must be a positive integer referring to a class in the displayed class list.
+* The class list index is independent of the student list index.
+* An invalid or out-of-range index is rejected without changing the student list.
 * Names are sorted ignoring case, with original spelling used to break ties.
 * An existing class with no students shows an empty student list and a count of zero.
-* A nonexistent class produces an error without changing the current student list.
 * Deleting the class currently being displayed empties the student list without deleting student records.
-  If you recreate the same module/class pair, subsequent assignments update this view using the new class membership.
+  If you recreate the class, subsequent assignments update this view using the new class membership.
 * This command changes only the displayed student list, not student records, class memberships, or the class list.
 * Use `list` to show all students again. `list` and `find` display results in their original insertion order.
 
 Examples:
 
-* `listbyclass m/CS2103 c/F10-2`
-* `listbyclass c/f10-2 m/cs2103`
+* Check the class list displayed in the UI, then run `listbyclass INDEX` for the desired class.
 
 The result message includes the student count and class, for example: `Listed 2 students taking CS2103 (F10-2).`
 
@@ -177,12 +175,12 @@ add sn/A0999902Y n/Amy Test e/amy.test@example.com
 addclass m/CS2103 c/TEST-103
 assign sn/A0999901X m/CS2103 c/TEST-103
 assign sn/A0999902Y m/CS2103 c/TEST-103
-listbyclass m/CS2103 c/TEST-103
+listbyclass 1
 ```
 
 The student list shows only Amy Test followed by Zoe Test, with the message
 `Listed 2 students taking CS2103 (TEST-103).` Other students and the class list are unchanged.
-After closing and reopening TAssist, run `listbyclass m/CS2103 c/TEST-103` again to display the saved
+After closing and reopening TAssist, check the class list and run `listbyclass 1` again to display the saved
 memberships alphabetically. The filtered view itself is not saved. Run `list` to return to all students.
 
 Editing a student updates their existing class memberships. Deleting a student removes their memberships
@@ -701,7 +699,7 @@ Action     | Format, Examples
 **Edit Class** | `editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]`<br> e.g., `editclass 1 m/CS2103 c/F11`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **List**   | `list`
-**List students by class** | `listbyclass m/MODULE_CODE c/CLASS_NAME`<br> e.g., `listbyclass m/CS2103 c/F10-2`
+**List students by class** | `listbyclass INDEX`<br> e.g., `listbyclass 1`
 **List classes by student** | `listbystudent INDEX`<br> e.g., `listbystudent 1`
 **List all classes** | `listclass`
 **Unassign** | `unassign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME`<br> e.g., `unassign sn/A1111111H m/CS2103 c/F10`
