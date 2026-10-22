@@ -113,11 +113,15 @@ public class Attendance {
 
     /**
      * Removes only the specified date, returning false if it is not recorded.
+     * Recorded dates remain removable after a timezone change or clock rollback.
      * @throws NullPointerException if the date is null.
-     * @throws IllegalArgumentException if the date is after today.
+     * @throws IllegalArgumentException if an unrecorded date is after today.
      */
     public boolean removeDate(LocalDate date) {
-        validateDate(date);
+        requireNonNull(date);
+        if (!attendedDates.contains(date)) {
+            validateDate(date);
+        }
         return attendedDates.remove(date);
     }
 

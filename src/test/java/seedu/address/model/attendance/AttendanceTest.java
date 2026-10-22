@@ -113,6 +113,14 @@ public class AttendanceTest {
     }
 
     @Test
+    public void removeDate_restoredFutureDate_allowsCorrectionWithoutAllowingFutureAddition() {
+        Attendance restored = Attendance.fromRecordedDates(ALICE, academicClass, Set.of(TODAY, LocalDate.MAX));
+        assertTrue(restored.removeDate(LocalDate.MAX));
+        assertEquals(Set.of(TODAY), restored.getAttendedDates());
+        assertThrows(IllegalArgumentException.class, () -> restored.addDate(LocalDate.MAX));
+    }
+
+    @Test
     public void removeDate_future_preservesDates() {
         attendance.addDate(TODAY);
         assertThrows(IllegalArgumentException.class, () -> attendance.removeDate(TODAY.plusDays(1)));

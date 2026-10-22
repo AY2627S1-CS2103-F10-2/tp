@@ -193,6 +193,50 @@ a `CommandException` before the student filter changes. An existing class with n
 the student view becomes empty and the result reports zero students. If saving fails after filtering,
 `LogicManager` reports a `CommandException`; the already-updated view is not rolled back.
 
+### Arrow key command history navigation
+
+Arrow key navigation lets users recall previously executed commands without executing them again. `CommandBox` delegates
+history storage and navigation to its `CommandHistory`, which holds two separate lists and tracks the draft and the
+current browsing position.
+
+Up moves towards older entries and Down moves towards the draft (newer entries). 
+Navigation stops at either boundary, and empty history leaves the input unchanged. 
+Modified arrow keys (such as Shift+Up or Ctrl+Down) do not trigger history navigation. 
+History lasts only for the current session and does not survive between restarts.
+
+<puml src="diagrams/CommandHistoryObjects.puml" alt="CommandBox linked to CommandHistory, its draft and position, and its original and working command lists" />
+
+| Field | Purpose |
+| --- | --- |
+| `commands` | Stores up to 20 successful commands in execution order, oldest first. Editing past commands does not change these entries. |
+| `workingCommands` | Holds a working copy of the history. Temporary edits remain available until the next non-blank command submission, whether it succeeds or fails. |
+| `draft` | Preserves the input from before the user started browsing history. Moving Down past the newest entry restores it. It is separate from the lists because it has not been successfully executed. |
+| `position` | Identifies the selected entry in `workingCommands`, using a zero-based index. A value equal to the list size represents the draft. |
+
+In the diagram, `position = 2` selects `list`. With four history entries, position 4 represents the draft. Moving Down past `find Alice` restores `addclass m/CS2103 n/f`.
+
+#### Preserving temporary edits with two command lists
+
+`commands` preserves the successfully executed commands. `workingCommands` is a separate list that preserves temporary
+edits while browsing history. These partial object diagrams show only the two lists, with entries numbered from zero.
+
+**Step 1: Recall.** After executing `help`, `find Carol`, `list`, and `find Alice`, the user presses Up to recall `find Alice`.
+Both lists contain the same commands.
+
+<puml src="diagrams/CommandHistoryBeforeEdit.puml" alt="CommandHistory with identical original and working lists before editing a recalled command" />
+
+**Step 2: Edit and navigate away.** The user changes the input to `find Bob` without executing it, then presses Up to recall
+`list`. Before moving, `saveCurrentInput()` saves `find Bob` in `workingCommands`. The original list still contains `find Alice`.
+
+<puml src="diagrams/CommandHistoryAfterEdit.puml" alt="CommandHistory with a temporary edit in the working list while the original list remains unchanged" />
+
+Pressing Down now recalls **`find Bob`**, so the user can continue editing it. Using a single list would either overwrite
+the original history entry or lose the temporary edit. After a successful or failed submission, `resetNavigation()`
+rebuilds `workingCommands` from `commands`, discarding temporary browsing edits.
+
+A successful submission first adds the command to `commands` and clears the draft. A failed submission preserves the
+failed input as the draft without adding it to history. Both cases reset `position` to the draft position.
+
 ### Adding an academic class
 
 #### Implementation
@@ -223,6 +267,109 @@ Step 5. The command returns a successful `CommandResult` with the message `New c
 
 **Note:** The logic diagram shows both successful addition and duplicate-class rejection. The model diagram expands only the successful addition. Invalid arguments cause a `ParseException` before the command is created. If `Model#hasAcademicClass()` returns `true`, the command throws a `CommandException` without adding the class. Neither failure reaches the save operation.
 </box>
+
+### Deleting an academic class
+
+The `deleteclass` command identifies an existing class by its module code and class name. `AddressBookParser` delegates argument validation to `DeleteClassCommandParser`, which creates a `DeleteClassCommand`. The command looks up the class through `Model#getAddressBook()` and calls `Model#deleteAcademicClass()` before returning a successful `CommandResult`.
+
+The following diagram shows a successful run of `deleteclass m/CS2103 c/F10-2`, assuming that class exists. The class is removed and the returned feedback is `Deleted class: CS2103-F10-2`. Parsing helpers, result construction, and storage calls are omitted for clarity; `LogicManager` saves the updated address book before returning the result to the UI.
+
+<puml src="diagrams/DeleteClassSequenceDiagram-Logic.puml" alt="Deleting an academic class through the Logic component" />
+
+Invalid arguments cause a `ParseException` before command creation. If the class is absent, the command throws a `CommandException` without deleting anything. These error paths are omitted from the diagram.
+
+### Assigning and unassigning students
+
+`AssignCommand` and `UnassignCommand` change a student's membership in one academic class without
+adding or deleting student records or classes. Both commands identify the stored student by
+`StudentNumber` and the stored class by the combination of `ModuleCode` and `ClassName`.
+Lookups search the address book rather than the displayed student list, so a student hidden by
+a name filter can still be assigned or unassigned.
+
+#### Assigning a student
+
+For example, `assign sn/A1111111H m/CS2103 c/F10` assigns an existing student to an existing class.
+The following sequence diagram starts at `LogicManager#execute(commandText)` and shows successful
+parsing, command creation and execution. Here, `commandText` is the example above and `args` is
+the argument string after the command word. Constructor arguments are abbreviated as `...`;
+the parser passes the validated student number, module code and class name to the command.
+`m:ModelManager` is accessed through the `Model` interface. The `Assign membership (model)`
+reference frame is expanded in the next diagram.
+
+<puml src="diagrams/AssignSequenceDiagram.puml" alt="Successful execution of AssignCommand, resolving the stored student and class through Model before assigning membership" />
+
+1. `LogicManager` asks `AddressBookParser` to parse the input. It creates an `AssignCommandParser`,
+   which validates the arguments and constructs an `AssignCommand`.
+2. `LogicManager` executes the returned command, which resolves the stored `Person` and
+   `AcademicClass` through the model's lookup methods.
+3. The command calls `Model#assignStudentToClass(person, academicClass)`.
+4. On successful membership addition, the command returns a `CommandResult` to `LogicManager`,
+   which saves the address book before returning the result to its caller.
+
+The following model-level sequence expands the membership update. The return value is `true`
+for this scenario because the student was not already a member.
+
+<puml src="diagrams/AssignSequenceDiagram-Model.puml" alt="ModelManager delegates assignment to AddressBook and AcademicClass adds the student to its membership set" />
+
+`ModelManager` delegates to `AddressBook`, which checks the stored-object preconditions using
+assertions before calling `AcademicClass#assignStudent(person)`. The class uses a set to prevent
+duplicate membership. If the student is already assigned, the model returns `false` and
+`AssignCommand` throws a `CommandException` instead of returning success feedback.
+
+#### Unassigning a student
+
+For example, `unassign sn/A1111111H m/CS2103 c/F10` removes an existing membership.
+The following sequence diagram starts at `LogicManager#execute(commandText)`, where `commandText`
+is the example above. It assumes that both records exist and the student belongs to the class.
+Unlike assignment, the current `UnassignCommand` obtains a `ReadOnlyAddressBook` from the model
+and performs its lookups through that interface; `addressBook:AddressBook` is the concrete object.
+Membership changes still go through the `Model` interface.
+
+<puml src="diagrams/UnassignSequenceDiagram.puml" alt="Successful execution of UnassignCommand, resolving records through ReadOnlyAddressBook before requesting removal through Model" />
+
+1. `LogicManager` asks `AddressBookParser` to parse the input. It creates an `UnassignCommandParser`,
+   which validates the arguments and constructs an `UnassignCommand`.
+2. `LogicManager` executes the returned command, which obtains the read-only address book view
+   and resolves the stored student and class.
+3. The command calls `Model#unassignStudentFromClass(person, academicClass)`.
+4. A successful removal produces a `CommandResult`, which `LogicManager` returns after saving
+   the address book.
+
+The `Unassign membership (model)` reference frame is expanded below. Only the selected class's
+student set changes; the student record and memberships in other classes remain intact.
+
+<puml src="diagrams/UnassignSequenceDiagram-Model.puml" alt="ModelManager delegates unassignment to AddressBook and AcademicClass removes the student from its membership set" />
+
+If the student is not a member, `AcademicClass#unassignStudent(person)` returns `false` without
+changing the set. That value propagates back to `UnassignCommand`, which throws a `CommandException`.
+
+#### Validation and failure paths
+
+The activity diagram below complements the successful-execution sequence diagrams. Assignment
+and unassignment share the lookup and persistence workflow, so one diagram shows both rather
+than repeating the same validation paths. The membership operation differs: assignment attempts
+to add the student, while unassignment attempts to remove the student.
+
+<puml src="diagrams/AssignUnassignActivityDiagram.puml" alt="Assign and Unassign workflow showing invalid input, missing student or class, unchanged membership, save failure and successful completion" />
+
+The guards distinguish successful and rejected paths. An unchanged membership means that the
+student is already assigned for `assign`, or is not assigned for `unassign`. In either case, the
+command reports an error before `LogicManager` reaches the saving step. A failure to save after
+a successful membership change is different: the in-memory change has already occurred.
+
+#### Validation, errors and persistence
+
+The sequence diagrams focus on successful execution and omit individual parser validation calls,
+assertion lookups, formatting helpers and exception construction to keep the interactions readable.
+
+* The command parsers reject missing, repeated or unknown prefixes and invalid identifier values
+  with `ParseException` before constructing the command.
+* If either lookup returns an empty `Optional`, the command throws `CommandException` before
+  attempting a membership update. Unassignment looks up the student before the class, as does assignment.
+* A duplicate assignment or an absent membership is rejected without changing memberships.
+* On successful command execution, `LogicManager` saves the address book before returning the
+  result to its caller. Saving occurs outside the scope of these diagrams. If saving fails,
+  `LogicManager` reports a `CommandException`; the in-memory membership change is not rolled back.
 
 ### \[Proposed\] Undo/redo feature
 

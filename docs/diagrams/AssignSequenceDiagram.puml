@@ -1,0 +1,76 @@
+@startuml
+!include style.puml
+skinparam ArrowFontStyle plain
+
+box Logic LOGIC_COLOR_T1
+participant ":LogicManager" as LogicManager LOGIC_COLOR
+participant ":AddressBookParser" as AddressBookParser LOGIC_COLOR
+participant ":AssignCommandParser" as AssignCommandParser LOGIC_COLOR
+participant "a:AssignCommand" as AssignCommand LOGIC_COLOR
+participant "r:CommandResult" as CommandResult LOGIC_COLOR
+end box
+
+box Model MODEL_COLOR_T1
+participant "m:ModelManager" as Model MODEL_COLOR
+end box
+
+[-> LogicManager : execute(assign)
+activate LogicManager
+
+LogicManager -> AddressBookParser : parseCommand(assign)
+activate AddressBookParser
+
+create AssignCommandParser
+AddressBookParser -> AssignCommandParser
+activate AssignCommandParser
+AssignCommandParser --> AddressBookParser
+deactivate AssignCommandParser
+
+AddressBookParser -> AssignCommandParser : parse(args)
+activate AssignCommandParser
+
+create AssignCommand
+AssignCommandParser -> AssignCommand : AssignCommand(...)
+activate AssignCommand
+AssignCommand --> AssignCommandParser
+deactivate AssignCommand
+
+AssignCommandParser --> AddressBookParser : a
+deactivate AssignCommandParser
+AddressBookParser --> LogicManager : a
+deactivate AddressBookParser
+
+LogicManager -> AssignCommand : execute(m)
+activate AssignCommand
+
+AssignCommand -> Model : findPersonByStudentNumber(studentNumber)
+activate Model
+Model --> AssignCommand : Optional.of(person)
+deactivate Model
+
+AssignCommand -> Model : findAcademicClass(moduleCode, className)
+activate Model
+Model --> AssignCommand : Optional.of(academicClass)
+deactivate Model
+
+AssignCommand -> Model : assignStudentToClass(person, academicClass)
+activate Model
+ref over Model
+Assign membership (model)
+end ref
+Model --> AssignCommand : true
+deactivate Model
+
+create CommandResult
+AssignCommand -> CommandResult : CommandResult(successMessage)
+activate CommandResult
+CommandResult --> AssignCommand
+deactivate CommandResult
+
+AssignCommand --> LogicManager : r
+deactivate AssignCommand
+
+
+[<-- LogicManager : r
+deactivate LogicManager
+@enduml
