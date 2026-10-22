@@ -12,38 +12,32 @@ import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
 import seedu.address.model.academicclass.AcademicClass;
-import seedu.address.model.academicclass.ClassName;
-import seedu.address.model.academicclass.ModuleCode;
 import seedu.address.model.person.Person;
 
 /** Records one attended date for a student currently assigned to a class. */
 public class AddAttendanceCommand extends Command {
     public static final String COMMAND_WORD = "addattendance";
     public static final String MESSAGE_USAGE = COMMAND_WORD + ": Records attendance for an assigned student. "
-            + "Parameters: INDEX (a positive integer in the displayed student list) "
-            + "m/MODULE_CODE c/CLASS_NAME d/YYYY-MM-DD\n"
-            + "Example: " + COMMAND_WORD + " 1 m/CS2103 c/F10-2 d/2024-02-29";
+            + "Parameters: STUDENT_INDEX CLASS_INDEX (positive integers in their respective displayed lists) "
+            + "d/YYYY-MM-DD\n"
+            + "Example: " + COMMAND_WORD + " 1 2 d/2024-02-29";
     public static final String MESSAGE_SUCCESS = "Recorded attendance for student (%1$s) in %2$s on %3$s.";
-    public static final String MESSAGE_CLASS_NOT_FOUND = "Class (%1$s-%2$s) cannot be found in the address book.";
     public static final String MESSAGE_NOT_ASSIGNED = "Student (%1$s) is not assigned to class %2$s.";
     public static final String MESSAGE_DUPLICATE_ATTENDANCE =
             "Attendance for student (%1$s) in %2$s on %3$s is already recorded.";
 
     private final Index index;
-    private final ModuleCode moduleCode;
-    private final ClassName className;
+    private final Index classIndex;
     private final LocalDate date;
 
     /**
-     * Creates a command with validated identifiers and a parsed date.
+     * Creates a command with validated indices and a parsed date.
      * Date eligibility is checked by the model when the command executes.
      */
-    public AddAttendanceCommand(Index index, ModuleCode moduleCode,
-            ClassName className, LocalDate date) {
-        requireAllNonNull(index, moduleCode, className, date);
+    public AddAttendanceCommand(Index index, Index classIndex, LocalDate date) {
+        requireAllNonNull(index, classIndex, date);
         this.index = index;
-        this.moduleCode = moduleCode;
-        this.className = className;
+        this.classIndex = classIndex;
         this.date = date;
     }
 
@@ -55,8 +49,11 @@ public class AddAttendanceCommand extends Command {
             throw new CommandException(Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
         }
         Person person = displayedStudents.get(index.getZeroBased());
-        AcademicClass academicClass = model.findAcademicClass(moduleCode, className)
-                .orElseThrow(() -> new CommandException(String.format(MESSAGE_CLASS_NOT_FOUND, moduleCode, className)));
+        List<AcademicClass> displayedClasses = model.getFilteredAcademicClassList();
+        if (classIndex.getZeroBased() >= displayedClasses.size()) {
+            throw new CommandException(Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX);
+        }
+        AcademicClass academicClass = displayedClasses.get(classIndex.getZeroBased());
         if (!academicClass.getStudents().contains(person)) {
             throw new CommandException(String.format(MESSAGE_NOT_ASSIGNED, person.getStudentNumber(), academicClass));
         }
@@ -87,14 +84,13 @@ public class AddAttendanceCommand extends Command {
             return false;
         }
         return index.equals(otherCommand.index)
-                && moduleCode.equals(otherCommand.moduleCode)
-                && className.equals(otherCommand.className)
+                && classIndex.equals(otherCommand.classIndex)
                 && date.equals(otherCommand.date);
     }
 
     @Override
     public String toString() {
         return new ToStringBuilder(this).add("index", index)
-                .add("moduleCode", moduleCode).add("className", className).add("date", date).toString();
+                .add("classIndex", classIndex).add("date", date).toString();
     }
 }

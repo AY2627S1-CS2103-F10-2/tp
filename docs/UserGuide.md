@@ -356,14 +356,18 @@ Rejected commands leave memberships and student counts unchanged.
 
 Records one attended date for a student in a particular module and class.
 
-Format: `addattendance INDEX m/MODULE_CODE c/CLASS_NAME d/YYYY-MM-DD`
+Format: `addattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD`
 
 * The student and class must exist, and the student must currently be assigned to that class.
-* `INDEX` is the positive student index in the current displayed list, including `find` and `listbyclass` results.
-  Check the displayed index again after changing views or class membership. An out-of-range index is rejected.
-* Put `INDEX` first, then supply each of `m/`, `c/` and `d/` exactly once, in any order.
-  Student-number input (`sn/`) and other unknown prefixes are rejected.
-* Outer whitespace in values is trimmed. Module codes and class names are case-insensitive.
+* `STUDENT_INDEX` selects a student in the current displayed student list, including `find` and `listbyclass` results.
+  `CLASS_INDEX` selects a class in the current displayed class list, including `listbystudent` results.
+* Put the student index first and the class index second, followed by exactly one `d/` date.
+  Both indices must be positive integers within their respective displayed lists.
+  Missing, extra, zero, negative, non-integer and out-of-range indices are rejected.
+* Check both displayed indices again after changing views, editing data or changing class membership,
+  including when recalling an old command. The same indices may now refer to a different student or class.
+* Student-number input (`sn/`), module/class prefixes (`m/`, `c/`) and other unknown prefixes are rejected.
+  Extra whitespace between the indices and around the date is accepted.
 * Use a valid calendar date with a year from `0001` to `9999`, a two-digit month and a two-digit day.
   Today and past dates are accepted; future dates are rejected using your computer's local date.
 * Recording the same date twice for the same student and class is rejected without changing the existing record.
@@ -376,8 +380,8 @@ Format: `addattendance INDEX m/MODULE_CODE c/CLASS_NAME d/YYYY-MM-DD`
 Example (after creating the student and class):
 
 1. `assign sn/A0123456X m/CS2103 c/F10-2`
-2. Run `list` and check the student's displayed index (assumed to be `1` below).
-3. `addattendance 1 m/CS2103 c/F10-2 d/2024-02-29`
+2. Run `list` and `listclass`. Check the student's index (assumed to be `1`) and the class's index (assumed to be `2`).
+3. `addattendance 1 2 d/2024-02-29`
 
 TAssist displays a confirmation message when the date is recorded. This command does not add an attendance display
 to student cards.
@@ -386,16 +390,21 @@ to student cards.
 
 Removes one previously recorded date for a student in a particular module and class.
 
-Format: `deleteattendance INDEX m/MODULE_CODE c/CLASS_NAME d/YYYY-MM-DD`
+Format: `deleteattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD`
 
 * The student and class must still exist, and the specified date must already be recorded for that pair.
 * The student does not need to be currently assigned to the class. You can correct retained history after unassignment.
-  If they disappeared from `listbyclass`, run `list` first and use their newly displayed index.
-* `INDEX` is the positive student index in the current displayed list, including `find` and `listbyclass` results.
-  Check the displayed index again after changing views or class membership. An out-of-range index is rejected.
-* Put `INDEX` first, then supply each of `m/`, `c/` and `d/` exactly once, in any order.
-  Student-number input (`sn/`) and other unknown prefixes are rejected.
-* Outer whitespace in values is trimmed. Module codes and class names are case-insensitive.
+  If the student disappeared from `listbyclass`, run `list`. If the class is hidden by `listbystudent`, run `listclass`.
+  Use their newly displayed indices.
+* `STUDENT_INDEX` selects a student in the current displayed student list, including `find` and `listbyclass` results.
+  `CLASS_INDEX` selects a class in the current displayed class list, including `listbystudent` results.
+* Put the student index first and the class index second, followed by exactly one `d/` date.
+  Both indices must be positive integers within their respective displayed lists.
+  Missing, extra, zero, negative, non-integer and out-of-range indices are rejected.
+* Check both displayed indices again after changing views, editing data or changing class membership,
+  including when recalling an old command. The same indices may now refer to a different student or class.
+* Student-number input (`sn/`), module/class prefixes (`m/`, `c/`) and other unknown prefixes are rejected.
+  Extra whitespace between the indices and around the date is accepted.
 * Use a valid calendar date in `YYYY-MM-DD` format, with a year from `0001` to `9999`.
   An already-recorded date can be removed even if it appears future after a clock or timezone change.
   This does not allow future attendance to be added. Unrecorded future dates are rejected.
@@ -405,9 +414,9 @@ Format: `deleteattendance INDEX m/MODULE_CODE c/CLASS_NAME d/YYYY-MM-DD`
 * Successful removal is saved automatically and remains in effect after restarting TAssist.
   You can record the removed date again with `addattendance` if the student is currently assigned to the class.
 
-Example (after recording attendance for the student currently displayed at index `1`):
+Example (after recording attendance for student index `1` in class index `2` in the current displayed lists):
 
-`deleteattendance 1 m/CS2103 c/F10-2 d/2024-02-29`
+`deleteattendance 1 2 d/2024-02-29`
 
 TAssist displays a confirmation message when the date is removed. Repeating this command reports that the date
 is not recorded.
@@ -448,7 +457,7 @@ Format: `editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]`
 * The resulting module code and class name must not identify another existing class. Different modules can have classes with the same name.
 * Student memberships are preserved. Student records, other classes, and memberships in other classes remain unchanged.
 * Attendance history is preserved, including records for students who are no longer assigned to the class.
-  Use the updated module code and class name for subsequent attendance commands.
+  Check the class's displayed index before using subsequent attendance commands.
 * If the current student view lists members of the edited class, it follows the renamed class and remains alphabetical. Other student filters and their displayed order remain unchanged.
 * Subsequent commands that identify the class by module code and class name must use its updated details.
 
@@ -684,9 +693,9 @@ Action     | Format, Examples
 **Add Class** | `addclass m/MODULE_CODE c/CLASS_NAME` <br> e.g., `addclass m/CS2103T c/F10-2`
 **Assign** | `assign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME` <br> e.g., `assign sn/A0123456X m/CS2103T c/F10-2`
 **Clear**  | `clear`
-**Add attendance** | `addattendance INDEX m/MODULE_CODE c/CLASS_NAME d/YYYY-MM-DD`<br> e.g., `addattendance 1 m/CS2103 c/F10-2 d/2024-02-29`
+**Add attendance** | `addattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD`<br> e.g., `addattendance 1 2 d/2024-02-29`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
-**Delete attendance** | `deleteattendance INDEX m/MODULE_CODE c/CLASS_NAME d/YYYY-MM-DD`<br> e.g., `deleteattendance 1 m/CS2103 c/F10-2 d/2024-02-29`
+**Delete attendance** | `deleteattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD`<br> e.g., `deleteattendance 1 2 d/2024-02-29`
 **Delete Class** | `deleteclass m/MODULE_CODE c/CLASS_NAME`<br> e.g., `deleteclass m/CS2103T c/F10-2`
 **Edit**   | `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
 **Edit Class** | `editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]`<br> e.g., `editclass 1 m/CS2103 c/F11`

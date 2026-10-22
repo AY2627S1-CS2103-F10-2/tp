@@ -23,7 +23,7 @@ import seedu.address.model.academicclass.ModuleCode;
 
 /** Checks attendance targeting against the displayed list rather than storage order. */
 public class AttendanceIndexTest {
-    private static final String ARGUMENTS = " m/CS2103 c/F10-2 d/2024-02-29";
+    private static final String ARGUMENTS = " 1 d/2024-02-29";
     private final AddressBookParser parser = new AddressBookParser();
 
     @Test
@@ -90,6 +90,59 @@ public class AttendanceIndexTest {
             for (String index : List.of("", "0", "-1", "1.5", "abc", "2147483648", "1 2",
                     "sn/A0123456X", "1 sn/A0123456X")) {
                 assertThrows(ParseException.class, () -> parser.parseCommand(command + " " + index + ARGUMENTS));
+            }
+        }
+    }
+
+    @Test
+    public void execute_filteredClassView_targetsDisplayedClassAndPreservesBothViews() throws Exception {
+        ModelManager model = assignedModel();
+        AcademicClass otherClass = new AcademicClass(new ModuleCode("CS2101"), new ClassName("F10-2"));
+        model.addAcademicClass(otherClass);
+        model.assignStudentToClass(ALICE, otherClass);
+        model.unassignStudentFromClass(ALICE, model.getAcademicClassList().getFirst());
+        model.filterPersonsByClass(otherClass);
+        // listbystudent filters the classes independently of the student panel.
+        parser.parseCommand("listbystudent 1").execute(model);
+        assertEquals(List.of(otherClass), model.getFilteredAcademicClassList());
+        parser.parseCommand("addattendance 1 1 d/2024-02-29").execute(model);
+        assertSame(ALICE, model.getAttendanceList().getFirst().getStudent());
+        assertSame(otherClass, model.getAttendanceList().getFirst().getAcademicClass());
+        parser.parseCommand("deleteattendance 1 1 d/2024-02-29").execute(model);
+        assertEquals(Set.of(), model.getAttendanceList().getFirst().getAttendedDates());
+        assertEquals(List.of(ALICE), model.getFilteredPersonList());
+        assertEquals(List.of(otherClass), model.getFilteredAcademicClassList());
+    }
+
+    @Test
+    public void execute_hiddenClass_rejectsIndicesOutsideDisplayedClassList() throws Exception {
+        ModelManager model = assignedModel();
+        AcademicClass otherClass = new AcademicClass(new ModuleCode("CS2101"), new ClassName("F10-2"));
+        model.addAcademicClass(otherClass);
+        model.updateFilteredAcademicClassList(otherClass::equals);
+        for (String command : List.of("addattendance", "deleteattendance")) {
+            Command parsed = parser.parseCommand(command + " 2 2 d/2024-02-29");
+            assertThrows(CommandException.class, Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX, () ->
+                    parsed.execute(model));
+        }
+        model.updateFilteredAcademicClassList(unused -> false);
+        for (String command : List.of("addattendance", "deleteattendance")) {
+            Command parsed = parser.parseCommand(command + " 2 1 d/2024-02-29");
+            assertThrows(CommandException.class, Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX, () ->
+                    parsed.execute(model));
+        }
+        assertEquals(List.of(), model.getAttendanceList());
+        assertEquals(List.of(BENSON, ALICE), model.getFilteredPersonList());
+        assertEquals(List.of(), model.getFilteredAcademicClassList());
+    }
+
+    @Test
+    public void parse_invalidClassIndexOrWrongNumberOfIndices_rejectsInput() {
+        for (String command : List.of("addattendance", "deleteattendance")) {
+            for (String indices : List.of("", "1", "1 2 3", "1 0", "1 -1", "1 1.5", "1 abc",
+                    "1 2147483648", "1 c/2", "1 m/CS2103 c/F10-2")) {
+                assertThrows(ParseException.class, () ->
+                        parser.parseCommand(command + " " + indices + " d/2024-02-29"));
             }
         }
     }

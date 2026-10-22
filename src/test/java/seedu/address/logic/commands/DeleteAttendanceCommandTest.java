@@ -58,7 +58,7 @@ public class DeleteAttendanceCommandTest {
     public void execute_lastDate_canBeRecordedAgain() throws Exception {
         command(DATE).execute(model);
         assertEquals(0, model.getAttendanceList().getFirst().getAttendanceCount());
-        new AddAttendanceCommand(Index.fromOneBased(2), MODULE, CLASS_NAME, DATE).execute(model);
+        new AddAttendanceCommand(Index.fromOneBased(2), Index.fromOneBased(1), DATE).execute(model);
         assertEquals(Set.of(DATE), model.getAttendanceList().getFirst().getAttendedDates());
     }
 
@@ -78,7 +78,7 @@ public class DeleteAttendanceCommandTest {
 
     @Test
     public void execute_noHistory_rejectsWithoutCreatingRecord() {
-        assertFailure(new DeleteAttendanceCommand(Index.fromOneBased(1), MODULE, CLASS_NAME, DATE),
+        assertFailure(new DeleteAttendanceCommand(Index.fromOneBased(1), Index.fromOneBased(1), DATE),
                 String.format(DeleteAttendanceCommand.MESSAGE_ATTENDANCE_NOT_FOUND,
                         BENSON.getStudentNumber(), academicClass, DATE));
     }
@@ -93,15 +93,15 @@ public class DeleteAttendanceCommandTest {
     @Test
     public void execute_missingStudent_rejectsWithoutMutation() {
         Index missing = Index.fromOneBased(3);
-        assertFailure(new DeleteAttendanceCommand(missing, MODULE, CLASS_NAME, DATE),
+        assertFailure(new DeleteAttendanceCommand(missing, Index.fromOneBased(1), DATE),
                 Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
     }
 
     @Test
     public void execute_missingClass_rejectsWithoutMutation() {
-        ModuleCode missing = new ModuleCode("CS9999");
-        assertFailure(new DeleteAttendanceCommand(Index.fromOneBased(2), missing, CLASS_NAME, DATE),
-                String.format(DeleteAttendanceCommand.MESSAGE_CLASS_NOT_FOUND, missing, CLASS_NAME));
+        Index missing = Index.fromOneBased(2);
+        assertFailure(new DeleteAttendanceCommand(Index.fromOneBased(2), missing, DATE),
+                Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX);
     }
 
     @Test
@@ -138,10 +138,10 @@ public class DeleteAttendanceCommandTest {
     @Test
     public void execute_findView_preservesFiltersAndDisplayedTarget() throws Exception {
         model.updateFilteredPersonList(new NameContainsKeywordsPredicate(List.of("Alice")));
-        model.updateFilteredAcademicClassList(unused -> false);
+        model.updateFilteredAcademicClassList(academicClass::equals);
         command(DATE).execute(model);
         assertEquals(List.of(ALICE), model.getFilteredPersonList());
-        assertEquals(List.of(), model.getFilteredAcademicClassList());
+        assertEquals(List.of(academicClass), model.getFilteredAcademicClassList());
         assertEquals(Set.of(), model.getAttendanceList().getFirst().getAttendedDates());
     }
 
@@ -156,11 +156,9 @@ public class DeleteAttendanceCommandTest {
 
     @Test
     public void constructor_nullArguments_throwsNullPointerException() {
-        assertThrows(NullPointerException.class, () -> new DeleteAttendanceCommand(null, MODULE, CLASS_NAME, DATE));
+        assertThrows(NullPointerException.class, () -> new DeleteAttendanceCommand(null, Index.fromOneBased(1), DATE));
         assertThrows(NullPointerException.class, () -> new DeleteAttendanceCommand(Index.fromOneBased(2),
-                null, CLASS_NAME, DATE));
-        assertThrows(NullPointerException.class, () -> new DeleteAttendanceCommand(Index.fromOneBased(2),
-                MODULE, null, DATE));
+                null, DATE));
         assertThrows(NullPointerException.class, () -> command(null));
     }
 
@@ -177,23 +175,21 @@ public class DeleteAttendanceCommandTest {
         assertFalse(original.equals(null));
         assertFalse(original.equals("deleteattendance"));
         assertFalse(original.equals(command(DATE.plusDays(1))));
-        assertFalse(original.equals(new DeleteAttendanceCommand(Index.fromOneBased(1), MODULE, CLASS_NAME, DATE)));
+        assertFalse(original.equals(new DeleteAttendanceCommand(Index.fromOneBased(1), Index.fromOneBased(1), DATE)));
         assertFalse(original.equals(new DeleteAttendanceCommand(Index.fromOneBased(2),
-                new ModuleCode("CS2101"), CLASS_NAME, DATE)));
-        assertFalse(original.equals(new DeleteAttendanceCommand(Index.fromOneBased(2),
-                MODULE, new ClassName("F11-2"), DATE)));
+                Index.fromOneBased(2), DATE)));
     }
 
     @Test
     public void toString_containsTargetAndDate() {
         assertEquals(DeleteAttendanceCommand.class.getCanonicalName() + "{index="
-                + Index.fromOneBased(2) + ", moduleCode=CS2103, className=F10-2, date=2024-02-29}",
+                + Index.fromOneBased(2) + ", classIndex=" + Index.fromOneBased(1) + ", date=2024-02-29}",
                 command(DATE).toString());
     }
 
     private DeleteAttendanceCommand command(LocalDate date) {
         return new DeleteAttendanceCommand(Index.fromZeroBased(model.getFilteredPersonList().indexOf(ALICE)),
-                MODULE, CLASS_NAME, date);
+                Index.fromOneBased(1), date);
     }
 
     private void assertFailure(DeleteAttendanceCommand command, String message) {

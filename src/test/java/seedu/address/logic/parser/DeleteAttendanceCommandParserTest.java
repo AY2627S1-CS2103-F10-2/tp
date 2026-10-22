@@ -11,12 +11,10 @@ import org.junit.jupiter.api.Test;
 import seedu.address.commons.core.index.Index;
 import seedu.address.logic.commands.DeleteAttendanceCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
-import seedu.address.model.academicclass.ClassName;
-import seedu.address.model.academicclass.ModuleCode;
 
 /** Tests attendance removal syntax through the command router. */
 public class DeleteAttendanceCommandParserTest {
-    private static final String IDENTIFIERS = " 1 m/CS2103 c/F10-2";
+    private static final String IDENTIFIERS = " 1 2";
     private static final String VALID_COMMAND = "deleteattendance" + IDENTIFIERS + " d/2024-02-29";
     private final AddressBookParser parser = new AddressBookParser();
 
@@ -31,9 +29,9 @@ public class DeleteAttendanceCommandParserTest {
     }
 
     @Test
-    public void parseCommand_reorderedWhitespaceAndCase_normalizesValues() throws Exception {
+    public void parseCommand_extraWhitespace_parsesBothIndices() throws Exception {
         assertEquals(expected(LocalDate.of(2024, 2, 29)), parser.parseCommand(
-                "  deleteattendance 1 d/ 2024-02-29  c/ f10-2  m/ cs2103  "));
+                "  deleteattendance 1   2 d/ 2024-02-29  "));
     }
 
     @Test
@@ -44,7 +42,7 @@ public class DeleteAttendanceCommandParserTest {
 
     @Test
     public void parseCommand_missingPrefix_rejectsInput() {
-        for (String parameter : List.of("1", "m/CS2103", "c/F10-2", "d/2024-02-29")) {
+        for (String parameter : List.of("1 ", "2 ", "d/2024-02-29")) {
             assertThrows(ParseException.class, () -> parser.parseCommand(VALID_COMMAND.replace(parameter, "")));
         }
         assertThrows(ParseException.class, () -> parser.parseCommand("deleteattendance"));
@@ -52,7 +50,7 @@ public class DeleteAttendanceCommandParserTest {
 
     @Test
     public void parseCommand_emptyValues_rejectsInput() {
-        for (String value : List.of("1 ", "CS2103", "F10-2", "2024-02-29")) {
+        for (String value : List.of("1 ", "2 ", "2024-02-29")) {
             assertThrows(ParseException.class, () -> parser.parseCommand(VALID_COMMAND.replace(value, "")));
         }
     }
@@ -81,14 +79,6 @@ public class DeleteAttendanceCommandParserTest {
     }
 
     @Test
-    public void parseCommand_invalidIdentifiers_reusesSharedValidation() {
-        assertThrows(ParseException.class, ModuleCode.MESSAGE_CONSTRAINTS, () ->
-                parser.parseCommand(VALID_COMMAND.replace("CS2103", "2103")));
-        assertThrows(ParseException.class, ClassName.MESSAGE_CONSTRAINTS, () ->
-                parser.parseCommand(VALID_COMMAND.replace("F10-2", "---")));
-    }
-
-    @Test
     public void parseCommand_invalidDates_rejectsWithoutNormalization() {
         for (String date : List.of("0000-01-01", "2023-02-29", "1900-02-29", "2024-02-30", "2024-13-01",
                 "2024-04-31", "2024-00-01", "2024-01-00", "2024-2-29", "24-02-29", "20240229", "29-02-2024",
@@ -99,7 +89,6 @@ public class DeleteAttendanceCommandParserTest {
     }
 
     private DeleteAttendanceCommand expected(LocalDate date) {
-        return new DeleteAttendanceCommand(Index.fromOneBased(1), new ModuleCode("CS2103"),
-                new ClassName("F10-2"), date);
+        return new DeleteAttendanceCommand(Index.fromOneBased(1), Index.fromOneBased(2), date);
     }
 }

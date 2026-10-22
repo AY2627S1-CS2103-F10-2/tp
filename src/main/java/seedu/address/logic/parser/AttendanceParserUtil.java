@@ -2,9 +2,7 @@ package seedu.address.logic.parser;
 
 import static java.util.Objects.requireNonNull;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
-import static seedu.address.logic.parser.CliSyntax.PREFIX_CLASS_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_DATE;
-import static seedu.address.logic.parser.CliSyntax.PREFIX_MODULE_CODE;
 
 import java.util.List;
 import java.util.Set;
@@ -18,8 +16,7 @@ import seedu.address.logic.parser.exceptions.ParseException;
 /** Shared argument structure validation for attendance commands. */
 final class AttendanceParserUtil {
     static final String MESSAGE_UNKNOWN_PARAMETER = "Unknown parameter: %1$s";
-    private static final List<Prefix> REQUIRED_PREFIXES = List.of(
-            PREFIX_MODULE_CODE, PREFIX_CLASS_NAME, PREFIX_DATE);
+    private static final List<Prefix> REQUIRED_PREFIXES = List.of(PREFIX_DATE);
     private static final Set<String> VALID_PREFIXES = REQUIRED_PREFIXES.stream()
             .map(Prefix::getPrefix).collect(Collectors.toUnmodifiableSet());
     private static final Pattern PREFIX_PATTERN = Pattern.compile("(?<=\\s)([^\\s/]+/)");
@@ -36,10 +33,14 @@ final class AttendanceParserUtil {
         return arguments;
     }
 
-    /** Parses the displayed index with command-specific usage feedback for invalid input. */
-    static Index parseIndex(ArgumentMultimap arguments, String commandUsage) throws ParseException {
+    /** Parses exactly two displayed indices with command-specific feedback for invalid input. */
+    static Index[] parseIndices(ArgumentMultimap arguments, String commandUsage) throws ParseException {
+        String[] indices = arguments.getPreamble().trim().split("\\s+");
+        if (indices.length != 2) {
+            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, commandUsage));
+        }
         try {
-            return ParserUtil.parseIndex(arguments.getPreamble());
+            return new Index[] {ParserUtil.parseIndex(indices[0]), ParserUtil.parseIndex(indices[1])};
         } catch (ParseException e) {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, commandUsage), e);
         }

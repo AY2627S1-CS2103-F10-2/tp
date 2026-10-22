@@ -96,20 +96,20 @@ public class AddAttendanceCommandTest {
     @Test
     public void execute_missingStudent_rejectsWithoutMutation() {
         Index missing = Index.fromOneBased(3);
-        assertFailureWithoutMutation(new AddAttendanceCommand(missing, MODULE, CLASS_NAME, DATE),
+        assertFailureWithoutMutation(new AddAttendanceCommand(missing, Index.fromOneBased(1), DATE),
                 Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
     }
 
     @Test
     public void execute_missingClass_rejectsWithoutMutation() {
-        ModuleCode missing = new ModuleCode("CS9999");
-        assertFailureWithoutMutation(new AddAttendanceCommand(Index.fromOneBased(2), missing, CLASS_NAME, DATE),
-                String.format(AddAttendanceCommand.MESSAGE_CLASS_NOT_FOUND, missing, CLASS_NAME));
+        Index missing = Index.fromOneBased(2);
+        assertFailureWithoutMutation(new AddAttendanceCommand(Index.fromOneBased(2), missing, DATE),
+                Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX);
     }
 
     @Test
     public void execute_unassignedStudent_rejectsWithoutAssigning() {
-        assertFailureWithoutMutation(new AddAttendanceCommand(Index.fromOneBased(1), MODULE, CLASS_NAME, DATE),
+        assertFailureWithoutMutation(new AddAttendanceCommand(Index.fromOneBased(1), Index.fromOneBased(1), DATE),
                 String.format(AddAttendanceCommand.MESSAGE_NOT_ASSIGNED, BENSON.getStudentNumber(), academicClass));
     }
 
@@ -132,8 +132,8 @@ public class AddAttendanceCommandTest {
         model.assignStudentToClass(ALICE, otherModule);
         model.assignStudentToClass(BENSON, academicClass);
         command(DATE).execute(model);
-        new AddAttendanceCommand(Index.fromOneBased(1), MODULE, CLASS_NAME, DATE).execute(model);
-        new AddAttendanceCommand(Index.fromOneBased(2), otherModule.getModuleCode(), CLASS_NAME, DATE)
+        new AddAttendanceCommand(Index.fromOneBased(1), Index.fromOneBased(1), DATE).execute(model);
+        new AddAttendanceCommand(Index.fromOneBased(2), Index.fromOneBased(2), DATE)
                 .execute(model);
 
         List<Attendance> records = model.getAttendanceList();
@@ -145,22 +145,14 @@ public class AddAttendanceCommandTest {
     }
 
     @Test
-    public void execute_lowercaseIdentifiers_resolvesStoredEndpoints() throws Exception {
-        new AddAttendanceCommand(Index.fromOneBased(2),
-                new ModuleCode("cs2103"), new ClassName("f10-2"), DATE).execute(model);
-        assertSame(ALICE, model.getAttendanceList().getFirst().getStudent());
-        assertSame(academicClass, model.getAttendanceList().getFirst().getAcademicClass());
-    }
-
-    @Test
     public void execute_findView_preservesDisplayedTargetAndClassFilter() throws Exception {
         model.updateFilteredPersonList(new NameContainsKeywordsPredicate(List.of("Alice")));
-        model.updateFilteredAcademicClassList(unused -> false);
+        model.updateFilteredAcademicClassList(academicClass::equals);
         var displayed = model.getFilteredPersonList();
         command(DATE).execute(model);
         assertSame(displayed, model.getFilteredPersonList());
         assertEquals(List.of(ALICE), displayed);
-        assertEquals(List.of(), model.getFilteredAcademicClassList());
+        assertEquals(List.of(academicClass), model.getFilteredAcademicClassList());
         assertUnchangedStudentsAndMembership();
     }
 
@@ -186,7 +178,7 @@ public class AddAttendanceCommandTest {
         model.addAcademicClass(otherClass);
         model.assignStudentToClass(BENSON, otherClass);
         model.filterPersonsByClass(otherClass);
-        assertFailureWithoutMutation(new AddAttendanceCommand(Index.fromOneBased(1), MODULE, CLASS_NAME, DATE),
+        assertFailureWithoutMutation(new AddAttendanceCommand(Index.fromOneBased(1), Index.fromOneBased(1), DATE),
                 String.format(AddAttendanceCommand.MESSAGE_NOT_ASSIGNED, BENSON.getStudentNumber(), academicClass));
         assertEquals(List.of(BENSON), model.getFilteredPersonList());
         assertEquals(Set.of(ALICE), academicClass.getStudents());
@@ -205,11 +197,9 @@ public class AddAttendanceCommandTest {
 
     @Test
     public void constructor_nullArguments_throwsNullPointerException() {
-        assertThrows(NullPointerException.class, () -> new AddAttendanceCommand(null, MODULE, CLASS_NAME, DATE));
+        assertThrows(NullPointerException.class, () -> new AddAttendanceCommand(null, Index.fromOneBased(1), DATE));
         assertThrows(NullPointerException.class, () -> new AddAttendanceCommand(Index.fromOneBased(2),
-                null, CLASS_NAME, DATE));
-        assertThrows(NullPointerException.class, () -> new AddAttendanceCommand(Index.fromOneBased(2),
-                MODULE, null, DATE));
+                null, DATE));
         assertThrows(NullPointerException.class, () -> command(null));
     }
 
@@ -226,23 +216,21 @@ public class AddAttendanceCommandTest {
         assertFalse(original.equals(null));
         assertFalse(original.equals("addattendance"));
         assertFalse(original.equals(command(DATE.plusDays(1))));
-        assertFalse(original.equals(new AddAttendanceCommand(Index.fromOneBased(1), MODULE, CLASS_NAME, DATE)));
+        assertFalse(original.equals(new AddAttendanceCommand(Index.fromOneBased(1), Index.fromOneBased(1), DATE)));
         assertFalse(original.equals(new AddAttendanceCommand(Index.fromOneBased(2),
-                new ModuleCode("CS2101"), CLASS_NAME, DATE)));
-        assertFalse(original.equals(new AddAttendanceCommand(Index.fromOneBased(2),
-                MODULE, new ClassName("F11-2"), DATE)));
+                Index.fromOneBased(2), DATE)));
     }
 
     @Test
     public void toString_containsTargetAndDate() {
         String expected = AddAttendanceCommand.class.getCanonicalName() + "{index="
-                + Index.fromOneBased(2) + ", moduleCode=CS2103, className=F10-2, date=2024-02-29}";
+                + Index.fromOneBased(2) + ", classIndex=" + Index.fromOneBased(1) + ", date=2024-02-29}";
         assertEquals(expected, command(DATE).toString());
     }
 
     private AddAttendanceCommand command(LocalDate date) {
         return new AddAttendanceCommand(Index.fromZeroBased(model.getFilteredPersonList().indexOf(ALICE)),
-                MODULE, CLASS_NAME, date);
+                Index.fromOneBased(1), date);
     }
 
     private void assertFailureWithoutMutation(AddAttendanceCommand command, String message) {

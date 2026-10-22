@@ -82,7 +82,7 @@ public class LogicManagerTest {
         logic.execute("add sn/A0123456X n/Alice e/alice@example.com");
         logic.execute("addclass m/CS2103 c/F10-2");
         logic.execute("assign sn/A0123456X m/CS2103 c/F10-2");
-        String attendanceCommand = "addattendance 1 m/CS2103 c/F10-2 d/2024-02-29";
+        String attendanceCommand = "addattendance 1 1 d/2024-02-29";
         logic.execute(attendanceCommand);
 
         Path savedFile = temporaryFolder.resolve("addressBook.json");
@@ -111,10 +111,10 @@ public class LogicManagerTest {
         logic.execute("add sn/A0123456X n/Alice e/alice@example.com");
         logic.execute("addclass m/CS2103 c/F10-2");
         logic.execute("assign sn/A0123456X m/CS2103 c/F10-2");
-        logic.execute("addattendance 1 m/CS2103 c/F10-2 d/2024-02-28");
-        logic.execute("addattendance 1 m/CS2103 c/F10-2 d/2024-02-29");
+        logic.execute("addattendance 1 1 d/2024-02-28");
+        logic.execute("addattendance 1 1 d/2024-02-29");
         logic.execute("unassign sn/A0123456X m/CS2103 c/F10-2");
-        String deleteCommand = "deleteattendance 1 m/CS2103 c/F10-2 d/2024-02-29";
+        String deleteCommand = "deleteattendance 1 1 d/2024-02-29";
         logic.execute(deleteCommand);
 
         Path savedFile = temporaryFolder.resolve("addressBook.json");

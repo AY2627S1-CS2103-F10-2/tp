@@ -1,16 +1,12 @@
 package seedu.address.logic.parser;
 
-import static seedu.address.logic.parser.CliSyntax.PREFIX_CLASS_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_DATE;
-import static seedu.address.logic.parser.CliSyntax.PREFIX_MODULE_CODE;
 
 import java.time.LocalDate;
 
 import seedu.address.commons.core.index.Index;
 import seedu.address.logic.commands.AddAttendanceCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
-import seedu.address.model.academicclass.ClassName;
-import seedu.address.model.academicclass.ModuleCode;
 
 /** Parses the student, class and date for recording attendance. */
 public class AddAttendanceCommandParser implements Parser<AddAttendanceCommand> {
@@ -19,11 +15,9 @@ public class AddAttendanceCommandParser implements Parser<AddAttendanceCommand> 
     @Override
     public AddAttendanceCommand parse(String args) throws ParseException {
         ArgumentMultimap arguments = AttendanceParserUtil.parseArguments(args, AddAttendanceCommand.MESSAGE_USAGE);
-        Index index = AttendanceParserUtil.parseIndex(arguments, AddAttendanceCommand.MESSAGE_USAGE);
-        ModuleCode moduleCode = ParserUtil.parseModuleCode(arguments.getValue(PREFIX_MODULE_CODE).orElseThrow());
-        ClassName className = ParserUtil.parseClassName(arguments.getValue(PREFIX_CLASS_NAME).orElseThrow());
+        Index[] indices = AttendanceParserUtil.parseIndices(arguments, AddAttendanceCommand.MESSAGE_USAGE);
         LocalDate date = ParserUtil.parseAttendanceDate(arguments.getValue(PREFIX_DATE).orElseThrow());
-        return new AddAttendanceCommand(index, moduleCode, className, date);
+        return new AddAttendanceCommand(indices[0], indices[1], date);
     }
 
 }
