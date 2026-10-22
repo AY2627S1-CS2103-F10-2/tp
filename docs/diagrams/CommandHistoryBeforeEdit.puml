@@ -1,0 +1,24 @@
+@startuml
+!include style.puml
+show members
+top to bottom direction
+skinparam objectBackgroundColor #FFFFAA
+skinparam objectBorderColor #000000
+skinparam objectFontColor #000000
+skinparam DefaultTextAlignment left
+
+object "<u>commands:ArrayList</u>" as commands {
+    [0] = "help"
+    [1] = "find Carol"
+    [2] = "list"
+    [3] = "find Alice"
+}
+object "<u>workingCommands:ArrayList</u>" as working {
+    [0] = "help"
+    [1] = "find Carol"
+    [2] = "list"
+    [3] = "find Alice"
+}
+
+commands -[hidden]right-> working
+@enduml

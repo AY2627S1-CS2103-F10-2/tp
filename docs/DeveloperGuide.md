@@ -161,6 +161,50 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 
 This section describes some noteworthy details on how certain features are implemented.
 
+### Arrow key command history navigation
+
+Arrow key navigation lets users recall previously executed commands without executing them again. `CommandBox` delegates
+history storage and navigation to its `CommandHistory`, which holds two separate lists and tracks the draft and the
+current browsing position.
+
+Up moves towards older entries and Down moves towards the draft (newer entries). 
+Navigation stops at either boundary, and empty history leaves the input unchanged. 
+Modified arrow keys (such as Shift+Up or Ctrl+Down) do not trigger history navigation. 
+History lasts only for the current session and does not survive between restarts.
+
+<puml src="diagrams/CommandHistoryObjects.puml" alt="CommandBox linked to CommandHistory, its draft and position, and its original and working command lists" />
+
+| Field | Purpose |
+| --- | --- |
+| `commands` | Stores up to 20 successful commands in execution order, oldest first. Editing past commands does not change these entries. |
+| `workingCommands` | Holds a working copy of the history. Temporary edits remain available until the next non-blank command submission, whether it succeeds or fails. |
+| `draft` | Preserves the input from before the user started browsing history. Moving Down past the newest entry restores it. It is separate from the lists because it has not been successfully executed. |
+| `position` | Identifies the selected entry in `workingCommands`, using a zero-based index. A value equal to the list size represents the draft. |
+
+In the diagram, `position = 2` selects `list`. With four history entries, position 4 represents the draft. Moving Down past `find Alice` restores `addclass m/CS2103 n/f`.
+
+#### Preserving temporary edits with two command lists
+
+`commands` preserves the successfully executed commands. `workingCommands` is a separate list that preserves temporary
+edits while browsing history. These partial object diagrams show only the two lists, with entries numbered from zero.
+
+**Step 1: Recall.** After executing `help`, `find Carol`, `list`, and `find Alice`, the user presses Up to recall `find Alice`.
+Both lists contain the same commands.
+
+<puml src="diagrams/CommandHistoryBeforeEdit.puml" alt="CommandHistory with identical original and working lists before editing a recalled command" />
+
+**Step 2: Edit and navigate away.** The user changes the input to `find Bob` without executing it, then presses Up to recall
+`list`. Before moving, `saveCurrentInput()` saves `find Bob` in `workingCommands`. The original list still contains `find Alice`.
+
+<puml src="diagrams/CommandHistoryAfterEdit.puml" alt="CommandHistory with a temporary edit in the working list while the original list remains unchanged" />
+
+Pressing Down now recalls **`find Bob`**, so the user can continue editing it. Using a single list would either overwrite
+the original history entry or lose the temporary edit. After a successful or failed submission, `resetNavigation()`
+rebuilds `workingCommands` from `commands`, discarding temporary browsing edits.
+
+A successful submission first adds the command to `commands` and clears the draft. A failed submission preserves the
+failed input as the draft without adding it to history. Both cases reset `position` to the draft position.
+
 ### Adding an academic class
 
 #### Implementation
