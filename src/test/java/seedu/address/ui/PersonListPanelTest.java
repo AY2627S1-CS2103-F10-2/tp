@@ -104,7 +104,8 @@ public class PersonListPanelTest {
                     model::getAttendanceDisplayClass, model::getAttendanceList);
             PersonListPanel.PersonListViewCell displayedCell = panel.new PersonListViewCell();
             displayedCell.updateItem(ALICE, false);
-            assertEquals("No attendance recorded", ((Label) displayedCell.getGraphic().lookup("#attendance")).getText());
+            assertEquals("No attendance recorded", ((Label) displayedCell.getGraphic()
+                    .lookup("#attendance")).getText());
 
             model.getFilteredPersonList().addListener((ListChangeListener<Person>) change ->
                     displayedCell.updateItem(ALICE, false));
@@ -113,7 +114,8 @@ public class PersonListPanelTest {
             assertEquals("2020-01-01", ((Label) displayedCell.getGraphic().lookup("#attendance")).getText());
 
             assertTrue(model.removeAttendance(ALICE, academicClass, LocalDate.of(2020, 1, 1)));
-            assertEquals("No attendance recorded", ((Label) displayedCell.getGraphic().lookup("#attendance")).getText());
+            assertEquals("No attendance recorded", ((Label) displayedCell.getGraphic()
+                    .lookup("#attendance")).getText());
         });
     }
 
