@@ -12,6 +12,7 @@ public class CliSyntax {
     public static final Prefix PREFIX_EMAIL = new Prefix("e/");
     public static final Prefix PREFIX_TELEGRAM = new Prefix("tg/");
     public static final Prefix PREFIX_TAG = new Prefix("t/");
+    public static final Prefix PREFIX_THRESHOLD = new Prefix("t/");
     public static final Prefix PREFIX_MODULE_CODE = new Prefix("m/");
     public static final Prefix PREFIX_CLASS_NAME = new Prefix("c/");
 

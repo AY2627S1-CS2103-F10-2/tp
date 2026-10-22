@@ -211,13 +211,39 @@ public class ModelManager implements Model {
 
     @Override
     public void filterPersonsByClass(AcademicClass academicClass) {
-        requireNonNull(academicClass);
+        filterPersonsByClass(academicClass, Optional.empty());
+    }
+
+    @Override
+    public void filterPersonsByClass(AcademicClass academicClass, Optional<Integer> threshold) {
+        requireAllNonNull(academicClass, threshold);
+        if (threshold.isPresent() && threshold.get() <= 0) {
+            throw new IllegalArgumentException("Attendance threshold must be a positive integer.");
+        }
         updateFilteredPersonListAlphabetically(person ->
                 addressBook.findAcademicClass(academicClass.getModuleCode(), academicClass.getClassName())
-                        .map(storedClass -> storedClass.getStudents().stream()
-                                .anyMatch(member -> member.isSamePerson(person)))
+                        .map(storedClass -> isClassMemberWithinThreshold(person, storedClass, threshold))
                         .orElse(false));
         personFilterClass = academicClass;
+    }
+
+    private boolean isClassMemberWithinThreshold(Person person, AcademicClass storedClass,
+            Optional<Integer> threshold) {
+        boolean isMember = storedClass.getStudents().stream()
+                .anyMatch(member -> member.isSamePerson(person));
+        if (!isMember) {
+            return false;
+        }
+        return threshold.map(limit -> getAttendanceCount(person, storedClass) < limit).orElse(true);
+    }
+
+    private int getAttendanceCount(Person person, AcademicClass academicClass) {
+        return addressBook.getAttendanceList().stream()
+                .filter(record -> record.getStudent().isSamePerson(person)
+                        && record.getAcademicClass().isSameClass(academicClass))
+                .mapToInt(Attendance::getAttendanceCount)
+                .findFirst()
+                .orElse(0);
     }
 
     @Override

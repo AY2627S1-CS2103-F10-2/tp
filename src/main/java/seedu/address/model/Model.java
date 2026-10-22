@@ -134,6 +134,15 @@ public interface Model {
     void filterPersonsByClass(AcademicClass academicClass);
 
     /**
+     * Displays the given class's students alphabetically, optionally restricted to those with fewer than
+     * {@code threshold} recorded attendance dates for that class, and tracks the selected class.
+     *
+     * @throws NullPointerException if {@code academicClass} or {@code threshold} is null
+     * @throws IllegalArgumentException if {@code threshold} is present and not positive
+     */
+    void filterPersonsByClass(AcademicClass academicClass, Optional<Integer> threshold);
+
+    /**
      * Adds the given academic class.
      * {@code academicClass} must not already exist in the address book.
      */
