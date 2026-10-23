@@ -53,7 +53,7 @@ public class ListByStudentIntegrationTest {
         assertEquals(2, original.getStudents().size());
         assertSame(edited, displayed.get(0));
 
-        logic.execute("unassign sn/A0999801X m/CS2113 c/RENAMED-T01");
+        logic.execute("unassign 1 1");
         assertEquals(List.of("CS2100-DEMO-L01"), displayedClasses(model));
         logic.execute("assign sn/A0999801X m/CS2113 c/RENAMED-T01");
         assertEquals(List.of("CS2113-RENAMED-T01", "CS2100-DEMO-L01"), displayedClasses(model));
@@ -106,7 +106,7 @@ public class ListByStudentIntegrationTest {
         restarted.execute("listbystudent 1");
         assertEquals(List.of("CS2103-DEMO-T01", "CS2100-DEMO-L01"), displayedClasses(reloaded));
 
-        restarted.execute("unassign sn/A0999801X m/CS2103 c/DEMO-T01");
+        restarted.execute("unassign 1 1");
         assertEquals(List.of("CS2100-DEMO-L01"), displayedClasses(reloaded));
         restarted.execute("assign sn/A0999801X m/CS2103 c/DEMO-T01");
         restarted.execute("edit 1 sn/A0999809Z");

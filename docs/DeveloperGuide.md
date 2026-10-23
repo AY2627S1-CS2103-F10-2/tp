@@ -288,10 +288,9 @@ Invalid arguments cause a `ParseException` before command creation. If the class
 ### Assigning and unassigning students
 
 `AssignCommand` and `UnassignCommand` change a student's membership in one academic class without
-adding or deleting student records or classes. Both commands identify the stored student by
-`StudentNumber` and the stored class by the combination of `ModuleCode` and `ClassName`.
-Lookups search the address book rather than the displayed student list, so a student hidden by
-a name filter can still be assigned or unassigned.
+adding or deleting student records or classes. `AssignCommand` identifies records by student number,
+module code and class name, including records hidden by filters. `UnassignCommand` instead accepts
+student and class indices in their respective displayed lists; hidden records cannot be selected.
 
 #### Assigning a student
 
@@ -325,19 +324,20 @@ duplicate membership. If the student is already assigned, the model returns `fal
 
 #### Unassigning a student
 
-For example, `unassign sn/A1111111H m/CS2103 c/F10` removes an existing membership.
+For example, `unassign 2 1` removes the second displayed student from the first displayed class.
 The following sequence diagram starts at `LogicManager#execute(commandText)`, where `commandText`
 is the example above. It assumes that both records exist and the student belongs to the class.
-Unlike assignment, the current `UnassignCommand` obtains a `ReadOnlyAddressBook` from the model
-and performs its lookups through that interface; `addressBook:AddressBook` is the concrete object.
-Membership changes still go through the `Model` interface.
+The parser validates exactly two positive indices using `AttendanceParserUtil#parseIndices`.
+The command resolves the student through `Model#getFilteredPersonList()` and the class through
+`Model#getFilteredAcademicClassList()`, checking each index against its displayed list size.
+Membership changes go through the `Model` interface.
 
-<puml src="diagrams/UnassignSequenceDiagram.puml" alt="Successful execution of UnassignCommand, resolving records through ReadOnlyAddressBook before requesting removal through Model" />
+<puml src="diagrams/UnassignSequenceDiagram.puml" alt="Successful execution of UnassignCommand, resolving displayed student and class indices before requesting removal through Model" />
 
 1. `LogicManager` asks `AddressBookParser` to parse the input. It creates an `UnassignCommandParser`,
    which validates the arguments and constructs an `UnassignCommand`.
-2. `LogicManager` executes the returned command, which obtains the read-only address book view
-   and resolves the stored student and class.
+2. `LogicManager` executes the returned command, which resolves both displayed indices and
+   checks that the student belongs to the selected class.
 3. The command calls `Model#unassignStudentFromClass(person, academicClass)`.
 4. A successful removal produces a `CommandResult`, which `LogicManager` returns after saving
    the address book.
@@ -347,15 +347,16 @@ student set changes; the student record and memberships in other classes remain 
 
 <puml src="diagrams/UnassignSequenceDiagram-Model.puml" alt="ModelManager delegates unassignment to AddressBook and AcademicClass removes the student from its membership set" />
 
-If the student is not a member, `AcademicClass#unassignStudent(person)` returns `false` without
-changing the set. That value propagates back to `UnassignCommand`, which throws a `CommandException`.
+The command rejects a student who is not a member before requesting removal. It also handles
+a `false` removal result with a `CommandException`. Successful removal refreshes membership-dependent
+student and class filters without resetting the active filters or ordering. Indices may shift as
+records disappear from filtered views. Attendance history is retained for correction or reassignment.
 
 #### Validation and failure paths
 
 The activity diagram below complements the successful-execution sequence diagrams. Assignment
-and unassignment share the lookup and persistence workflow, so one diagram shows both rather
-than repeating the same validation paths. The membership operation differs: assignment attempts
-to add the student, while unassignment attempts to remove the student.
+and unassignment resolve records differently: assignment uses stored identifiers, while unassignment
+uses displayed indices. Both validate the selected records before updating membership and saving.
 
 <puml src="diagrams/AssignUnassignActivityDiagram.puml" alt="Assign and Unassign workflow showing invalid input, missing student or class, unchanged membership, save failure and successful completion" />
 
@@ -369,10 +370,12 @@ a successful membership change is different: the in-memory change has already oc
 The sequence diagrams focus on successful execution and omit individual parser validation calls,
 assertion lookups, formatting helpers and exception construction to keep the interactions readable.
 
-* The command parsers reject missing, repeated or unknown prefixes and invalid identifier values
-  with `ParseException` before constructing the command.
-* If either lookup returns an empty `Optional`, the command throws `CommandException` before
-  attempting a membership update. Unassignment looks up the student before the class, as does assignment.
+* The assignment parser rejects missing, repeated or unknown prefixes and invalid identifier values.
+  The unassignment parser rejects anything other than exactly two positive integer indices.
+  Both report `ParseException` before constructing the command.
+* Assignment rejects empty lookup results with `CommandException`. Unassignment reports an invalid
+  displayed student or class index with `CommandException`, including when the relevant view is empty.
+  Both resolve the student before the class, before attempting a membership update.
 * A duplicate assignment or an absent membership is rejected without changing memberships.
 * On successful command execution, `LogicManager` saves the address book before returning the
   result to its caller. Saving occurs outside the scope of these diagrams. If saving fails,
@@ -667,8 +670,8 @@ Use case ends.
 
 **Main Success Scenario (MSS):**
 
-1. TA requests to unassign a student from a class, providing the student number,
-   module code and class name.
+1. TA requests to unassign a student from a class, providing the student index and class index
+   in their respective displayed lists.
 2. TAssist removes the student's assignment to the specified class and automatically saves the change.
 3. TAssist returns a confirmation that the student is no longer assigned to the class, identifying the student and the class.
 
@@ -680,19 +683,19 @@ Use case ends.
   - 1a1. TAssist informs TA of the error and the required details, without changing any assignments.
   - Use case ends.
 
-- **1b. No student matches the supplied student number.**
-  - 1b1. TAssist informs TA that the student does not exist, identifying the supplied student number.
+- **1b. The student index is outside the displayed student list.**
+  - 1b1. TAssist reports an invalid displayed student index.
   - 1b2. TAssist rejects the request without changing any assignments.
   - Use case ends.
 
-- **1c. No class matches the supplied module code and class name.**
-  - 1c1. TAssist informs TA that the class does not exist, identifying the supplied module code and class name.
+- **1c. The class index is outside the displayed class list.**
+  - 1c1. TAssist reports an invalid displayed class index.
   - 1c2. TAssist rejects the request without changing any assignments.
   - Use case ends.
 
 - **1d. The student is not assigned to the specified class.**
-  - 1d1. TAssist leaves the student unassigned to the class without changing any data.
-  - Use case resumes from step 3.
+  - 1d1. TAssist reports that the student is not assigned to the class without changing any data.
+  - Use case ends.
 
 - **2a. TAssist is unable to save the change.**
   - 2a1. TAssist informs TA that the removal of the assignment could not be saved.
@@ -857,7 +860,7 @@ testers are expected to do more *exploratory* testing.
    The student search results remain unchanged.
 4. Run `listbystudent 0`, `listbystudent 1 extra`, and `listbystudent 2`.
    Expected: invalid-command or invalid-index feedback; both views remain unchanged.
-5. Run `unassign sn/A0999801X m/CS2103 c/DEMO-T01`.
+5. Run `unassign 1 1`.
    Expected: only CS2100 DEMO-L01 remains in the Classes panel.
 6. Run `find AlphaDemoBob`, then `listbystudent 1`.
    Expected: zero matching classes and an empty Classes panel.

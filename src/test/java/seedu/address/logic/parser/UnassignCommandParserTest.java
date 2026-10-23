@@ -1,124 +1,83 @@
 package seedu.address.logic.parser;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static seedu.address.logic.parser.CliSyntax.PREFIX_CLASS_NAME;
-import static seedu.address.logic.parser.CliSyntax.PREFIX_MODULE_CODE;
-import static seedu.address.logic.parser.CliSyntax.PREFIX_STUDENT_NUMBER;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseFailure;
 import static seedu.address.testutil.TypicalPersons.ALICE;
+import static seedu.address.testutil.TypicalPersons.BENSON;
+
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.Command;
-import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.UnassignCommand;
 import seedu.address.model.ModelManager;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
-import seedu.address.model.person.Person;
-import seedu.address.model.person.StudentNumber;
 
-/**
- * Tests unassign argument validation and the identifiers passed to the command.
- */
+/** Tests index validation and the displayed records targeted by the parsed command. */
 public class UnassignCommandParserTest {
-    private static final String VALID_ARGUMENTS = " sn/" + ALICE.getStudentNumber() + " m/CS2103 c/F10";
     private final UnassignCommandParser parser = new UnassignCommandParser();
 
     @Test
-    public void parse_validArguments_executesWithExpectedIdentities() throws Exception {
-        assertParsedCommandTargetsExpectedRecords(parser.parse(VALID_ARGUMENTS));
+    public void parse_validIndices_targetsDisplayedStudentAndClass() throws Exception {
+        assertParsedCommandTargetsExpectedRecords(parser.parse(" 2 1"));
     }
 
     @Test
-    public void parse_reorderedLowercaseArguments_executesWithNormalizedIdentities() throws Exception {
-        assertParsedCommandTargetsExpectedRecords(parser.parse(
-                " c/f10 m/cs2103 sn/" + ALICE.getStudentNumber().value.toLowerCase(java.util.Locale.ROOT)));
+    public void parse_extraWhitespace_targetsDisplayedStudentAndClass() throws Exception {
+        assertParsedCommandTargetsExpectedRecords(parser.parse("  2\t 1  "));
     }
 
     @Test
     public void parseCommand_unassign_routesToUnassignParser() throws Exception {
-        assertParsedCommandTargetsExpectedRecords(new AddressBookParser().parseCommand(
-                UnassignCommand.COMMAND_WORD + VALID_ARGUMENTS));
+        assertParsedCommandTargetsExpectedRecords(new AddressBookParser().parseCommand("unassign 2 1"));
     }
 
     @Test
-    public void parse_missingPrefixes_failure() {
-        assertParseFailure(parser, "", UnassignCommandParser.MESSAGE_MISSING_PARAMETERS);
-        assertParseFailure(parser, " m/CS2103 c/F10", UnassignCommandParser.MESSAGE_MISSING_PARAMETERS);
-        assertParseFailure(parser, " sn/" + ALICE.getStudentNumber() + " c/F10",
-                UnassignCommandParser.MESSAGE_MISSING_PARAMETERS);
-        assertParseFailure(parser, " sn/" + ALICE.getStudentNumber() + " m/CS2103",
-                UnassignCommandParser.MESSAGE_MISSING_PARAMETERS);
+    public void parse_missingOrExtraIndices_failure() {
+        for (String input : new String[] {"", " ", "1", "1 2 3", "extra 1 2"}) {
+            assertInvalidArguments(input);
+        }
     }
 
     @Test
-    public void parse_emptyValues_failure() {
-        assertParseFailure(parser, " sn/ m/CS2103 c/F10", StudentNumber.MESSAGE_EMPTY);
-        assertParseFailure(parser, " sn/" + ALICE.getStudentNumber() + " m/ c/F10", ModuleCode.MESSAGE_EMPTY);
-        assertParseFailure(parser, " sn/" + ALICE.getStudentNumber() + " m/CS2103 c/", ClassName.MESSAGE_EMPTY);
+    public void parse_invalidIndices_failure() {
+        for (String input : new String[] {"0 1", "1 0", "-1 1", "1 -1", "+1 1", "1 +1",
+            "1.5 1", "1 1.5", "abc 1", "1 abc", "2147483648 1", "1 2147483648"}) {
+            assertInvalidArguments(input);
+        }
     }
 
     @Test
-    public void parse_invalidValues_failure() {
-        assertParseFailure(parser, " sn/A12 m/CS2103 c/F10", StudentNumber.MESSAGE_CONSTRAINTS);
-        assertParseFailure(parser, " sn/" + ALICE.getStudentNumber() + " m/2103 c/F10",
-                ModuleCode.MESSAGE_CONSTRAINTS);
-        assertParseFailure(parser, " sn/" + ALICE.getStudentNumber() + " m/CS2103 c/---",
-                ClassName.MESSAGE_CONSTRAINTS);
+    public void parse_prefixedArguments_failure() {
+        for (String input : new String[] {"sn/A1111111H m/CS2103 c/F10", "1 1 d/2024-02-29", "1 1 x/value"}) {
+            assertInvalidArguments(input);
+        }
     }
 
-    @Test
-    public void parse_duplicatePrefixes_failure() {
-        assertParseFailure(parser, VALID_ARGUMENTS + " sn/" + ALICE.getStudentNumber(),
-                Messages.getErrorMessageForDuplicatePrefixes(PREFIX_STUDENT_NUMBER));
-        assertParseFailure(parser, VALID_ARGUMENTS + " m/CS2103",
-                Messages.getErrorMessageForDuplicatePrefixes(PREFIX_MODULE_CODE));
-        assertParseFailure(parser, VALID_ARGUMENTS + " c/F10",
-                Messages.getErrorMessageForDuplicatePrefixes(PREFIX_CLASS_NAME));
-    }
-
-    @Test
-    public void parse_unknownPrefix_failure() {
-        assertParseFailure(parser, VALID_ARGUMENTS + " x/unknown",
-                String.format(UnassignCommandParser.MESSAGE_UNKNOWN_PARAMETER, "x/"));
-    }
-
-    @Test
-    public void parse_nonEmptyPreamble_failure() {
-        assertParseFailure(parser, " extra" + VALID_ARGUMENTS,
+    private void assertInvalidArguments(String input) {
+        assertParseFailure(parser, input,
                 String.format(Messages.MESSAGE_INVALID_COMMAND_FORMAT, UnassignCommand.MESSAGE_USAGE));
     }
 
     private void assertParsedCommandTargetsExpectedRecords(Command command) throws Exception {
-        AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103"), new ClassName("F10"));
-        ModelStubRecordingUnassignment model = new ModelStubRecordingUnassignment();
+        ModelManager model = new ModelManager();
+        model.addPerson(BENSON);
         model.addPerson(ALICE);
-        model.addAcademicClass(academicClass);
+        AcademicClass target = new AcademicClass(new ModuleCode("CS2103"), new ClassName("F10"));
+        AcademicClass other = new AcademicClass(new ModuleCode("CS2103"), new ClassName("F11"));
+        model.addAcademicClass(target);
+        model.addAcademicClass(other);
+        model.assignStudentToClass(ALICE, target);
+        model.assignStudentToClass(BENSON, target);
+        model.assignStudentToClass(ALICE, other);
 
-        CommandResult result = command.execute(model);
-
-        assertSame(ALICE, model.unassignedPerson);
-        assertSame(academicClass, model.unassignedClass);
-        assertEquals(new CommandResult(String.format(UnassignCommand.MESSAGE_SUCCESS,
-                ALICE.getStudentNumber(), academicClass)), result);
-    }
-
-    /**
-     * Records which stored objects the parsed command passes to the model.
-     */
-    private static class ModelStubRecordingUnassignment extends ModelManager {
-        private Person unassignedPerson;
-        private AcademicClass unassignedClass;
-
-        @Override
-        public boolean unassignStudentFromClass(Person person, AcademicClass academicClass) {
-            unassignedPerson = person;
-            unassignedClass = academicClass;
-            return true;
-        }
+        assertEquals(String.format(UnassignCommand.MESSAGE_SUCCESS, ALICE.getStudentNumber(), target),
+                command.execute(model).getFeedbackToUser());
+        assertEquals(Set.of(BENSON), target.getStudents());
+        assertEquals(Set.of(ALICE), other.getStudents());
     }
 }

@@ -7,147 +7,142 @@ import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.BENSON;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableSet;
+import seedu.address.commons.core.index.Index;
+import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.ModelManager;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
-import seedu.address.model.person.Person;
 
-/**
- * Tests unassign command execution and its interaction with the model.
- */
+/** Tests unassignment through displayed indices, filters, and retained attendance history. */
 public class UnassignCommandTest {
-    private static final ModuleCode MODULE_CODE = new ModuleCode("CS2103");
-    private static final ClassName CLASS_NAME = new ClassName("F10");
-
     private final ModelManager model = new ModelManager();
+    private AcademicClass target;
+    private AcademicClass other;
+
+    @BeforeEach
+    public void setUp() {
+        model.addPerson(BENSON);
+        model.addPerson(ALICE);
+        target = new AcademicClass(new ModuleCode("CS2103"), new ClassName("F10"));
+        other = new AcademicClass(new ModuleCode("CS2103"), new ClassName("F11"));
+        model.addAcademicClass(target);
+        model.addAcademicClass(other);
+        model.assignStudentToClass(ALICE, target);
+        model.assignStudentToClass(BENSON, target);
+        model.assignStudentToClass(ALICE, other);
+    }
 
     @Test
     public void execute_nullModel_throwsNullPointerException() {
-        assertThrows(NullPointerException.class, () -> commandFor(ALICE).execute(null));
+        assertThrows(NullPointerException.class, () -> command(1, 1).execute(null));
     }
 
     @Test
     public void execute_assignedStudent_removesOnlyTargetMembership() throws Exception {
-        AcademicClass targetClass = new AcademicClassWithStudents(MODULE_CODE, CLASS_NAME, ALICE, BENSON);
-        AcademicClass otherClass = new AcademicClassWithStudents(MODULE_CODE, new ClassName("F11"), ALICE);
-        model.addPerson(ALICE);
-        model.addPerson(BENSON);
-        model.addAcademicClass(targetClass);
-        model.addAcademicClass(otherClass);
-
-        CommandResult result = commandFor(ALICE).execute(model);
-
+        CommandResult result = command(2, 1).execute(model);
         assertEquals(new CommandResult(String.format(UnassignCommand.MESSAGE_SUCCESS,
-                ALICE.getStudentNumber(), targetClass)), result);
-        assertEquals(Set.of(BENSON), targetClass.getStudents());
-        assertEquals(Set.of(ALICE), otherClass.getStudents());
-        assertEquals(List.of(ALICE, BENSON), model.getAddressBook().getPersonList());
-        assertEquals(List.of(targetClass, otherClass), model.getAcademicClassList());
+                ALICE.getStudentNumber(), target)), result);
+        assertEquals(Set.of(BENSON), target.getStudents());
+        assertEquals(Set.of(ALICE), other.getStudents());
+        assertEquals(List.of(BENSON, ALICE), model.getAddressBook().getPersonList());
+        assertEquals(List.of(target, other), model.getAcademicClassList());
     }
 
     @Test
-    public void execute_studentHiddenByFilter_preservesFilterAndDisplayedOrder() throws Exception {
-        AcademicClass targetClass = new AcademicClassWithStudents(MODULE_CODE, CLASS_NAME, ALICE, BENSON);
-        model.addPerson(ALICE);
-        model.addPerson(BENSON);
-        model.addAcademicClass(targetClass);
-        model.updateFilteredPersonListAlphabetically(person -> person.equals(BENSON));
+    public void execute_filteredStudent_usesDisplayedIndexAndPreservesFilter() throws Exception {
+        model.updateFilteredPersonList(person -> person.equals(ALICE));
+        command(1, 1).execute(model);
+        assertEquals(List.of(ALICE), model.getFilteredPersonList());
+        assertEquals(Set.of(BENSON), target.getStudents());
+    }
 
-        commandFor(ALICE).execute(model);
-
+    @Test
+    public void execute_sortedClassView_usesDisplayedOrderAndRefreshesMemberships() throws Exception {
+        model.filterPersonsByClass(target);
+        assertEquals(List.of(ALICE, BENSON), model.getFilteredPersonList());
+        command(1, 1).execute(model);
         assertEquals(List.of(BENSON), model.getFilteredPersonList());
-        assertEquals(List.of(ALICE, BENSON), model.getAddressBook().getPersonList());
-        assertEquals(Set.of(BENSON), targetClass.getStudents());
+        assertEquals(Set.of(BENSON), target.getStudents());
+        command(1, 1).execute(model);
+        assertTrue(model.getFilteredPersonList().isEmpty());
+        assertTrue(target.getStudents().isEmpty());
     }
 
     @Test
-    public void execute_studentNotFound_throwsCommandExceptionWithoutChangingMembership() {
-        AcademicClass targetClass = new AcademicClassWithStudents(MODULE_CODE, CLASS_NAME, BENSON);
-        model.addPerson(BENSON);
-        model.addAcademicClass(targetClass);
-
-        assertThrows(CommandException.class, String.format(UnassignCommand.MESSAGE_STUDENT_NOT_FOUND,
-                ALICE.getStudentNumber()), () -> commandFor(ALICE).execute(model));
-
-        assertEquals(Set.of(BENSON), targetClass.getStudents());
-        assertEquals(List.of(BENSON), model.getAddressBook().getPersonList());
+    public void execute_filteredClass_usesDisplayedIndexAndRefreshesClassList() throws Exception {
+        model.updateFilteredAcademicClassListByStudent(ALICE.getStudentNumber());
+        command(2, 1).execute(model);
+        assertEquals(List.of(other), model.getFilteredAcademicClassList());
+        command(2, 1).execute(model);
+        assertTrue(model.getFilteredAcademicClassList().isEmpty());
+        assertFalse(other.getStudents().contains(ALICE));
     }
 
     @Test
-    public void execute_classNotFound_throwsCommandException() {
-        model.addPerson(ALICE);
-        AcademicClass otherClass = new AcademicClassWithStudents(MODULE_CODE, new ClassName("F11"), ALICE);
-        model.addAcademicClass(otherClass);
-
-        assertThrows(CommandException.class, String.format(UnassignCommand.MESSAGE_CLASS_NOT_FOUND,
-                MODULE_CODE, CLASS_NAME), () -> commandFor(ALICE).execute(model));
-
-        assertEquals(Set.of(ALICE), otherClass.getStudents());
-        assertEquals(List.of(ALICE), model.getAddressBook().getPersonList());
+    public void execute_invalidStudentIndex_preservesMemberships() {
+        assertThrows(CommandException.class,
+                Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX, () -> command(3, 1).execute(model));
+        assertEquals(Set.of(ALICE, BENSON), target.getStudents());
     }
 
     @Test
-    public void execute_studentNotAssigned_throwsCommandException() {
-        AcademicClass targetClass = new AcademicClass(MODULE_CODE, CLASS_NAME);
-        model.addPerson(ALICE);
-        model.addAcademicClass(targetClass);
-
-        assertThrows(CommandException.class, String.format(UnassignCommand.MESSAGE_STUDENT_NOT_IN_CLASS,
-                ALICE.getStudentNumber(), targetClass), () ->
-                commandFor(ALICE).execute(model));
-
-        assertTrue(targetClass.getStudents().isEmpty());
-        assertEquals(List.of(ALICE), model.getAddressBook().getPersonList());
+    public void execute_invalidClassIndex_preservesMemberships() {
+        assertThrows(CommandException.class,
+                Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX, () -> command(1, 3).execute(model));
+        assertEquals(Set.of(ALICE, BENSON), target.getStudents());
     }
 
     @Test
-    public void execute_unassignTwice_secondAttemptThrowsCommandException() throws Exception {
-        AcademicClass targetClass = new AcademicClassWithStudents(MODULE_CODE, CLASS_NAME, ALICE);
-        model.addPerson(ALICE);
-        model.addAcademicClass(targetClass);
-        UnassignCommand command = commandFor(ALICE);
-
-        command.execute(model);
-        assertThrows(CommandException.class, String.format(UnassignCommand.MESSAGE_STUDENT_NOT_IN_CLASS,
-                ALICE.getStudentNumber(), targetClass), () ->
-                command.execute(model));
-
-        assertFalse(targetClass.getStudents().contains(ALICE));
+    public void execute_emptyStudentView_rejectsHiddenStudent() {
+        model.updateFilteredPersonList(person -> false);
+        assertThrows(CommandException.class,
+                Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX, () -> command(1, 1).execute(model));
+        assertEquals(Set.of(ALICE, BENSON), target.getStudents());
     }
 
-    private UnassignCommand commandFor(Person person) {
-        return new UnassignCommand(person.getStudentNumber(), MODULE_CODE, CLASS_NAME);
+    @Test
+    public void execute_emptyClassView_rejectsHiddenClass() {
+        model.updateFilteredAcademicClassList(academicClass -> false);
+        assertThrows(CommandException.class,
+                Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX, () -> command(1, 1).execute(model));
+        assertEquals(Set.of(ALICE, BENSON), target.getStudents());
     }
 
-    /**
-     * Supplies pre-existing memberships until the production assignment API is available.
-     * This fixture tests command/model coordination, not AcademicClass's removal implementation.
-     */
-    private static class AcademicClassWithStudents extends AcademicClass {
-        private final ObservableSet<Person> members = FXCollections.observableSet();
+    @Test
+    public void execute_studentNotAssigned_preservesMemberships() {
+        assertThrows(CommandException.class, String.format(Messages.MESSAGE_STUDENT_NOT_IN_CLASS,
+                BENSON.getStudentNumber(), other), () -> command(1, 2).execute(model));
+        assertEquals(Set.of(ALICE), other.getStudents());
+    }
 
-        AcademicClassWithStudents(ModuleCode moduleCode, ClassName className, Person... persons) {
-            super(moduleCode, className);
-            members.addAll(List.of(persons));
-        }
+    @Test
+    public void execute_unassignTwiceWithUnchangedViews_secondAttemptFails() throws Exception {
+        command(2, 1).execute(model);
+        assertThrows(CommandException.class, String.format(Messages.MESSAGE_STUDENT_NOT_IN_CLASS,
+                ALICE.getStudentNumber(), target), () -> command(2, 1).execute(model));
+        assertEquals(Set.of(BENSON), target.getStudents());
+    }
 
-        @Override
-        public ObservableSet<Person> getStudents() {
-            return FXCollections.unmodifiableObservableSet(members);
-        }
+    @Test
+    public void execute_withAttendance_retainsHistoryAndAllowsReassignment() throws Exception {
+        LocalDate date = LocalDate.of(2024, 2, 29);
+        model.addAttendance(ALICE, target, date);
+        command(2, 1).execute(model);
+        assertEquals(Set.of(date), model.getAttendanceList().getFirst().getAttendedDates());
+        assertTrue(model.assignStudentToClass(ALICE, target));
+        assertEquals(Set.of(date), model.getAttendanceList().getFirst().getAttendedDates());
+    }
 
-        @Override
-        public boolean unassignStudent(Person person) {
-            return members.remove(person);
-        }
+    private UnassignCommand command(int studentIndex, int classIndex) {
+        return new UnassignCommand(Index.fromOneBased(studentIndex), Index.fromOneBased(classIndex));
     }
 }
