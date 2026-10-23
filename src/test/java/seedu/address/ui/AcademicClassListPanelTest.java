@@ -1,6 +1,7 @@
 package seedu.address.ui;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Orientation;
 import javafx.scene.control.ListView;
 import seedu.address.model.ModelManager;
 import seedu.address.model.academicclass.AcademicClass;
@@ -43,6 +45,9 @@ public class AcademicClassListPanelTest {
             assertNotNull(academicClassListPanel.getRoot());
             ListView<?> academicClassListView = (ListView<?>) academicClassListPanel.getRoot().lookup(".list-view");
             assertNotNull(academicClassListView.getCellFactory().call(null));
+            assertEquals(Orientation.VERTICAL, academicClassListView.getOrientation());
+            assertNull(academicClassListView.getSelectionModel());
+            assertFalse(academicClassListView.isFocusTraversable());
         });
     }
 

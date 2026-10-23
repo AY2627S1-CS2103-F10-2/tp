@@ -2,6 +2,7 @@ package seedu.address.ui;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.BENSON;
 
@@ -13,7 +14,9 @@ import org.junit.jupiter.api.Test;
 
 import javafx.application.Platform;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.layout.StackPane;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
@@ -41,6 +44,27 @@ public class AcademicClassCardTest {
             assertLabelTextExists(academicClassCard.getRoot(), "1. ");
             assertLabelTextExists(academicClassCard.getRoot(), "CS2103T F10-2");
             assertLabelTextExists(academicClassCard.getRoot(), "Students: 0");
+        });
+    }
+
+    @Test
+    public void longClassName_narrowCard_wrapsWithoutHidingIndexOrMembership() {
+        runOnFxThreadAndWait(() -> {
+            AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103T"),
+                    new ClassName("TUTORIAL-GROUP-WITH-A-VERY-LONG-NAME"));
+            AcademicClassCard card = new AcademicClassCard(academicClass, 123);
+            StackPane container = new StackPane(card.getRoot());
+            Scene scene = new Scene(container, 180, 400);
+            scene.getStylesheets().add(getClass().getResource("/view/DarkTheme.css").toExternalForm());
+            container.applyCss();
+            container.layout();
+
+            Label name = (Label) card.getRoot().lookup("#className");
+            assertTrue(name.isWrapText());
+            assertTrue(name.getHeight() > name.getFont().getSize() * 2);
+            assertTrue(name.localToScene(name.getBoundsInLocal()).getMaxX() <= container.getWidth());
+            assertLabelTextExists(card.getRoot(), "123. ");
+            assertLabelTextExists(card.getRoot(), "Students: 0");
         });
     }
 
