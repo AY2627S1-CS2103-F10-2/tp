@@ -57,7 +57,6 @@ Model --> UnassignCommand : displayedClasses
 deactivate Model
 note right of UnassignCommand
 Validate classIndex and select academicClass.
-Check that person belongs to academicClass.
 end note
 
 UnassignCommand -> Model : unassignStudentFromClass(person, academicClass)

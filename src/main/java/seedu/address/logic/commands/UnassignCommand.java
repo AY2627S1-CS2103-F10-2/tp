@@ -43,7 +43,7 @@ public class UnassignCommand extends Command {
         }
         Person person = displayedStudents.get(studentIndex.getZeroBased());
 
-        AcademicClass academicClass = getAcademicClass(model, person);
+        AcademicClass academicClass = getAcademicClass(model);
 
         if (!model.unassignStudentFromClass(person, academicClass)) {
             throw new CommandException(String.format(Messages.MESSAGE_STUDENT_NOT_IN_CLASS,
@@ -53,18 +53,13 @@ public class UnassignCommand extends Command {
         return new CommandResult(String.format(MESSAGE_SUCCESS, person.getStudentNumber(), academicClass));
     }
 
-    /** Resolves the displayed class and checks that the selected student is assigned to it. */
-    private AcademicClass getAcademicClass(Model model, Person person) throws CommandException {
+    /** Resolves the displayed class after validating its index. */
+    private AcademicClass getAcademicClass(Model model) throws CommandException {
         List<AcademicClass> displayedClasses = model.getFilteredAcademicClassList();
         if (classIndex.getZeroBased() >= displayedClasses.size()) {
             throw new CommandException(Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX);
         }
-        AcademicClass academicClass = displayedClasses.get(classIndex.getZeroBased());
 
-        if (!academicClass.getStudents().contains(person)) {
-            throw new CommandException(String.format(Messages.MESSAGE_STUDENT_NOT_IN_CLASS,
-                    person.getStudentNumber(), academicClass));
-        }
-        return academicClass;
+        return displayedClasses.get(classIndex.getZeroBased());
     }
 }

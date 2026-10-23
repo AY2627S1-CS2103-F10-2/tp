@@ -336,9 +336,10 @@ Membership changes go through the `Model` interface.
 
 1. `LogicManager` asks `AddressBookParser` to parse the input. It creates an `UnassignCommandParser`,
    which validates the arguments and constructs an `UnassignCommand`.
-2. `LogicManager` executes the returned command, which resolves both displayed indices and
-   checks that the student belongs to the selected class.
-3. The command calls `Model#unassignStudentFromClass(person, academicClass)`.
+2. `LogicManager` executes the returned command, which validates both displayed indices and
+   resolves the selected student and class.
+3. The command calls `Model#unassignStudentFromClass(person, academicClass)` and checks whether
+   the model reports a successful removal.
 4. A successful removal produces a `CommandResult`, which `LogicManager` returns after saving
    the address book.
 
@@ -347,8 +348,9 @@ student set changes; the student record and memberships in other classes remain 
 
 <puml src="diagrams/UnassignSequenceDiagram-Model.puml" alt="ModelManager delegates unassignment to AddressBook and AcademicClass removes the student from its membership set" />
 
-The command rejects a student who is not a member before requesting removal. It also handles
-a `false` removal result with a `CommandException`. Successful removal refreshes membership-dependent
+If the student is not assigned to the class, `AcademicClass#unassignStudent(person)` returns `false`
+without changing membership. This result propagates through the model to the command, which throws
+a `CommandException`. Successful removal refreshes membership-dependent
 student and class filters without resetting the active filters or ordering. Indices may shift as
 records disappear from filtered views. Attendance history is retained for correction or reassignment.
 

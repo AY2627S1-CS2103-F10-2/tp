@@ -40,11 +40,6 @@ else ([unassign])
         stop
     else ([valid class index])
     endif
-    if () then ([student not assigned])
-        :Report not assigned;
-        stop
-    else ([student assigned])
-    endif
 endif
 
 :Attempt the requested
