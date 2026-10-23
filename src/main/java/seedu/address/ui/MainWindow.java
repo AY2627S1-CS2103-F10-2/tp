@@ -1,15 +1,18 @@
 package seedu.address.ui;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
@@ -139,12 +142,31 @@ public class MainWindow extends UiPart<Stage> {
      * Sets the default size based on {@code guiSettings}.
      */
     private void setWindowDefaultSize(GuiSettings guiSettings) {
-        primaryStage.setHeight(guiSettings.getWindowHeight());
-        primaryStage.setWidth(guiSettings.getWindowWidth());
-        if (guiSettings.getWindowCoordinates() != null) {
-            primaryStage.setX(guiSettings.getWindowCoordinates().getX());
-            primaryStage.setY(guiSettings.getWindowCoordinates().getY());
+        Rectangle2D bounds = getVisibleWindowBounds(guiSettings,
+                Screen.getScreens().stream().map(Screen::getVisualBounds).toList(),
+                Screen.getPrimary().getVisualBounds());
+        primaryStage.setWidth(bounds.getWidth());
+        primaryStage.setHeight(bounds.getHeight());
+        primaryStage.setX(bounds.getMinX());
+        primaryStage.setY(bounds.getMinY());
+    }
+
+    /** Restores usable saved bounds, or fits and centers the window on the primary screen. */
+    static Rectangle2D getVisibleWindowBounds(GuiSettings settings, List<Rectangle2D> screens,
+            Rectangle2D primaryScreen) {
+        double width = settings.getWindowWidth();
+        double height = settings.getWindowHeight();
+        if (settings.getWindowCoordinates() != null) {
+            Rectangle2D savedBounds = new Rectangle2D(settings.getWindowCoordinates().getX(),
+                    settings.getWindowCoordinates().getY(), width, height);
+            if (screens.stream().anyMatch(screen -> screen.contains(savedBounds))) {
+                return savedBounds;
+            }
         }
+        width = Math.min(width, primaryScreen.getWidth());
+        height = Math.min(height, primaryScreen.getHeight());
+        return new Rectangle2D(primaryScreen.getMinX() + (primaryScreen.getWidth() - width) / 2,
+                primaryScreen.getMinY() + (primaryScreen.getHeight() - height) / 2, width, height);
     }
 
     /**

@@ -1,5 +1,6 @@
 package seedu.address.ui;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.nio.file.Path;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.io.TempDir;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Rectangle2D;
 import javafx.stage.Stage;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.logic.Logic;
@@ -37,6 +39,28 @@ public class MainWindowTest {
         } catch (IllegalStateException e) {
             // JavaFX toolkit has already been initialized.
         }
+    }
+
+    @Test
+    public void restoreWindow_disconnectedMonitor_centersOnPrimaryScreen() {
+        Rectangle2D primary = new Rectangle2D(0, 0, 1920, 1080);
+        assertEquals(new Rectangle2D(590, 240, 740, 600), MainWindow.getVisibleWindowBounds(
+                new GuiSettings(740, 600, 2000, 100), List.of(primary), primary));
+    }
+
+    @Test
+    public void restoreWindow_connectedMonitorWithNegativeCoordinates_preservesPosition() {
+        Rectangle2D primary = new Rectangle2D(0, 0, 1920, 1080);
+        Rectangle2D secondary = new Rectangle2D(-1920, 0, 1920, 1080);
+        assertEquals(new Rectangle2D(-1800, 100, 740, 600), MainWindow.getVisibleWindowBounds(
+                new GuiSettings(740, 600, -1800, 100), List.of(primary, secondary), primary));
+    }
+
+    @Test
+    public void restoreWindow_oversizedWindow_fitsPrimaryScreen() {
+        Rectangle2D primary = new Rectangle2D(0, 30, 1280, 720);
+        assertEquals(primary, MainWindow.getVisibleWindowBounds(
+                new GuiSettings(2560, 1440, 0, 0), List.of(primary), primary));
     }
 
     @Test
