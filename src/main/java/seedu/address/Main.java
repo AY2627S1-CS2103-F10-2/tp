@@ -1,6 +1,7 @@
 package seedu.address;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.Logger;
 
@@ -28,7 +29,12 @@ public class Main {
     private static Logger logger = LogsCenter.getLogger(Main.class);
 
     public static void main(String[] args) {
-        try (ApplicationLock lock = ApplicationLock.tryAcquire(Paths.get(".")).orElse(null)) {
+        launchWithLock(Paths.get("."), () -> Application.launch(MainApp.class, args));
+    }
+
+    /** Runs the application only while it owns the working folder's lock. */
+    static void launchWithLock(Path applicationFolder, Runnable launchApplication) {
+        try (ApplicationLock lock = ApplicationLock.tryAcquire(applicationFolder).orElse(null)) {
             if (lock == null) {
                 System.err.println("Unable to open TAssist: TAssist is already running for this data folder. "
                         + "Close the other instance first.");
@@ -36,7 +42,7 @@ public class Main {
             }
             logger.warning("The warnings about a 'restricted method in java.lang.System' "
                 + "and 'enabling native access' appearing below (if any) can be ignored.");
-            Application.launch(MainApp.class, args);
+            launchApplication.run();
         } catch (IOException e) {
             System.err.println("Unable to access the TAssist application lock: " + e.getMessage());
         }
