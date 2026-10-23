@@ -47,8 +47,10 @@ public class Messages {
                 .append("; Email: ")
                 .append(person.getEmail());
         person.getTelegram().ifPresent(telegram -> builder.append("; Telegram: @").append(telegram));
-        builder.append("; Tags: ");
-        person.getTags().forEach(builder::append);
+        if (!person.getTags().isEmpty()) {
+            builder.append("; Tags: ");
+            person.getTags().forEach(builder::append);
+        }
         return builder.toString();
     }
 
