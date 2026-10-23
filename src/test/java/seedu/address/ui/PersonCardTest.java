@@ -14,8 +14,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import javafx.application.Platform;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.text.Text;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
@@ -52,6 +55,39 @@ public class PersonCardTest {
             FlowPane tags = (FlowPane) card.getRoot().lookup("#tags");
             assertEquals(List.of("project", "tutorial"), tags.getChildren().stream()
                     .map(node -> ((Label) node).getText()).toList());
+        });
+    }
+
+    @Test
+    public void longDetails_narrowCard_wrapNamesContactsAndTags() {
+        Person person = new PersonBuilder().withName("Alice Pauline With A Very Long Student Name")
+                .withEmail("alice.pauline.with.a.long.email.address@example.com")
+                .withTelegram("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
+                .withTags("aVeryLongTagThatMustWrapWithinTheStudentCard", "tutorial").build();
+        runOnFxThreadAndWait(() -> {
+            PersonCard card = new PersonCard(person, 123);
+            StackPane container = new StackPane(card.getRoot());
+            container.getStyleClass().addAll("app-shell", "workspace-bottom");
+            Scene scene = new Scene(container, 230, 500);
+            scene.getStylesheets().add(getClass().getResource("/view/Workspace.css").toExternalForm());
+            container.applyCss();
+            container.layout();
+            container.layout();
+
+            for (String id : List.of("name", "email", "telegram")) {
+                Label label = getLabel(card, id);
+                assertTrue(label.isWrapText());
+                assertTrue(label.getHeight() > label.getFont().getSize() * 1.5,
+                        id + ": " + label.getWidth() + " x " + label.getHeight());
+                assertTrue(label.localToScene(label.getBoundsInLocal()).getMaxX() <= container.getWidth(), id);
+                assertEquals(label.getText(), ((Text) label.lookup(".text")).getText());
+            }
+            FlowPane tags = (FlowPane) card.getRoot().lookup("#tags");
+            for (var tag : tags.getChildren()) {
+                assertTrue(tag.localToScene(tag.getBoundsInLocal()).getMaxX() <= container.getWidth());
+            }
+            assertEquals("123. ", getLabel(card, "id").getText());
+            assertFalse(getLabel(card, "attendance").isManaged());
         });
     }
 
