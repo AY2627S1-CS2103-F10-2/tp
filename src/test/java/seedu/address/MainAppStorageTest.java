@@ -22,6 +22,26 @@ public class MainAppStorageTest {
     public Path temporaryFolder;
 
     @Test
+    public void init_commandAndShutdown_persistThroughConfiguredStorage() throws Exception {
+        MainApp app = new MainApp() {
+            @Override
+            void initModelAndStorage(Path applicationFolder) {
+                assertEquals(Path.of("").toAbsolutePath(), applicationFolder);
+                super.initModelAndStorage(temporaryFolder);
+            }
+        };
+        app.init();
+        app.logic.execute("add sn/A0999602X n/Storage Probe e/storage@example.com");
+        app.stop();
+
+        MainApp reopened = new MainApp();
+        reopened.initModelAndStorage(temporaryFolder);
+        assertTrue(reopened.model.getAddressBook().getPersonList().stream()
+                .anyMatch(person -> person.getStudentNumber().value.equals("A0999602X")));
+        assertTrue(Files.exists(temporaryFolder.resolve("preferences.json")));
+    }
+
+    @Test
     public void initModelAndStorage_applicationFolder_savesAndReloadsInThatFolder() throws Exception {
         Path applicationFolder = Files.createDirectories(temporaryFolder.resolve("app with spaces #1"));
         MainApp app = new MainApp();

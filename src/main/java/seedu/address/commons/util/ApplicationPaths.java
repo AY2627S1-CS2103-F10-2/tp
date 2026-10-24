@@ -11,6 +11,8 @@ import java.nio.file.Paths;
  * Resolves the application folder shared by locking and saved files.
  */
 public class ApplicationPaths {
+    private ApplicationPaths() {}
+
     /**
      * Returns the JAR's folder for packaged runs, or the working directory for IDE/Gradle runs.
      *
