@@ -22,7 +22,6 @@ public class AddAttendanceCommand extends Command {
             + "d/YYYY-MM-DD\n"
             + "Example: " + COMMAND_WORD + " 1 2 d/2024-02-29";
     public static final String MESSAGE_SUCCESS = "Recorded attendance for student (%1$s) in %2$s on %3$s.";
-    public static final String MESSAGE_NOT_ASSIGNED = "Student (%1$s) is not assigned to class %2$s.";
     public static final String MESSAGE_DUPLICATE_ATTENDANCE =
             "Attendance for student (%1$s) in %2$s on %3$s is already recorded.";
 
@@ -55,7 +54,8 @@ public class AddAttendanceCommand extends Command {
         }
         AcademicClass academicClass = displayedClasses.get(classIndex.getZeroBased());
         if (!academicClass.getStudents().contains(person)) {
-            throw new CommandException(String.format(MESSAGE_NOT_ASSIGNED, person.getStudentNumber(), academicClass));
+            throw new CommandException(String.format(Messages.MESSAGE_STUDENT_NOT_IN_CLASS,
+                    person.getStudentNumber(), academicClass));
         }
         recordAttendance(model, person, academicClass);
         return new CommandResult(String.format(MESSAGE_SUCCESS, person.getStudentNumber(), academicClass, date));

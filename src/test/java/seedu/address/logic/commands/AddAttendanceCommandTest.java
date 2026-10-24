@@ -110,7 +110,7 @@ public class AddAttendanceCommandTest {
     @Test
     public void execute_unassignedStudent_rejectsWithoutAssigning() {
         assertFailureWithoutMutation(new AddAttendanceCommand(Index.fromOneBased(1), Index.fromOneBased(1), DATE),
-                String.format(AddAttendanceCommand.MESSAGE_NOT_ASSIGNED, BENSON.getStudentNumber(), academicClass));
+                String.format(Messages.MESSAGE_STUDENT_NOT_IN_CLASS, BENSON.getStudentNumber(), academicClass));
     }
 
     @Test
@@ -118,7 +118,7 @@ public class AddAttendanceCommandTest {
         command(DATE).execute(model);
         model.unassignStudentFromClass(ALICE, academicClass);
         assertFailureWithoutMutation(command(DATE.plusDays(1)),
-                String.format(AddAttendanceCommand.MESSAGE_NOT_ASSIGNED, ALICE.getStudentNumber(), academicClass));
+                String.format(Messages.MESSAGE_STUDENT_NOT_IN_CLASS, ALICE.getStudentNumber(), academicClass));
         model.assignStudentToClass(ALICE, academicClass);
         command(DATE.plusDays(1)).execute(model);
         assertEquals(1, model.getAttendanceList().size());
@@ -179,7 +179,7 @@ public class AddAttendanceCommandTest {
         model.assignStudentToClass(BENSON, otherClass);
         model.filterPersonsByClass(otherClass);
         assertFailureWithoutMutation(new AddAttendanceCommand(Index.fromOneBased(1), Index.fromOneBased(1), DATE),
-                String.format(AddAttendanceCommand.MESSAGE_NOT_ASSIGNED, BENSON.getStudentNumber(), academicClass));
+                String.format(Messages.MESSAGE_STUDENT_NOT_IN_CLASS, BENSON.getStudentNumber(), academicClass));
         assertEquals(List.of(BENSON), model.getFilteredPersonList());
         assertEquals(Set.of(ALICE), academicClass.getStudents());
         assertEquals(Set.of(BENSON), otherClass.getStudents());

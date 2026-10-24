@@ -17,7 +17,7 @@ public class UnassignCommandParser implements Parser<UnassignCommand> {
     @Override
     public UnassignCommand parse(String args) throws ParseException {
         ArgumentMultimap arguments = ArgumentTokenizer.tokenize(args);
-        Index[] indices = AttendanceParserUtil.parseIndices(arguments, UnassignCommand.MESSAGE_USAGE);
+        Index[] indices = ParserUtil.parseIndices(arguments.getPreamble(), UnassignCommand.MESSAGE_USAGE);
 
         return new UnassignCommand(indices[0], indices[1]);
     }
