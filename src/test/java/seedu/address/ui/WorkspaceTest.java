@@ -79,7 +79,7 @@ public class WorkspaceTest {
                 MainWindow window = openWindow(stage, createLogic());
                 assertEquals(450, stage.getMinWidth());
                 assertEquals(600, stage.getMinHeight());
-                assertEquals("TAssist", stage.getTitle());
+                assertEquals("TAssist App", stage.getTitle());
                 SplitPane split = (SplitPane) stage.getScene().lookup("#workspaceSplitPane");
                 assertEquals(Orientation.HORIZONTAL, split.getOrientation());
                 assertEquals(0.45, split.getDividerPositions()[0], 0.04);
