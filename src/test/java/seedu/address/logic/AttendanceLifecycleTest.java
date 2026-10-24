@@ -50,7 +50,7 @@ public class AttendanceLifecycleTest {
     @Test
     public void execute_unassignDeleteReassign_keepsRemainingHistoryAcrossReload() throws Exception {
         logic.execute("addattendance" + ATTENDANCE_TARGET + " d/2024-02-28");
-        logic.execute("unassign" + TARGET);
+        logic.execute("unassign" + ATTENDANCE_TARGET);
         assertThrows(CommandException.class, () ->
                 logic.execute("addattendance" + ATTENDANCE_TARGET + " d/2024-03-01"));
         logic.execute("deleteattendance" + ATTENDANCE_TARGET + " d/2024-02-29");
@@ -171,7 +171,7 @@ public class AttendanceLifecycleTest {
 
     @Test
     public void execute_renameAfterUnassignment_canDeleteRetainedHistory() throws Exception {
-        logic.execute("unassign" + TARGET);
+        logic.execute("unassign" + ATTENDANCE_TARGET);
         logic.execute("editclass 1 c/F11-2");
         reload();
         assertDates(Set.of(DATE));

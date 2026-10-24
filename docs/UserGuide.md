@@ -145,24 +145,34 @@ This command leaves the current class filter unchanged. Use `listclass` to resto
 Shows only students assigned to the class at the specified displayed index, alphabetically by name using the existing
 student cards.
 Each card also shows the dates on which that student attended the class.
+Optionally, specify `t/THRESHOLD` to filter for class members with fewer than `THRESHOLD` recorded attendance dates in that class.
 
-Format: `listbyclass INDEX`
+Format: `listbyclass INDEX [t/THRESHOLD]`
 
 * `INDEX` must be a positive integer referring to a class in the displayed class list.
+* `THRESHOLD` (optional) must be a positive integer.
+  * When `t/THRESHOLD` is provided, only students assigned to the selected class with **fewer than `THRESHOLD` recorded attendance dates** for that class are displayed.
+  * Students with no recorded attendance for that class count as having `0` attendance dates (for example, `t/1` displays only students with `0` recorded dates, and `t/5` displays students with `0` to `4` recorded dates while excluding students with `5` or more dates).
+  * Attendance recorded for other classes does not affect the count for the selected class.
+  * Omitting `t/THRESHOLD` lists all students assigned to the class and clears any active attendance threshold restriction.
 * The class list index is independent of the student list index.
-* An invalid or out-of-range index is rejected without changing the student list.
+* An invalid or out-of-range index or threshold is rejected without changing the student list.
 * Names are sorted ignoring case, with original spelling used to break ties.
-* An existing class with no students shows an empty student list and a count of zero.
+* Adding or deleting attendance dates, or assigning/unassigning students, immediately updates the displayed list against the active class and threshold filter.
+* An existing class with no matching students shows an empty student list and a count of zero.
 * Deleting the class currently being displayed empties the student list without deleting student records.
   If you recreate the class, subsequent assignments update this view using the new class membership.
+* Renaming the class currently being displayed with `editclass` preserves both the class view and any active `t/THRESHOLD` attendance filter.
 * This command changes only the displayed student list, not student records, class memberships, or the class list.
 * Use `list` to show all students again. `list` and `find` display results in their original insertion order.
 
 Examples:
 
-* Check the class list displayed in the UI, then run `listbyclass INDEX` for the desired class.
+* Check the class list displayed in the UI, then run `listbyclass 1` to list all students in the 1st displayed class, or `listbyclass 1 t/5` to list only students in the 1st displayed class with fewer than 5 recorded attendance dates.
 
-The result message includes the student count and class, for example: `Listed 2 students taking CS2103 (F10-2).`
+The result message includes the student count and class (and the threshold when specified), for example:
+* `Listed 2 students taking CS2103 (F10-2).`
+* `Listed 1 students taking CS2103 (F10-2) with fewer than 5 recorded attendance dates.`
 
 Classes created with `addclass` start empty. Use `assign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME`
 to assign an existing student before listing the class. Memberships are saved across restarts.
@@ -248,7 +258,7 @@ Only `CS2106 DEMO-BOB` appears. Bob is index `1` in the search results, regardle
 To check a student with no memberships and see the view update automatically, run:
 
 ```text
-unassign sn/A0999802Y m/CS2106 c/DEMO-BOB
+unassign 1 1
 listbystudent 1
 ```
 
@@ -572,27 +582,21 @@ Invalid module codes and class names are rejected before searching for a class. 
 
 ### Unassigning a student from an academic class: `unassign`
 
-Removes a student's membership from one academic class. Use this when a student leaves a class but should remain in the address book or in other classes.
+Removes a student's membership from one academic class. The student remains in the address book and in other classes.
 
-Format: `unassign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME`
+Format: `unassign STUDENT_INDEX CLASS_INDEX`
 
-**Before you begin:** The student and academic class must exist, and the student must already be assigned to that class.
+* Both indices are required positive integers, in student-then-class order, counting from `1` in their respective displayed panels.
+* The student and class must be visible, and the student must already be assigned to that class.
+* After `find`, `listbyclass`, or `listbystudent`, use the indices in the current results. Run `list` to restore all students or `listclass` to restore all classes if the target is hidden.
+* Only membership in the selected class is removed. Student and class records, other memberships, and recorded attendance history are retained.
+* Active filters and ordering are preserved. Membership-dependent views refresh, so a student or class may disappear and remaining indices may shift.
+* Check both panels before repeating a command. Reusing the same indices after a view changes can target a different student or class.
 
-* All three parameters are required and must each appear exactly once. You can enter them in any order.
-* `STUDENT_NUMBER` must contain 5–20 letters or digits, without spaces.
-* `MODULE_CODE` must start with a letter and contain only letters or digits.
-* `CLASS_NAME` may contain letters, digits, and hyphens (`-`), and must contain at least one letter or digit.
-* Identifiers are matched exactly, ignoring letter case. For example, `cs2103` matches `CS2103`, but class name `F10` does not match `F-10`.
-* The command uses the student number, not an index in the displayed list. It can unassign a student hidden by a previous `find` command.
-* Only membership in the specified class is removed. The student record, academic class, and memberships in other classes remain unchanged.
-* The current person filter and displayed order remain unchanged.
-
-Examples
-
-Suppose student `A1111111H` is assigned to class `F10` in module `CS2103`. Run:
+Example: suppose student `A1111111H` is displayed at student index `2` and `CS2103-F10` is displayed at class index `1`:
 
 ```text
-unassign sn/A1111111H m/CS2103 c/F10
+unassign 2 1
 ```
 
 Expected feedback:
@@ -601,24 +605,12 @@ Expected feedback:
 Student (A1111111H) has been unassigned from CS2103-F10.
 ```
 
-You can also change the parameter order and use lowercase identifiers:
-
-```text
-unassign c/f10 m/cs2103 sn/a1111111h
-```
-
-Both commands target the same membership. Run either command once; repeating it after successful removal reports that the student is no longer assigned to the class.
-
 Common errors:
 
-* Missing parameter: `You're missing some parameters. The correct format is unassign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME`
-* Student not found: `Student (A1234567H) cannot be found in the address book.`
-* Class not found: `Class (CS2100-F10) cannot be found in the address book.`
-* Student not assigned to the class: `Student (A1234567H) is not assigned to class CS2101-L1.` This also occurs when repeating a successful unassignment.
-* Repeated parameter: `Multiple values specified for the following single-valued field(s):` followed by the repeated prefixes.
-* Unknown parameter: `Unknown parameter: PREFIX`
-* Unexpected text before the parameters: `Invalid command format!` followed by the command usage.
-* Empty or invalid student number, module code, or class name: the corresponding validation error from `add` or `addclass`.
+* Missing, extra, or invalid indices (including zero, negative numbers, decimals, and the old prefixes): `Invalid command format!` followed by the command usage.
+* Student index outside the displayed list: `The person index provided is invalid.`
+* Class index outside the displayed list: `The class index provided is invalid.`
+* Student not assigned to the selected class: `Student (A1234567H) is not assigned to class CS2101-L1.` Repeating an unassignment produces this error only if the indices still identify the same student and class.
 
 Rejected commands leave memberships and student counts unchanged.
 
@@ -699,9 +691,9 @@ Action     | Format, Examples
 **Edit Class** | `editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]`<br> e.g., `editclass 1 m/CS2103 c/F11`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **List**   | `list`
-**List students by class** | `listbyclass INDEX`<br> e.g., `listbyclass 1`
+**List students by class** | `listbyclass INDEX [t/THRESHOLD]`<br> e.g., `listbyclass 1`, `listbyclass 1 t/5`
 **List classes by student** | `listbystudent INDEX`<br> e.g., `listbystudent 1`
 **List all classes** | `listclass`
-**Unassign** | `unassign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME`<br> e.g., `unassign sn/A1111111H m/CS2103 c/F10`
+**Unassign** | `unassign STUDENT_INDEX CLASS_INDEX`<br> e.g., `unassign 2 1`
 **Help**   | `help`
 **Exit**   | `exit`

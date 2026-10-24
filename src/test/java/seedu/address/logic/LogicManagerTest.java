@@ -113,7 +113,7 @@ public class LogicManagerTest {
         logic.execute("assign sn/A0123456X m/CS2103 c/F10-2");
         logic.execute("addattendance 1 1 d/2024-02-28");
         logic.execute("addattendance 1 1 d/2024-02-29");
-        logic.execute("unassign sn/A0123456X m/CS2103 c/F10-2");
+        logic.execute("unassign 1 1");
         String deleteCommand = "deleteattendance 1 1 d/2024-02-29";
         logic.execute(deleteCommand);
 

@@ -24,6 +24,8 @@ public class Messages {
     public static final String MESSAGE_DUPLICATE_FIELDS =
                 "Multiple values specified for the following single-valued field(s): ";
 
+    public static final String MESSAGE_STUDENT_NOT_IN_CLASS = "Student (%1$s) is not assigned to class %2$s.";
+
     /**
      * Returns an error message indicating the duplicate prefixes.
      */

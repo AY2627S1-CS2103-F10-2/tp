@@ -1,0 +1,82 @@
+@startuml
+!include style.puml
+skinparam ArrowFontStyle plain
+
+box Logic LOGIC_COLOR_T1
+participant ":LogicManager" as LogicManager LOGIC_COLOR
+participant ":AddressBookParser" as AddressBookParser LOGIC_COLOR
+participant ":UnassignCommandParser" as UnassignCommandParser LOGIC_COLOR
+participant "u:UnassignCommand" as UnassignCommand LOGIC_COLOR
+participant "r:CommandResult" as CommandResult LOGIC_COLOR
+end box
+
+box Model MODEL_COLOR_T1
+participant "m:ModelManager" as Model MODEL_COLOR
+end box
+
+[-> LogicManager : execute(unassign)
+activate LogicManager
+
+LogicManager -> AddressBookParser : parseCommand(unassign)
+activate AddressBookParser
+
+create UnassignCommandParser
+AddressBookParser -> UnassignCommandParser
+activate UnassignCommandParser
+UnassignCommandParser --> AddressBookParser
+deactivate UnassignCommandParser
+
+AddressBookParser -> UnassignCommandParser : parse(args)
+activate UnassignCommandParser
+
+create UnassignCommand
+UnassignCommandParser -> UnassignCommand : UnassignCommand(studentIndex, classIndex)
+activate UnassignCommand
+UnassignCommand --> UnassignCommandParser
+deactivate UnassignCommand
+
+UnassignCommandParser --> AddressBookParser : u
+deactivate UnassignCommandParser
+AddressBookParser --> LogicManager : u
+deactivate AddressBookParser
+
+LogicManager -> UnassignCommand : execute(m)
+activate UnassignCommand
+
+UnassignCommand -> Model : getFilteredPersonList()
+activate Model
+Model --> UnassignCommand : displayedStudents
+deactivate Model
+note right of UnassignCommand
+Validate studentIndex and select person.
+end note
+
+UnassignCommand -> Model : getFilteredAcademicClassList()
+activate Model
+Model --> UnassignCommand : displayedClasses
+deactivate Model
+note right of UnassignCommand
+Validate classIndex and select academicClass.
+end note
+
+UnassignCommand -> Model : unassignStudentFromClass(person, academicClass)
+activate Model
+ref over Model
+Unassign membership (model)
+end ref
+Model --> UnassignCommand : true
+deactivate Model
+
+create CommandResult
+UnassignCommand -> CommandResult : CommandResult(successMessage)
+activate CommandResult
+CommandResult --> UnassignCommand
+deactivate CommandResult
+
+UnassignCommand --> LogicManager : r
+deactivate UnassignCommand
+
+
+[<-- LogicManager : r
+deactivate LogicManager
+@enduml

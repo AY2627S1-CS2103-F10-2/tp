@@ -28,13 +28,6 @@ public class PersonListPanel extends UiPart<Region> {
     @FXML
     private ListView<Person> personListView;
 
-    /**
-     * Creates a {@code PersonListPanel} with the given {@code ObservableList}.
-     */
-    public PersonListPanel(ObservableList<Person> personList) {
-        this(personList, Optional::empty, List::of);
-    }
-
     /** Creates a person list whose cards can display the currently selected class attendance. */
     public PersonListPanel(ObservableList<Person> personList,
             Supplier<Optional<AcademicClass>> attendanceClassSupplier,
