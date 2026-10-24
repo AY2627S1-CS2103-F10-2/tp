@@ -169,6 +169,10 @@ No class row should become selected or highlighted, and the displayed students,
 attendance and command output should remain unchanged. Tab should continue to
 Students; Shift+Tab should return to Classes, then to output.
 
+Finally, execute `clear` in this isolated demo, Tab to the empty Classes list,
+and press End, Home and the arrow/page keys repeatedly. Expect no exception in
+the terminal. Tab must still leave the list, and F1 must still open Help.
+
 ## Automated validation and optional captures
 
 `./gradlew check coverage` runs the tests and Checkstyle. The UI suite checks the

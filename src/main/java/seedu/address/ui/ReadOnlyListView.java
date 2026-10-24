@@ -37,6 +37,13 @@ public class ReadOnlyListView<T> extends ListView<T> {
             VirtualFlow<ListCell<T>> flow = getVirtualFlow();
             ListCell<T> first = flow.getFirstVisibleCell();
             if (first == null) {
+                // JavaFX 17's default Home/End handlers assume a non-null selection model.
+                switch (event.getCode()) {
+                    case UP, KP_UP, DOWN, KP_DOWN, PAGE_UP, PAGE_DOWN, HOME, END -> event.consume();
+                    default -> {
+                        // Leave focus traversal and accelerators available when the list is empty.
+                    }
+                }
                 return;
             }
             switch (event.getCode()) {

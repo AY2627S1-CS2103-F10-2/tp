@@ -121,6 +121,10 @@ End/Home: reach bottom/top. Repeated keys at either boundary are harmless.
 EXPECT: no selected/highlighted class rows; students, attendance and output unchanged.
 Tab moves to Students. Shift+Tab returns to Classes, then output.
 
+Finally execute clear in this isolated demo. Tab to the empty Classes list.
+Press End, Home and arrow/page keys repeatedly: no exception in the terminal.
+Tab must still leave the list, and F1 must still open Help.
+
 OPTIONAL AUTOMATED CAPTURES (desktop required)
 TASSIST_CAPTURE_UI=1 ./gradlew test --tests 'seedu.address.ui.WorkspaceTest' --rerun-tasks
 Images: build/ui-preview/layout-*.png. Test storage is temporary.
