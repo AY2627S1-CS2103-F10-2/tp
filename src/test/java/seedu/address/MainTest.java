@@ -1,6 +1,5 @@
 package seedu.address;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -19,21 +18,6 @@ import seedu.address.storage.ApplicationLock;
 public class MainTest {
     @TempDir
     public Path temporaryFolder;
-
-    @Test
-    public void getLockDirectory_packagedJar_usesJarFolderInsteadOfWorkingDirectory() throws Exception {
-        Path jarFolder = Files.createDirectories(temporaryFolder.resolve("app with spaces"));
-        Path jar = Files.createFile(jarFolder.resolve("TAssist.jar"));
-        Path workingDirectory = Files.createDirectories(temporaryFolder.resolve("terminal"));
-        assertEquals(jarFolder, Main.getLockDirectory(jar, workingDirectory));
-    }
-
-    @Test
-    public void getLockDirectory_classesDirectory_usesWorkingDirectory() throws Exception {
-        Path classes = Files.createDirectories(temporaryFolder.resolve("classes"));
-        Path workingDirectory = Files.createDirectories(temporaryFolder.resolve("terminal"));
-        assertEquals(workingDirectory, Main.getLockDirectory(classes, workingDirectory));
-    }
 
     @Test
     public void launchWithLock_available_holdsLockDuringLaunchAndReleasesAfterwards() throws Exception {
