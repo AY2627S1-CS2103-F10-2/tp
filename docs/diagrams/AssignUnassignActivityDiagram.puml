@@ -14,19 +14,32 @@ if () then ([invalid arguments])
 else ([valid arguments])
 endif
 
-:Find student by student number;
-if () then ([student absent])
-    :Report student not found;
-    stop
-else ([student exists])
-endif
-
-:Find class by module code
-and class name;
-if () then ([class absent])
-    :Report class not found;
-    stop
-else ([class exists])
+if () then ([assign])
+    :Find student by student number;
+    if () then ([student absent])
+        :Report student not found;
+        stop
+    else ([student exists])
+    endif
+    :Find class by module code and class name;
+    if () then ([class absent])
+        :Report class not found;
+        stop
+    else ([class exists])
+    endif
+else ([unassign])
+    :Resolve student index in displayed student list;
+    if () then ([student index out of range])
+        :Report invalid displayed student index;
+        stop
+    else ([valid student index])
+    endif
+    :Resolve class index in displayed class list;
+    if () then ([class index out of range])
+        :Report invalid displayed class index;
+        stop
+    else ([valid class index])
+    endif
 endif
 
 :Attempt the requested
