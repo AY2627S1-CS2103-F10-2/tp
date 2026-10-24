@@ -1,6 +1,7 @@
 package seedu.address.logic.parser;
 
 import static java.util.Objects.requireNonNull;
+import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -59,6 +60,25 @@ public class ParserUtil {
             throw new ParseException(MESSAGE_INVALID_INDEX);
         }
         return Index.fromOneBased(Integer.parseInt(trimmedIndex));
+    }
+
+    /**
+     * Parses exactly two displayed indices in input order.
+     *
+     * @throws ParseException if the input does not contain exactly two positive integer indices.
+     */
+    public static Index[] parseIndices(String preamble, String commandUsage) throws ParseException {
+        requireNonNull(preamble);
+        requireNonNull(commandUsage);
+        String[] indices = preamble.trim().split("\\s+");
+        if (indices.length != 2) {
+            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, commandUsage));
+        }
+        try {
+            return new Index[] {parseIndex(indices[0]), parseIndex(indices[1])};
+        } catch (ParseException e) {
+            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, commandUsage), e);
+        }
     }
 
     /** Parses a positive integer. */

@@ -10,7 +10,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import seedu.address.commons.core.index.Index;
 import seedu.address.logic.parser.exceptions.ParseException;
 
 /** Shared argument structure validation for attendance commands. */
@@ -31,19 +30,6 @@ final class AttendanceParserUtil {
         ArgumentMultimap arguments = ArgumentTokenizer.tokenize(args, REQUIRED_PREFIXES.toArray(Prefix[]::new));
         validateStructure(arguments, commandUsage);
         return arguments;
-    }
-
-    /** Parses exactly two displayed indices with command-specific feedback for invalid input. */
-    static Index[] parseIndices(ArgumentMultimap arguments, String commandUsage) throws ParseException {
-        String[] indices = arguments.getPreamble().trim().split("\\s+");
-        if (indices.length != 2) {
-            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, commandUsage));
-        }
-        try {
-            return new Index[] {ParserUtil.parseIndex(indices[0]), ParserUtil.parseIndex(indices[1])};
-        } catch (ParseException e) {
-            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, commandUsage), e);
-        }
     }
 
     private static void validateStructure(ArgumentMultimap arguments, String commandUsage) throws ParseException {
