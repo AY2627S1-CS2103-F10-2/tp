@@ -14,10 +14,34 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import seedu.address.storage.ApplicationLock;
+import seedu.address.testutil.ApplicationClassLoader;
 
 public class MainTest {
     @TempDir
     public Path temporaryFolder;
+
+    @Test
+    public void main_packagedJarAlreadyLocked_reportsDuplicateWithoutLaunching() throws Exception {
+        Path jar = Files.createFile(temporaryFolder.resolve("TAssist.jar"));
+        ClassLoader loader = new ApplicationClassLoader(jar.toUri().toURL(),
+                "seedu.address.Main", "seedu.address.commons.util.ApplicationPaths");
+        Class<?> main = loader.loadClass("seedu.address.Main");
+        try (ApplicationLock lock = ApplicationLock.tryAcquire(temporaryFolder).orElseThrow()) {
+            String error = captureError(() -> invokeMain(main));
+            assertTrue(error.contains("TAssist is already running"));
+            assertTrue(ApplicationLock.tryAcquire(temporaryFolder).isEmpty());
+        }
+    }
+
+    @Test
+    public void main_invalidApplicationLocation_reportsErrorWithoutLaunching() throws Exception {
+        ClassLoader loader = new ApplicationClassLoader(ApplicationClassLoader.invalidLocation(),
+                "seedu.address.Main", "seedu.address.commons.util.ApplicationPaths");
+        Class<?> main = loader.loadClass("seedu.address.Main");
+        String error = captureError(() -> invokeMain(main));
+        assertTrue(error.contains("Unable to locate the TAssist application folder"));
+        assertFalse(error.contains("Unable to access the TAssist application lock"));
+    }
 
     @Test
     public void launchWithLock_available_holdsLockDuringLaunchAndReleasesAfterwards() throws Exception {
@@ -63,6 +87,14 @@ public class MainTest {
         }));
         try (ApplicationLock lock = ApplicationLock.tryAcquire(temporaryFolder).orElseThrow()) {
             assertTrue(ApplicationLock.tryAcquire(temporaryFolder).isEmpty());
+        }
+    }
+
+    private void invokeMain(Class<?> main) {
+        try {
+            main.getMethod("main", String[].class).invoke(null, (Object) new String[0]);
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError("Application entry point failed", e);
         }
     }
 
