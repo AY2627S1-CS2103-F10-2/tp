@@ -145,10 +145,17 @@ public class MainWindow extends UiPart<Stage> {
         Rectangle2D bounds = getVisibleWindowBounds(guiSettings,
                 Screen.getScreens().stream().map(Screen::getVisualBounds).toList(),
                 Screen.getPrimary().getVisualBounds());
-        primaryStage.setWidth(bounds.getWidth());
-        primaryStage.setHeight(bounds.getHeight());
-        primaryStage.setX(bounds.getMinX());
-        primaryStage.setY(bounds.getMinY());
+        applyWindowBounds(primaryStage, bounds);
+    }
+
+    /** Lowers FXML minimums when necessary before fitting the stage to its usable bounds. */
+    static void applyWindowBounds(Stage stage, Rectangle2D bounds) {
+        stage.setMinWidth(Math.min(stage.getMinWidth(), bounds.getWidth()));
+        stage.setMinHeight(Math.min(stage.getMinHeight(), bounds.getHeight()));
+        stage.setWidth(bounds.getWidth());
+        stage.setHeight(bounds.getHeight());
+        stage.setX(bounds.getMinX());
+        stage.setY(bounds.getMinY());
     }
 
     /** Restores usable saved bounds, or fits and centers the window on the primary screen. */
@@ -156,6 +163,9 @@ public class MainWindow extends UiPart<Stage> {
             Rectangle2D primaryScreen) {
         double width = settings.getWindowWidth();
         double height = settings.getWindowHeight();
+        GuiSettings defaults = new GuiSettings();
+        width = Double.isFinite(width) && width > 0 ? width : defaults.getWindowWidth();
+        height = Double.isFinite(height) && height > 0 ? height : defaults.getWindowHeight();
         if (settings.getWindowCoordinates() != null) {
             Rectangle2D savedBounds = new Rectangle2D(settings.getWindowCoordinates().getX(),
                     settings.getWindowCoordinates().getY(), width, height);
