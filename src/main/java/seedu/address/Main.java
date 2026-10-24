@@ -2,13 +2,12 @@ package seedu.address;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.logging.Logger;
 
 import javafx.application.Application;
 import seedu.address.commons.core.LogsCenter;
+import seedu.address.commons.util.ApplicationPaths;
 import seedu.address.storage.ApplicationLock;
 
 /**
@@ -28,21 +27,13 @@ import seedu.address.storage.ApplicationLock;
  * to be the entry point of the application, we avoid this issue.
  */
 public class Main {
-    private static Logger logger = LogsCenter.getLogger(Main.class);
-
     public static void main(String[] args) {
         try {
-            Path location = Paths.get(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-            Path lockDirectory = getLockDirectory(location, Paths.get(".").toAbsolutePath());
+            Path lockDirectory = ApplicationPaths.getApplicationDirectory();
             launchWithLock(lockDirectory, () -> Application.launch(MainApp.class, args));
         } catch (URISyntaxException e) {
             System.err.println("Unable to locate the TAssist application folder: " + e.getMessage());
         }
-    }
-
-    /** Uses the JAR's folder for packaged runs and the working directory for IDE/Gradle runs. */
-    static Path getLockDirectory(Path codeLocation, Path workingDirectory) {
-        return Files.isRegularFile(codeLocation) ? codeLocation.toAbsolutePath().getParent() : workingDirectory;
     }
 
     /** Runs the application only while it owns the application folder's lock. */
@@ -53,6 +44,7 @@ public class Main {
                         + "Close the other instance first.");
                 return;
             }
+            Logger logger = LogsCenter.getLogger(Main.class);
             logger.warning("The warnings about a 'restricted method in java.lang.System' "
                 + "and 'enabling native access' appearing below (if any) can be ignored.");
             launchApplication.run();
