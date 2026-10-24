@@ -26,8 +26,6 @@ public class AcademicClassListPanel extends UiPart<Region> {
     public AcademicClassListPanel(ObservableList<AcademicClass> academicClassList) {
         super(FXML);
         academicClassListView.setItems(academicClassList);
-        academicClassListView.setSelectionModel(null);
-        academicClassListView.setFocusTraversable(false);
         academicClassListView.setCellFactory(listView -> new AcademicClassListViewCell());
     }
 

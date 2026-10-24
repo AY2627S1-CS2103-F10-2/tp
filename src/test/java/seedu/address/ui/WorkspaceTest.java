@@ -29,12 +29,16 @@ import javafx.event.ActionEvent;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.skin.VirtualFlow;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritableImage;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
@@ -114,6 +118,92 @@ public class WorkspaceTest {
     }
 
     @Test
+    public void workspace_keyboardScrollsClasses_withoutSelectionOrDataChanges() throws Exception {
+        runOnFxThreadAndWait(() -> {
+            Logic logic = createLogic(30);
+            Stage stage = new Stage();
+            try {
+                openWindow(stage, logic);
+                TextField input = (TextField) stage.getScene().lookup("#commandTextField");
+                TextArea output = (TextArea) stage.getScene().lookup("#resultDisplay");
+                ListView<?> classes = (ListView<?>) stage.getScene().lookup("#academicClassListView");
+                ListView<?> students = (ListView<?>) stage.getScene().lookup("#personListView");
+                List<?> originalStudents = List.copyOf(students.getItems());
+                List<?> originalClasses = List.copyOf(classes.getItems());
+                String originalOutput = output.getText();
+                VirtualFlow<?> flow = (VirtualFlow<?>) classes.lookup(".virtual-flow");
+                int initialFirstIndex = flow.getFirstVisibleCell().getIndex();
+
+                input.requestFocus();
+                press(input, KeyCode.TAB);
+                assertSame(output, stage.getScene().getFocusOwner());
+                press(output, KeyCode.TAB);
+                assertSame(classes, stage.getScene().getFocusOwner());
+
+                assertEquals(initialFirstIndex, flow.getFirstVisibleCell().getIndex());
+                press(classes, KeyCode.HOME);
+                settle(stage);
+                assertEquals(0, flow.getFirstVisibleCell().getIndex());
+                press(classes, KeyCode.DOWN);
+                layout(stage);
+                int afterDown = flow.getFirstVisibleCell().getIndex();
+                assertTrue(afterDown > 0);
+                press(classes, KeyCode.PAGE_DOWN);
+                layout(stage);
+                int afterPageDown = flow.getFirstVisibleCell().getIndex();
+                assertTrue(afterPageDown > afterDown + 1);
+                press(classes, KeyCode.PAGE_UP);
+                layout(stage);
+                assertTrue(flow.getFirstVisibleCell().getIndex() < afterPageDown);
+                press(classes, KeyCode.END);
+                layout(stage);
+                assertEquals(classes.getItems().size() - 1, flow.getLastVisibleCell().getIndex());
+                press(classes, KeyCode.PAGE_DOWN);
+                layout(stage);
+                assertEquals(classes.getItems().size() - 1, flow.getLastVisibleCell().getIndex());
+                int beforeUp = flow.getFirstVisibleCell().getIndex();
+                press(classes, KeyCode.UP);
+                layout(stage);
+                assertTrue(flow.getFirstVisibleCell().getIndex() < beforeUp);
+                press(classes, KeyCode.HOME);
+                layout(stage);
+                assertEquals(0, flow.getFirstVisibleCell().getIndex());
+                press(classes, KeyCode.UP);
+                assertEquals(0, flow.getFirstVisibleCell().getIndex());
+                assertSame(classes, stage.getScene().getFocusOwner());
+                assertNull(classes.getSelectionModel());
+                assertFalse(classes.lookupAll(".list-cell").stream()
+                        .map(ListCell.class::cast).anyMatch(ListCell::isSelected));
+                assertEquals(originalStudents, students.getItems());
+                assertEquals(originalClasses, classes.getItems());
+                assertEquals(originalOutput, output.getText());
+                assertEquals("", input.getText());
+                assertTrue(logic.getAttendanceDisplayClass().isEmpty());
+                capture(stage, "layout-class-keyboard-focus");
+                press(classes, KeyCode.TAB);
+                assertSame(students, stage.getScene().getFocusOwner());
+                press(students, KeyCode.TAB, true);
+                assertSame(classes, stage.getScene().getFocusOwner());
+                press(classes, KeyCode.TAB, true);
+                assertSame(output, stage.getScene().getFocusOwner());
+
+                execute(input, "clear");
+                layout(stage);
+                classes.requestFocus();
+                for (KeyCode code : List.of(KeyCode.UP, KeyCode.DOWN, KeyCode.PAGE_UP,
+                        KeyCode.PAGE_DOWN, KeyCode.HOME, KeyCode.END)) {
+                    press(classes, code);
+                }
+                assertTrue(classes.getItems().isEmpty());
+                press(classes, KeyCode.TAB);
+                assertSame(students, stage.getScene().getFocusOwner());
+            } finally {
+                stage.hide();
+            }
+        });
+    }
+
+    @Test
     public void workspace_draftsAndClassClicks_leaveDataUntilCommandExecutes() throws Exception {
         runOnFxThreadAndWait(() -> {
             Logic logic = createLogic();
@@ -126,7 +216,7 @@ public class WorkspaceTest {
                 ListView<?> students = (ListView<?>) window.getPersonListPanel().getRoot().lookup("#personListView");
                 assertEquals(Orientation.VERTICAL, classes.getOrientation());
                 assertNull(classes.getSelectionModel());
-                assertFalse(classes.isFocusTraversable());
+                assertTrue(classes.isFocusTraversable());
                 assertSame(logic.getFilteredPersonList(), students.getItems());
                 assertSame(logic.getFilteredAcademicClassList(), classes.getItems());
                 List<?> originalStudents = List.copyOf(students.getItems());
@@ -207,6 +297,10 @@ public class WorkspaceTest {
     }
 
     private Logic createLogic() {
+        return createLogic(0);
+    }
+
+    private Logic createLogic(int extraClassCount) {
         AddressBook book = new AddressBook();
         for (var student : List.of(ALICE, BENSON, DANIEL)) {
             book.addPerson(student);
@@ -216,6 +310,9 @@ public class WorkspaceTest {
                 new ClassName("TUTORIAL-GROUP-WITH-A-LONG-NAME"));
         book.addAcademicClass(first);
         book.addAcademicClass(second);
+        for (int index = 0; index < extraClassCount; index++) {
+            book.addAcademicClass(new AcademicClass(new ModuleCode("CS2103"), new ClassName("T" + index)));
+        }
         book.assignStudentToClass(ALICE, first);
         book.assignStudentToClass(BENSON, first);
         book.assignStudentToClass(DANIEL, second);
@@ -229,6 +326,14 @@ public class WorkspaceTest {
     private static void execute(TextField input, String command) {
         input.setText(command);
         input.fireEvent(new ActionEvent());
+    }
+
+    private static void press(Node target, KeyCode code) {
+        press(target, code, false);
+    }
+
+    private static void press(Node target, KeyCode code, boolean shiftDown) {
+        target.fireEvent(new KeyEvent(KeyEvent.KEY_PRESSED, "", "", code, shiftDown, false, false, false));
     }
 
     private static void assertLabelExists(Node root, String text) {

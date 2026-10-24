@@ -84,7 +84,8 @@ Other classes' counts stay 1.
 
 4. THEME, FOCUS AND HELP
 Inspect slate-blue input/output/cards, readable text/tags, menus and footer.
-Tab through input/output/student list: visible blue focus. Class rows skip selection.
+Tab through input/output/Classes/Students: visible blue focus.
+Classes has a border around the list; its rows remain unselected.
 Check keyboard menu navigation and the focused menu item's colour.
 Press F1 from input; also open Help from menu. Check slate theme and readable text.
 Tab to Copy URL; inspect focus border and activate it. Close Help.
@@ -99,6 +100,26 @@ listbyclass 1
 
 EXPECT: three classes; F10 Alice/Ben; Alice's two comma-separated dates;
 Ben's No attendance recorded label.
+
+6. KEYBOARD SCROLLING - RUN AFTER THE PERSISTENCE CHECK
+addclass m/CS2103 c/KEYBOARD-01
+addclass m/CS2103 c/KEYBOARD-02
+addclass m/CS2103 c/KEYBOARD-03
+addclass m/CS2103 c/KEYBOARD-04
+addclass m/CS2103 c/KEYBOARD-05
+addclass m/CS2103 c/KEYBOARD-06
+addclass m/CS2103 c/KEYBOARD-07
+addclass m/CS2103 c/KEYBOARD-08
+addclass m/CS2103 c/KEYBOARD-09
+addclass m/CS2103 c/KEYBOARD-10
+addclass m/CS2103 c/KEYBOARD-11
+addclass m/CS2103 c/KEYBOARD-12
+
+From input, Tab to output, then Tab to Classes. Inspect its blue focus border.
+Page Down/Page Up: scroll through classes. Arrow Down/Up: scroll by a row.
+End/Home: reach bottom/top. Repeated keys at either boundary are harmless.
+EXPECT: no selected/highlighted class rows; students, attendance and output unchanged.
+Tab moves to Students. Shift+Tab returns to Classes, then output.
 
 OPTIONAL AUTOMATED CAPTURES (desktop required)
 TASSIST_CAPTURE_UI=1 ./gradlew test --tests 'seedu.address.ui.WorkspaceTest' --rerun-tasks

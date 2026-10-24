@@ -1,9 +1,9 @@
 package seedu.address.ui;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -47,7 +47,7 @@ public class AcademicClassListPanelTest {
             assertNotNull(academicClassListView.getCellFactory().call(null));
             assertEquals(Orientation.VERTICAL, academicClassListView.getOrientation());
             assertNull(academicClassListView.getSelectionModel());
-            assertFalse(academicClassListView.isFocusTraversable());
+            assertTrue(academicClassListView.isFocusTraversable());
         });
     }
 

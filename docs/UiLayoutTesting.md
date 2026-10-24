@@ -126,8 +126,9 @@ to show the corresponding members. The other classes' counts stay at 1.
 
 Inspect the input, output, both card lists, File/Help menus and footer: slate-blue
 surfaces, light text, consistent spacing and subtle borders should be readable.
-Tab through the input, output and student list; focused controls and student rows
-show a visible blue focus indicator. Class rows are skipped for selection.
+Tab through the input, output, Classes list and Students list. Focused controls
+and student rows show a visible blue focus indicator. The Classes list has a
+focus border around the list; its rows remain unselected.
 Verify keyboard menu navigation and inspect the opened menu's focused item.
 
 Press F1 while the input is focused, and also open Help from the menu. Expect the
@@ -141,11 +142,39 @@ and activate it. Close Help, then execute `exit` and relaunch:
 Execute `listclass` and `listbyclass 1`. Expect three classes, Alice and Ben in F10,
 Alice's two comma-separated dates, and Ben's `No attendance recorded` message.
 
+## 5. Keyboard scrolling with overflowing classes
+
+After the persistence check, add enough classes to extend below the viewport:
+
+```text
+addclass m/CS2103 c/KEYBOARD-01
+addclass m/CS2103 c/KEYBOARD-02
+addclass m/CS2103 c/KEYBOARD-03
+addclass m/CS2103 c/KEYBOARD-04
+addclass m/CS2103 c/KEYBOARD-05
+addclass m/CS2103 c/KEYBOARD-06
+addclass m/CS2103 c/KEYBOARD-07
+addclass m/CS2103 c/KEYBOARD-08
+addclass m/CS2103 c/KEYBOARD-09
+addclass m/CS2103 c/KEYBOARD-10
+addclass m/CS2103 c/KEYBOARD-11
+addclass m/CS2103 c/KEYBOARD-12
+```
+
+With the input focused, press Tab to reach output, then Tab again to reach
+Classes. Its border should indicate focus. Use Page Down and Page Up to move
+through the classes, Arrow Down and Arrow Up to scroll by a row, and End and Home
+to reach the bottom and top. Repeated keys at either boundary should be harmless.
+No class row should become selected or highlighted, and the displayed students,
+attendance and command output should remain unchanged. Tab should continue to
+Students; Shift+Tab should return to Classes, then to output.
+
 ## Automated validation and optional captures
 
 `./gradlew check coverage` runs the tests and Checkstyle. The UI suite checks the
-assembled split layout, passive class rows, narrow-card wrapping, typing without
-filtering, executed filters and the original attendance labels. On a desktop,
+assembled split layout, keyboard scrolling without class selection, narrow-card
+wrapping, typing without filtering, executed filters and the original attendance
+labels. On a desktop,
 optional captures from the real JavaFX scenes can be generated with:
 
 ```sh
