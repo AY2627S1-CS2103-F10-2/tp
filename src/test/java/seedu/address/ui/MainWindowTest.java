@@ -1,6 +1,8 @@
 package seedu.address.ui;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -15,6 +17,7 @@ import org.junit.jupiter.api.io.TempDir;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Rectangle2D;
 import javafx.stage.Stage;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.logic.Logic;
@@ -37,6 +40,68 @@ public class MainWindowTest {
         } catch (IllegalStateException e) {
             // JavaFX toolkit has already been initialized.
         }
+        Platform.setImplicitExit(false);
+    }
+
+    @Test
+    public void restoreWindow_disconnectedMonitor_centersOnPrimaryScreen() {
+        Rectangle2D primary = new Rectangle2D(0, 0, 1920, 1080);
+        assertEquals(new Rectangle2D(590, 240, 740, 600), MainWindow.getVisibleWindowBounds(
+                new GuiSettings(740, 600, 2000, 100), List.of(primary), primary));
+    }
+
+    @Test
+    public void restoreWindow_offScreenNegativeCoordinates_centersOnPrimaryScreen() {
+        Rectangle2D primary = new Rectangle2D(0, 0, 1920, 1080);
+        for (int[] position : new int[][] {{-10000, 100}, {100, -10000}, {100, -20}}) {
+            assertEquals(new Rectangle2D(590, 240, 740, 600), MainWindow.getVisibleWindowBounds(
+                    new GuiSettings(740, 600, position[0], position[1]), List.of(primary), primary));
+        }
+    }
+
+    @Test
+    public void restoreWindow_connectedMonitorWithNegativeCoordinates_preservesPosition() {
+        Rectangle2D primary = new Rectangle2D(0, 0, 1920, 1080);
+        Rectangle2D secondary = new Rectangle2D(-1920, 0, 1920, 1080);
+        assertEquals(new Rectangle2D(-1800, 100, 740, 600), MainWindow.getVisibleWindowBounds(
+                new GuiSettings(740, 600, -1800, 100), List.of(primary, secondary), primary));
+    }
+
+    @Test
+    public void restoreWindow_oversizedWindow_fitsPrimaryScreen() {
+        Rectangle2D primary = new Rectangle2D(0, 30, 1280, 720);
+        assertEquals(primary, MainWindow.getVisibleWindowBounds(
+                new GuiSettings(2560, 1440, 0, 0), List.of(primary), primary));
+    }
+
+    @Test
+    public void restoreWindow_invalidDimensions_usesDefaults() {
+        Rectangle2D screen = new Rectangle2D(0, 0, 1920, 1080);
+        for (double invalid : new double[] {-1, 0, Double.NaN, Double.POSITIVE_INFINITY}) {
+            assertEquals(new Rectangle2D(100, 100, 740, 600), MainWindow.getVisibleWindowBounds(
+                    new GuiSettings(invalid, invalid, 100, 100), List.of(screen), screen));
+        }
+    }
+
+    @Test
+    public void restoreWindow_smallScreen_shownStageFitsDespiteFxmlMinimums() {
+        runOnFxThreadAndWait(() -> {
+            Stage stage = new Stage();
+            new MainWindow(stage, new LogicStub(), temporaryFolder.resolve("addressBook.json"));
+            Rectangle2D screen = new Rectangle2D(0, 0, 400, 560);
+            Rectangle2D bounds = MainWindow.getVisibleWindowBounds(
+                    new GuiSettings(740, 600, 0, 0), List.of(screen), screen);
+            try {
+                MainWindow.applyWindowBounds(stage, bounds);
+                stage.show();
+                assertTrue(stage.getMinWidth() <= screen.getWidth());
+                assertTrue(stage.getMinHeight() <= screen.getHeight());
+                assertTrue(stage.getWidth() <= screen.getWidth());
+                assertTrue(stage.getHeight() <= screen.getHeight());
+            } finally {
+                stage.hide();
+            }
+        });
     }
 
     @Test
