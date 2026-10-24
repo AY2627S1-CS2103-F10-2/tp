@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
@@ -31,6 +32,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollToEvent;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -77,7 +79,7 @@ public class WorkspaceTest {
             Stage stage = new Stage();
             try {
                 MainWindow window = openWindow(stage, createLogic());
-                assertEquals(450, stage.getMinWidth());
+                assertEquals(720, stage.getMinWidth());
                 assertEquals(600, stage.getMinHeight());
                 assertEquals("TAssist App", stage.getTitle());
                 SplitPane split = (SplitPane) stage.getScene().lookup("#workspaceSplitPane");
@@ -107,10 +109,17 @@ public class WorkspaceTest {
                 settle(stage);
                 capture(stage, "layout-compact");
                 assertTrue(window.getPersonListPanel().getRoot().getWidth() > 200);
-                stage.setWidth(450);
+                stage.setWidth(720);
                 settle(stage);
                 assertTrue(split.getItems().get(1).getBoundsInLocal().getWidth() >= 220);
                 capture(stage, "layout-minimum");
+                split.setDividerPositions(0);
+                settle(stage);
+                Label classHeader = (Label) stage.getScene().lookup("#classHeader");
+                assertTrue(classHeader.getHeight() > classHeader.getFont().getSize() * 1.5);
+                assertTrue(classHeader.localToScene(classHeader.getBoundsInLocal()).getMaxX()
+                        <= classes.localToScene(classes.getBoundsInLocal()).getMaxX());
+                capture(stage, "usability-narrow-class-header");
             } finally {
                 stage.hide();
             }
@@ -144,10 +153,11 @@ public class WorkspaceTest {
                 press(classes, KeyCode.HOME);
                 settle(stage);
                 assertEquals(0, flow.getFirstVisibleCell().getIndex());
+                double beforeDownPosition = flow.getPosition();
                 press(classes, KeyCode.DOWN);
                 layout(stage);
                 int afterDown = flow.getFirstVisibleCell().getIndex();
-                assertTrue(afterDown > 0);
+                assertTrue(flow.getPosition() > beforeDownPosition);
                 press(classes, KeyCode.PAGE_DOWN);
                 layout(stage);
                 int afterPageDown = flow.getFirstVisibleCell().getIndex();
@@ -278,13 +288,163 @@ public class WorkspaceTest {
                         + "e/ella.with.a.long.email.address@example.com "
                         + "tg/wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww "
                         + "t/aVeryLongTagThatMustWrapWithinTheStudentCard");
-                stage.setWidth(450);
+                stage.setWidth(720);
                 settle(stage);
                 capture(stage, "layout-long-details");
             } finally {
                 stage.hide();
             }
         });
+    }
+
+    @Test
+    public void workspace_headersAndEmptyStates_followExecutedCommands() throws Exception {
+        runOnFxThreadAndWait(() -> {
+            Logic logic = createLogic(1);
+            Stage stage = new Stage();
+            try {
+                openWindow(stage, logic);
+                TextField input = (TextField) stage.getScene().lookup("#commandTextField");
+                ListView<?> classes = (ListView<?>) stage.getScene().lookup("#academicClassListView");
+                ListView<?> students = (ListView<?>) stage.getScene().lookup("#personListView");
+                assertHeaders(stage, 3, 3, 3);
+                for (String draft : List.of("find Alice", "listbystudent 1", "listbyclass 3")) {
+                    input.setText(draft);
+                    assertHeaders(stage, 3, 3, 3);
+                }
+                execute(input, "listbystudent 1");
+                assertHeaders(stage, 1, 3, 3);
+                execute(input, "assign sn/A0123456X m/CS2101 c/TUTORIAL-GROUP-WITH-A-LONG-NAME");
+                assertHeaders(stage, 2, 3, 3);
+                execute(input, "addclass m/CS2100 c/EMPTY");
+                assertHeaders(stage, 2, 4, 3);
+                capture(stage, "usability-filtered-counts");
+                execute(input, "unassign 1 2");
+                assertHeaders(stage, 1, 4, 3);
+                execute(input, "edit 1 sn/A1111111X");
+                assertHeaders(stage, 1, 4, 3);
+                execute(input, "deleteclass m/CS2103 c/F10");
+                assertHeaders(stage, 0, 3, 3);
+                layout(stage);
+                assertLabelExists(classes, "No classes shown.");
+                assertTrue(classes.lookup(".placeholder").isVisible());
+                execute(input, "addclass m/CS2103 c/F12");
+                assertHeaders(stage, 0, 4, 3);
+                execute(input, "listbyclass 9999");
+                assertHeaders(stage, 0, 4, 3);
+                execute(input, "listclass");
+                assertHeaders(stage, 4, 4, 3);
+                execute(input, "find Nobody");
+                assertHeaders(stage, 4, 4, 0);
+                layout(stage);
+                assertLabelExists(students, "No students shown.");
+                assertTrue(students.lookup(".placeholder").isVisible());
+                execute(input, "list");
+                assertHeaders(stage, 4, 4, 3);
+                execute(input, "add sn/DEMO0001 n/Ella Ng e/ella@example.com");
+                assertHeaders(stage, 4, 4, 4);
+                execute(input, "find Ella");
+                assertHeaders(stage, 4, 4, 1);
+                execute(input, "delete 1");
+                assertHeaders(stage, 4, 4, 0);
+                execute(input, "list");
+                assertHeaders(stage, 4, 4, 3);
+                execute(input, "listbyclass 3");
+                assertHeaders(stage, 4, 4, 0);
+                execute(input, "clear");
+                assertHeaders(stage, 0, 0, 0);
+                layout(stage);
+                assertLabelExists(classes, "No classes shown.");
+                assertLabelExists(students, "No students shown.");
+                capture(stage, "usability-empty");
+            } finally {
+                stage.hide();
+            }
+        });
+    }
+
+    @Test
+    public void workspace_successfulClassIndexCommands_revealOnlyApplicableTargets() throws Exception {
+        runOnFxThreadAndWait(() -> {
+            Logic logic = createLogic(30);
+            Stage stage = new Stage();
+            try {
+                openWindow(stage, logic);
+                TextField input = (TextField) stage.getScene().lookup("#commandTextField");
+                ListView<?> classes = (ListView<?>) stage.getScene().lookup("#academicClassListView");
+                VirtualFlow<?> flow = (VirtualFlow<?>) classes.lookup(".virtual-flow");
+                List<Integer> scrollTargets = new ArrayList<>();
+                classes.addEventHandler(ScrollToEvent.scrollToTopIndex(),
+                        event -> scrollTargets.add(event.getScrollTarget()));
+                int initialFirstIndex = flow.getFirstVisibleCell().getIndex();
+                input.setText("listbyclass 32");
+                assertTrue(scrollTargets.isEmpty());
+                assertEquals(initialFirstIndex, flow.getFirstVisibleCell().getIndex());
+                assertHeaders(stage, 32, 32, 3);
+                for (String invalid : List.of("listbyclass 9999", "listbyclass", "listbyclass abc",
+                        "editclass 999999999999999999 c/INVALID")) {
+                    execute(input, invalid);
+                    assertTrue(scrollTargets.isEmpty());
+                }
+                execute(input, "listbyclass 32");
+                settle(stage);
+                assertEquals(List.of(31), scrollTargets);
+                assertEquals(31, flow.getLastVisibleCell().getIndex());
+                assertHeaders(stage, 32, 32, 0);
+                press(classes, KeyCode.HOME);
+                execute(input, "  editclass   32   c/TARGET-RENAMED  ");
+                settle(stage);
+                assertEquals(List.of(31, 31), scrollTargets);
+                assertEquals("TARGET-RENAMED", logic.getAcademicClassList().get(31).getClassName().value);
+                assertEquals(31, flow.getLastVisibleCell().getIndex());
+
+                press(classes, KeyCode.HOME);
+                settle(stage);
+                scrollTargets.clear();
+                execute(input, "assign sn/A0123456X m/CS2103 c/TARGET-RENAMED");
+                execute(input, "list");
+                assertTrue(scrollTargets.isEmpty());
+                assertEquals(0, flow.getFirstVisibleCell().getIndex());
+                execute(input, "addattendance 1 32 d/2020-01-03");
+                settle(stage);
+                assertEquals(List.of(31), scrollTargets);
+                assertEquals(31, flow.getLastVisibleCell().getIndex());
+                press(classes, KeyCode.HOME);
+                execute(input, "deleteattendance 1 32 d/2020-01-03");
+                settle(stage);
+                assertEquals(List.of(31, 31), scrollTargets);
+                assertEquals(31, flow.getLastVisibleCell().getIndex());
+
+                execute(input, "listbystudent 1");
+                assertHeaders(stage, 2, 32, 3);
+                scrollTargets.clear();
+                execute(input, "unassign 1 2");
+                assertHeaders(stage, 1, 32, 3);
+                assertTrue(scrollTargets.isEmpty(), "A class removed by the active filter must not reveal another row");
+                execute(input, "listclass");
+                press(classes, KeyCode.END);
+                scrollTargets.clear();
+                execute(input, "unassign 1 1");
+                settle(stage);
+                assertEquals(List.of(0), scrollTargets);
+                assertEquals(0, flow.getFirstVisibleCell().getIndex());
+                scrollTargets.clear();
+                execute(input, "addattendance 1 32 d/2020-01-03");
+                assertTrue(scrollTargets.isEmpty(), "Failed commands must not scroll a valid class target");
+                assertEquals(0, flow.getFirstVisibleCell().getIndex());
+                assertNull(classes.getSelectionModel());
+            } finally {
+                stage.hide();
+            }
+        });
+    }
+
+    private static void assertHeaders(Stage stage, int shownClasses, int totalClasses, int shownStudents) {
+        Label classHeader = (Label) stage.getScene().lookup("#classHeader");
+        Label studentHeader = (Label) stage.getScene().lookup("#studentHeader");
+        assertEquals("Classes — " + shownClasses + " shown / " + totalClasses + " total",
+                classHeader.getText());
+        assertEquals("Students — " + shownStudents + " shown", studentHeader.getText());
     }
 
     private MainWindow openWindow(Stage stage, Logic logic) {

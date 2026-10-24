@@ -84,20 +84,53 @@ public class MainWindowTest {
     }
 
     @Test
-    public void restoreWindow_smallScreen_shownStageFitsDespiteFxmlMinimums() {
+    public void restoreWindow_smallScreen_keepsMinimumWithVisibleOrigin() {
         runOnFxThreadAndWait(() -> {
             Stage stage = new Stage();
             new MainWindow(stage, new LogicStub(), temporaryFolder.resolve("addressBook.json"));
             Rectangle2D screen = new Rectangle2D(0, 0, 400, 560);
             Rectangle2D bounds = MainWindow.getVisibleWindowBounds(
                     new GuiSettings(740, 600, 0, 0), List.of(screen), screen);
+            assertEquals(new Rectangle2D(0, 0, 720, 600), bounds);
             try {
                 MainWindow.applyWindowBounds(stage, bounds);
                 stage.show();
-                assertTrue(stage.getMinWidth() <= screen.getWidth());
-                assertTrue(stage.getMinHeight() <= screen.getHeight());
-                assertTrue(stage.getWidth() <= screen.getWidth());
-                assertTrue(stage.getHeight() <= screen.getHeight());
+                assertEquals(720, stage.getMinWidth());
+                assertEquals(600, stage.getMinHeight());
+                assertTrue(stage.getWidth() >= 720);
+                assertTrue(stage.getHeight() >= 600);
+            } finally {
+                stage.hide();
+            }
+        });
+    }
+
+    @Test
+    public void restoreWindow_smallerSavedDimensions_expandsBeforeCheckingPosition() {
+        Rectangle2D primary = new Rectangle2D(0, 0, 1920, 1080);
+        assertEquals(new Rectangle2D(100, 100, 720, 600), MainWindow.getVisibleWindowBounds(
+                new GuiSettings(450, 500, 100, 100), List.of(primary), primary));
+        assertEquals(new Rectangle2D(600, 240, 720, 600), MainWindow.getVisibleWindowBounds(
+                new GuiSettings(450, 500, 1470, 500), List.of(primary), primary));
+    }
+
+    @Test
+    public void restoreWindow_smallerSavedStage_enforcesMinimumDimensions() {
+        runOnFxThreadAndWait(() -> {
+            Stage stage = new Stage();
+            LogicStub logic = new LogicStub() {
+                @Override
+                public GuiSettings getGuiSettings() {
+                    return new GuiSettings(450, 500, 0, 0);
+                }
+            };
+            new MainWindow(stage, logic, temporaryFolder.resolve("addressBook.json"));
+            try {
+                stage.show();
+                assertEquals(720, stage.getMinWidth());
+                assertEquals(600, stage.getMinHeight());
+                assertTrue(stage.getWidth() >= 720);
+                assertTrue(stage.getHeight() >= 600);
             } finally {
                 stage.hide();
             }

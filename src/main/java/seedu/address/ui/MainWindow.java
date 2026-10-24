@@ -2,11 +2,14 @@ package seedu.address.ui;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.OptionalInt;
 import java.util.logging.Logger;
 
+import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.input.KeyCombination;
@@ -16,8 +19,14 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
+import seedu.address.commons.util.StringUtil;
 import seedu.address.logic.Logic;
+import seedu.address.logic.commands.AddAttendanceCommand;
 import seedu.address.logic.commands.CommandResult;
+import seedu.address.logic.commands.DeleteAttendanceCommand;
+import seedu.address.logic.commands.EditClassCommand;
+import seedu.address.logic.commands.ListByClassCommand;
+import seedu.address.logic.commands.UnassignCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
 
@@ -28,6 +37,8 @@ import seedu.address.logic.parser.exceptions.ParseException;
 public class MainWindow extends UiPart<Stage> {
 
     private static final String FXML = "MainWindow.fxml";
+    private static final double MIN_WINDOW_WIDTH = 720;
+    private static final double MIN_WINDOW_HEIGHT = 600;
 
     private final Logger logger = LogsCenter.getLogger(getClass());
 
@@ -40,6 +51,12 @@ public class MainWindow extends UiPart<Stage> {
     private AcademicClassListPanel academicClassListPanel;
     private ResultDisplay resultDisplay;
     private HelpWindow helpWindow;
+
+    @FXML
+    private Label classHeader;
+
+    @FXML
+    private Label studentHeader;
 
     @FXML
     private StackPane commandBoxPlaceholder;
@@ -128,6 +145,13 @@ public class MainWindow extends UiPart<Stage> {
         academicClassListPanel = new AcademicClassListPanel(logic.getFilteredAcademicClassList());
         academicClassListPanelPlaceholder.getChildren().add(academicClassListPanel.getRoot());
 
+        classHeader.textProperty().bind(Bindings.createStringBinding(() ->
+                "Classes — " + logic.getFilteredAcademicClassList().size() + " shown / "
+                        + logic.getAcademicClassList().size() + " total",
+                logic.getFilteredAcademicClassList(), logic.getAcademicClassList()));
+        studentHeader.textProperty().bind(Bindings.size(logic.getFilteredPersonList())
+                .asString("Students — %d shown"));
+
         resultDisplay = new ResultDisplay();
         resultDisplayPlaceholder.getChildren().add(resultDisplay.getRoot());
 
@@ -148,17 +172,17 @@ public class MainWindow extends UiPart<Stage> {
         applyWindowBounds(primaryStage, bounds);
     }
 
-    /** Lowers FXML minimums when necessary before fitting the stage to its usable bounds. */
+    /** Applies restored bounds while enforcing the workspace's minimum size. */
     static void applyWindowBounds(Stage stage, Rectangle2D bounds) {
-        stage.setMinWidth(Math.min(stage.getMinWidth(), bounds.getWidth()));
-        stage.setMinHeight(Math.min(stage.getMinHeight(), bounds.getHeight()));
-        stage.setWidth(bounds.getWidth());
-        stage.setHeight(bounds.getHeight());
+        stage.setMinWidth(MIN_WINDOW_WIDTH);
+        stage.setMinHeight(MIN_WINDOW_HEIGHT);
+        stage.setWidth(Math.max(MIN_WINDOW_WIDTH, bounds.getWidth()));
+        stage.setHeight(Math.max(MIN_WINDOW_HEIGHT, bounds.getHeight()));
         stage.setX(bounds.getMinX());
         stage.setY(bounds.getMinY());
     }
 
-    /** Restores usable saved bounds, or fits and centers the window on the primary screen. */
+    /** Restores usable saved bounds, or centers on the primary screen subject to the minimum size. */
     static Rectangle2D getVisibleWindowBounds(GuiSettings settings, List<Rectangle2D> screens,
             Rectangle2D primaryScreen) {
         double width = settings.getWindowWidth();
@@ -166,6 +190,8 @@ public class MainWindow extends UiPart<Stage> {
         GuiSettings defaults = new GuiSettings();
         width = Double.isFinite(width) && width > 0 ? width : defaults.getWindowWidth();
         height = Double.isFinite(height) && height > 0 ? height : defaults.getWindowHeight();
+        width = Math.max(MIN_WINDOW_WIDTH, width);
+        height = Math.max(MIN_WINDOW_HEIGHT, height);
         if (settings.getWindowCoordinates() != null) {
             Rectangle2D savedBounds = new Rectangle2D(settings.getWindowCoordinates().getX(),
                     settings.getWindowCoordinates().getY(), width, height);
@@ -173,10 +199,10 @@ public class MainWindow extends UiPart<Stage> {
                 return savedBounds;
             }
         }
-        width = Math.min(width, primaryScreen.getWidth());
-        height = Math.min(height, primaryScreen.getHeight());
-        return new Rectangle2D(primaryScreen.getMinX() + (primaryScreen.getWidth() - width) / 2,
-                primaryScreen.getMinY() + (primaryScreen.getHeight() - height) / 2, width, height);
+        width = Math.max(MIN_WINDOW_WIDTH, Math.min(width, primaryScreen.getWidth()));
+        height = Math.max(MIN_WINDOW_HEIGHT, Math.min(height, primaryScreen.getHeight()));
+        return new Rectangle2D(primaryScreen.getMinX() + Math.max(0, (primaryScreen.getWidth() - width) / 2),
+                primaryScreen.getMinY() + Math.max(0, (primaryScreen.getHeight() - height) / 2), width, height);
     }
 
     /**
@@ -218,9 +244,12 @@ public class MainWindow extends UiPart<Stage> {
      */
     private CommandResult executeCommand(String commandText) throws CommandException, ParseException {
         try {
+            OptionalInt classPosition = getCommandClassPosition(commandText);
             CommandResult commandResult = logic.execute(commandText);
             logger.info("Result: " + commandResult.getFeedbackToUser());
             resultDisplay.setFeedbackToUser(commandResult.getFeedbackToUser());
+            classPosition.ifPresent(position -> academicClassListPanel.scrollToClass(
+                    logic.getFilteredAcademicClassList().indexOf(logic.getAcademicClassList().get(position))));
 
             if (commandResult.isShowHelp()) {
                 handleHelp();
@@ -236,5 +265,27 @@ public class MainWindow extends UiPart<Stage> {
             resultDisplay.setFeedbackToUser(e.getMessage());
             throw e;
         }
+    }
+
+    /** Resolves a class index before execution, since commands can change the displayed class list. */
+    private OptionalInt getCommandClassPosition(String commandText) {
+        String[] tokens = commandText.strip().split("\\s+");
+        int indexToken = switch (tokens[0]) {
+            case ListByClassCommand.COMMAND_WORD, EditClassCommand.COMMAND_WORD -> 1;
+            case AddAttendanceCommand.COMMAND_WORD, DeleteAttendanceCommand.COMMAND_WORD,
+                    UnassignCommand.COMMAND_WORD -> 2;
+            default -> -1;
+        };
+        if (indexToken < 0 || tokens.length <= indexToken
+                || !StringUtil.isNonZeroUnsignedInteger(tokens[indexToken])) {
+            return OptionalInt.empty();
+        }
+        int displayedIndex = Integer.parseInt(tokens[indexToken]) - 1;
+        if (displayedIndex >= logic.getFilteredAcademicClassList().size()) {
+            return OptionalInt.empty();
+        }
+        // Index-based class commands preserve the class collection's order, including edits.
+        return OptionalInt.of(logic.getAcademicClassList().indexOf(
+                logic.getFilteredAcademicClassList().get(displayedIndex)));
     }
 }

@@ -13,7 +13,7 @@
 <?import javafx.scene.layout.VBox?>
 
 <fx:root type="javafx.stage.Stage" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
-         title="TAssist App" minWidth="450" minHeight="600" onCloseRequest="#handleExit">
+         title="TAssist App" minWidth="720" minHeight="600" onCloseRequest="#handleExit">
   <icons>
     <Image url="@/images/tassist-icon-32.png" />
   </icons>
@@ -51,11 +51,11 @@
         <SplitPane fx:id="workspaceSplitPane" dividerPositions="0.45" VBox.vgrow="ALWAYS"
                    styleClass="workspace-bottom">
           <VBox minWidth="170" spacing="12" styleClass="class-sidebar">
-            <Label text="Classes" styleClass="section-title" />
+            <Label fx:id="classHeader" text="Classes" styleClass="section-title" wrapText="true" minWidth="0" />
             <StackPane fx:id="academicClassListPanelPlaceholder" minWidth="0" VBox.vgrow="ALWAYS" />
           </VBox>
           <VBox minWidth="220" spacing="12" styleClass="student-workspace">
-            <Label text="Students" styleClass="section-title" />
+            <Label fx:id="studentHeader" text="Students" styleClass="section-title" wrapText="true" minWidth="0" />
             <StackPane fx:id="personListPanelPlaceholder" minWidth="0" VBox.vgrow="ALWAYS" />
           </VBox>
         </SplitPane>
