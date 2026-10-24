@@ -112,6 +112,8 @@ Format: `add sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM] [t/TAG]... `
 * `EMAIL` must be in the format `local-part@domain`, with no spaces. Email comparisons are case-insensitive for duplicate checks.
 * `TELEGRAM`, if provided, may start with `@`. After removing `@`, it must contain 5 to 32 letters, digits, or underscores. It must be unique, ignoring case.
 * Parameters can be supplied in any order.
+* Adding a student keeps the current student filter and display order. The new student appears only if they match the filter.
+  New students are not assigned to any class, so they will not appear in an active `listbyclass` view until assigned to that class (and must also meet any attendance threshold). Use `list` to show all students.
 
 Examples:
 * `add sn/A0123456X n/Alice Tan e/alice@u.nus.edu tg/alice_tan`
@@ -442,6 +444,9 @@ Format: `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]
 * To remove all of a student's tags, enter `t/` without a tag after it.
 * To remove a student's Telegram username, enter `tg/` without a username after it. Omitting `tg/` keeps the existing username.
 * Student number, email, and Telegram username must remain unique after editing.
+* Editing keeps the current student filter, sorting, and attendance display. A student who no longer matches a `find` search disappears from its results; changing a name in a `listbyclass` view may change their alphabetical position.
+* Editing a student number preserves their class memberships and attendance history. Any active attendance threshold still applies.
+* Check the displayed indexes again before your next command, as an edit may change which students are shown and their indexes. Use `list` to show all students.
 
 Examples:
 *  `edit 1 tg/john_doe e/johndoe@example.com` edits the Telegram username and email address of the 1st student.
@@ -529,6 +534,8 @@ Format: `delete INDEX`
 * Deletes the student at the specified `INDEX`.
 * The index refers to the index number shown in the displayed student list.
 * The index **must be a positive integer** 1, 2, 3, ...
+* Deleting keeps the current student filter, sorting, and attendance display. If no remaining students match, the student list stays empty instead of showing unrelated students.
+* Check the displayed indexes again before deleting another student, as the remaining students are renumbered. Use `list` to show all students.
 
 Examples:
 * `list` followed by `delete 2` deletes the 2nd student in TAssist.
