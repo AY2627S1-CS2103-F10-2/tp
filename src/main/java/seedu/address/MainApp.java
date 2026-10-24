@@ -10,6 +10,7 @@ import javafx.application.Application;
 import javafx.stage.Stage;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.exceptions.DataLoadingException;
+import seedu.address.commons.util.ApplicationPaths;
 import seedu.address.commons.util.StringUtil;
 import seedu.address.logic.Logic;
 import seedu.address.logic.LogicManager;
@@ -48,16 +49,21 @@ public class MainApp extends Application {
         logger.info("=============================[ Initializing AddressBook ]===========================");
         super.init();
 
-        JsonUserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(USER_PREFS_FILE_PATH);
+        initModelAndStorage(ApplicationPaths.getApplicationDirectory());
+        logic = new LogicManager(model, storage);
+        ui = new UiManager(logic, storage.getAddressBookFilePath());
+    }
+
+    /** Initializes persistent storage and the model for the application folder. */
+    void initModelAndStorage(Path applicationFolder) {
+        JsonUserPrefsStorage userPrefsStorage =
+                new JsonUserPrefsStorage(applicationFolder.resolve(USER_PREFS_FILE_PATH));
         UserPrefs userPrefs = initPrefs(userPrefsStorage);
-        JsonAddressBookStorage addressBookStorage = new JsonAddressBookStorage(ADDRESS_BOOK_FILE_PATH);
+        JsonAddressBookStorage addressBookStorage =
+                new JsonAddressBookStorage(applicationFolder.resolve(ADDRESS_BOOK_FILE_PATH));
         storage = new StorageManager(addressBookStorage, userPrefsStorage);
 
         model = initModelManager(storage, userPrefs);
-
-        logic = new LogicManager(model, storage);
-
-        ui = new UiManager(logic, storage.getAddressBookFilePath());
     }
 
     /**

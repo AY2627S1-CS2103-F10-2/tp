@@ -27,8 +27,6 @@ import seedu.address.storage.ApplicationLock;
  * to be the entry point of the application, we avoid this issue.
  */
 public class Main {
-    private static Logger logger = LogsCenter.getLogger(Main.class);
-
     public static void main(String[] args) {
         try {
             Path lockDirectory = ApplicationPaths.getApplicationDirectory();
@@ -46,6 +44,7 @@ public class Main {
                         + "Close the other instance first.");
                 return;
             }
+            Logger logger = LogsCenter.getLogger(Main.class);
             logger.warning("The warnings about a 'restricted method in java.lang.System' "
                 + "and 'enabling native access' appearing below (if any) can be ignored.");
             launchApplication.run();
