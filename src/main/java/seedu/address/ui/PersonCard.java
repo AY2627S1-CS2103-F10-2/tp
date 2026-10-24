@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.FlowPane;
@@ -45,6 +46,8 @@ public class PersonCard extends UiPart<Region> {
     @FXML
     private Label attendance;
     @FXML
+    private FlowPane details;
+    @FXML
     private FlowPane tags;
 
     /**
@@ -68,6 +71,10 @@ public class PersonCard extends UiPart<Region> {
         name.setText(person.getName().fullName);
         studentNumber.setText(person.getStudentNumber().value);
         email.setText(person.getEmail().value);
+        // A single long contact detail must wrap within the available card width too.
+        for (Label detail : List.of(studentNumber, email, telegram)) {
+            constrainWrapping(detail, details);
+        }
         if (person.getTelegram().isPresent()) {
             telegram.setText("@" + person.getTelegram().get().value);
         } else {
@@ -84,7 +91,22 @@ public class PersonCard extends UiPart<Region> {
         }
         person.getTags().stream()
                 .sorted(Comparator.comparing(tag -> tag.tagName))
-                .forEach(tag -> tags.getChildren().add(new Label(tag.tagName)));
+                .forEach(tag -> {
+                    Label tagLabel = new Label(tag.tagName);
+                    tagLabel.setWrapText(true);
+                    tagLabel.setMinWidth(0);
+                    constrainWrapping(tagLabel, tags);
+                    tags.getChildren().add(tagLabel);
+                });
+        tags.setManaged(!tags.getChildren().isEmpty());
+        tags.setVisible(!tags.getChildren().isEmpty());
+    }
+
+    private void constrainWrapping(Label label, FlowPane parent) {
+        label.maxWidthProperty().bind(parent.widthProperty());
+        // FlowPane measures preferred height without a width; reserve enough height for wrapped text.
+        label.minHeightProperty().bind(Bindings.createDoubleBinding(() -> label.prefHeight(parent.getWidth()),
+                parent.widthProperty(), label.fontProperty(), label.textProperty(), label.insetsProperty()));
     }
 
     private void updateAttendance(AcademicClass attendanceClass, List<Attendance> attendanceRecords) {
