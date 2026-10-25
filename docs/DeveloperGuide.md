@@ -635,8 +635,8 @@ Use case ends.
 
 **Main Success Scenario (MSS):**
 
-1. TA requests to assign a student to a class, providing the student number,
-   module code and class name.
+1. TA requests to assign a student to a class, providing the student index first and the class index second,
+   in their respective displayed lists.
 2. TAssist assigns the student to the specified class and automatically saves the assignment.
 3. TAssist returns a confirmation of the successful assignment, identifying the student and the class.
 
@@ -644,17 +644,17 @@ Use case ends.
 
 **Extensions:**
 
-- **1a. Required details are missing, values are empty or invalid, or repeated, unrecognised or extra details are supplied.**
-  - 1a1. TAssist informs TA of the error and the required details, without changing any assignments.
+- **1a. The request does not contain exactly two positive integer indices, or includes prefixed or extra arguments.**
+  - 1a1. TAssist reports an invalid command format and the required student-index-first format, without changing any assignments.
   - Use case ends.
 
-- **1b. No student matches the supplied student number.**
-  - 1b1. TAssist informs TA that the student does not exist, identifying the supplied student number.
+- **1b. The student index is outside the displayed student list.**
+  - 1b1. TAssist reports an invalid displayed student index.
   - 1b2. TAssist rejects the request without changing any assignments.
   - Use case ends.
 
-- **1c. No class matches the supplied module code and class name.**
-  - 1c1. TAssist informs TA that the class does not exist, identifying the supplied module code and class name.
+- **1c. The class index is outside the displayed class list.**
+  - 1c1. TAssist reports an invalid displayed class index.
   - 1c2. TAssist rejects the request without changing any assignments.
   - Use case ends.
 
