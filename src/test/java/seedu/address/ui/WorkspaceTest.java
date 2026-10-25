@@ -400,7 +400,9 @@ public class WorkspaceTest {
                 }
                 execute(input, "listbystudent 1");
                 assertHeaders(stage, 1, 3, 3, 3);
-                execute(input, "assign sn/A0123456X m/CS2101 c/TUTORIAL-GROUP-WITH-A-LONG-NAME");
+                execute(input, "listclass");
+                execute(input, "assign 1 2");
+                execute(input, "listbystudent 1");
                 assertHeaders(stage, 2, 3, 3, 3);
                 execute(input, "addclass m/CS2100 c/EMPTY");
                 assertHeaders(stage, 2, 4, 3, 3);
@@ -409,7 +411,7 @@ public class WorkspaceTest {
                 assertHeaders(stage, 1, 4, 3, 3);
                 execute(input, "edit 1 sn/A1111111X");
                 assertHeaders(stage, 1, 4, 3, 3);
-                execute(input, "deleteclass m/CS2103 c/F10");
+                execute(input, "deleteclass 1");
                 assertHeaders(stage, 0, 3, 3, 3);
                 layout(stage);
                 assertLabelExists(classes, "No classes shown.");
@@ -487,8 +489,8 @@ public class WorkspaceTest {
                 press(classes, KeyCode.HOME);
                 settle(stage);
                 scrollTargets.clear();
-                execute(input, "assign sn/A0123456X m/CS2103 c/TARGET-RENAMED");
                 execute(input, "list");
+                execute(input, "assign 1 32");
                 assertTrue(scrollTargets.isEmpty());
                 assertEquals(0, flow.getFirstVisibleCell().getIndex());
                 execute(input, "addattendance 1 32 d/2020-01-03");
