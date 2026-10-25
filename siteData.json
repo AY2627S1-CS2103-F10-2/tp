@@ -53,6 +53,7 @@
         "common-classes": "Common classes",
         "implementation": "Implementation",
         "listing-students-by-class": "Listing students by class",
+        "listing-all-classes": "Listing all classes",
         "arrow-key-command-history-navigation": "Arrow key command history navigation",
         "adding-an-academic-class": "Adding an academic class",
         "deleting-an-academic-class": "Deleting an academic class",
