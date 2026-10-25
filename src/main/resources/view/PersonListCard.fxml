@@ -1,25 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<HBox id="cardPane" fx:id="cardPane" minWidth="0" prefWidth="0"
+<HBox id="cardPane" fx:id="cardPane" minWidth="0" prefWidth="0" alignment="TOP_LEFT"
       xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
-  <VBox spacing="6" minWidth="0" HBox.hgrow="ALWAYS">
-    <HBox spacing="2" alignment="TOP_LEFT" minWidth="0">
-      <Label fx:id="id" styleClass="cell_big_label" minWidth="-Infinity" />
-      <Label fx:id="name" styleClass="cell_big_label" minWidth="0" maxWidth="Infinity"
-             wrapText="true" HBox.hgrow="ALWAYS" />
-    </HBox>
-    <FlowPane fx:id="details" hgap="12" vgap="4" minWidth="0" prefWrapLength="280"
+  <Label fx:id="id" styleClass="card-index" minWidth="-Infinity" />
+  <VBox spacing="4" minWidth="0" HBox.hgrow="ALWAYS">
+    <Label fx:id="name" styleClass="cell_big_label" minWidth="0" maxWidth="Infinity" wrapText="true" />
+    <FlowPane fx:id="details" hgap="12" vgap="3" minWidth="0" prefWrapLength="280"
               styleClass="student-details">
-      <Label fx:id="studentNumber" styleClass="cell_small_label" minWidth="0" wrapText="true" />
+      <Label fx:id="studentNumber" styleClass="cell_small_label, student-identifier" minWidth="0" wrapText="true" />
       <Label fx:id="email" styleClass="cell_small_label" minWidth="0" wrapText="true" />
       <Label fx:id="telegram" styleClass="cell_small_label" minWidth="0" wrapText="true" />
     </FlowPane>
-    <FlowPane fx:id="tags" minWidth="0" prefWrapLength="280" />
+    <FlowPane fx:id="tags" minWidth="0" prefWrapLength="280">
+      <VBox.margin>
+        <Insets top="2" />
+      </VBox.margin>
+    </FlowPane>
     <Label fx:id="attendance" styleClass="cell_small_label" text="No attendance recorded" wrapText="true" />
   </VBox>
 </HBox>

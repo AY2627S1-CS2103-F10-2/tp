@@ -20,7 +20,7 @@ TAssist is a **desktop application for NUS Teaching Assistants who need to manag
 
 1. Download the latest `.jar` file from [here](https://github.com/AY2627S1-CS2103-F10-2/tp/releases).
 
-1. Copy the file to the folder you want to use as the _home folder_ for TAssist.
+1. Copy the file to a folder you can write to. This is the _home folder_ for TAssist and its saved files.
 
 1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar TAssist.jar`.<br>
    A GUI similar to the one below should appear in a few seconds. The app shows students and classes in separate sections.<br>
@@ -41,7 +41,7 @@ TAssist is a **desktop application for NUS Teaching Assistants who need to manag
 
    * `delete 3` : Deletes the 3rd student shown in the current list.
 
-   * `deleteclass m/CS2103T c/F10-2` : Deletes the class named `F10-2` for module `CS2103T`.
+   * `deleteclass 1` : Deletes the first class in the displayed class list.
 
    * `clear` : Deletes all students and classes.
 
@@ -79,7 +79,7 @@ Edits of past commands are kept while browsing and cleared when you submit a com
   For example, `n/` is used for student names, `m/` for module codes, and `c/` for class names.
 
 * Repeated prefixes are accepted only when the command explicitly allows multiple values.<br>
-  For example, `add` and `edit` accept multiple `t/TAG` values, but `addclass` and `deleteclass` accept exactly one `m/MODULE_CODE` and one `c/CLASS_NAME`.
+  For example, `add` and `edit` accept multiple `t/TAG` values, but `addclass` accepts exactly one `m/MODULE_CODE` and one `c/CLASS_NAME`.
 
 * Extraneous parameters for commands that take no parameters, such as `help`, `list`, `exit`, and `clear`, are ignored.<br>
   For example, `help 123` is interpreted as `help`.
@@ -112,6 +112,8 @@ Format: `add sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM] [t/TAG]... `
 * `EMAIL` must be in the format `local-part@domain`, with no spaces. Email comparisons are case-insensitive for duplicate checks.
 * `TELEGRAM`, if provided, may start with `@`. After removing `@`, it must contain 5 to 32 letters, digits, or underscores. It must be unique, ignoring case.
 * Parameters can be supplied in any order.
+* Adding a student keeps the current student filter and display order. The new student appears only if they match the filter.
+  New students are not assigned to any class, so they will not appear in an active `listbyclass` view until assigned to that class (and must also meet any attendance threshold). Use `list` to show all students.
 
 Examples:
 * `add sn/A0123456X n/Alice Tan e/alice@u.nus.edu tg/alice_tan`
@@ -435,6 +437,9 @@ Format: `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]
 * To remove all of a student's tags, enter `t/` without a tag after it.
 * To remove a student's Telegram username, enter `tg/` without a username after it. Omitting `tg/` keeps the existing username.
 * Student number, email, and Telegram username must remain unique after editing.
+* Editing keeps the current student filter, sorting, and attendance display. A student who no longer matches a `find` search disappears from its results; changing a name in a `listbyclass` view may change their alphabetical position.
+* Editing a student number preserves their class memberships and attendance history. Any active attendance threshold still applies.
+* Check the displayed indexes again before your next command, as an edit may change which students are shown and their indexes. Use `list` to show all students.
 
 Examples:
 *  `edit 1 tg/john_doe e/johndoe@example.com` edits the Telegram username and email address of the 1st student.
@@ -522,6 +527,8 @@ Format: `delete INDEX`
 * Deletes the student at the specified `INDEX`.
 * The index refers to the index number shown in the displayed student list.
 * The index **must be a positive integer** 1, 2, 3, ...
+* Deleting keeps the current student filter, sorting, and attendance display. If no remaining students match, the student list stays empty instead of showing unrelated students.
+* Check the displayed indexes again before deleting another student, as the remaining students are renumbered. Use `list` to show all students.
 
 Examples:
 * `list` followed by `delete 2` deletes the 2nd student in TAssist.
@@ -537,41 +544,29 @@ The current build deletes students by displayed list index, not by student numbe
 
 ### Deleting a class: `deleteclass`
 
-Deletes the class identified by its module code and class name from TAssist.
+Deletes the class at the specified index in the currently displayed class list from TAssist.
 
-Format: `deleteclass m/MODULE_CODE c/CLASS_NAME`
+Format: `deleteclass INDEX`
 
-* Both parameters are required, must have nonempty values, and must each be supplied exactly once. They can be supplied in either order.
-* `MODULE_CODE` must begin with a letter and contain only letters or digits, as for `addclass`.
-* `CLASS_NAME` must contain at least one letter or digit, and may contain only letters, digits, or hyphens, as for `addclass`.
-* The module code and class name must match the same existing class. Matching ignores letter case and leading or trailing spaces.
-* Searches all classes, regardless of the current student list filter. No list index is required.
-* Removes the class from the class list and saves the change automatically.
-* Any student assignments to the deleted class are removed with it. The students remain in TAssist, and other classes and their assignments are unchanged.
-* If no matching class exists, an error is shown and no data is changed.
+* `INDEX` is required and must be a positive integer such as `1`, `2`, or `3`.
+* The index refers to the number shown beside a class in the current class list, starting from `1`.
+* The index must be within the displayed class list. If the list is filtered, only the displayed classes can be selected.
+* Use `listclass` to display all classes before choosing an index when needed.
+* Removes the class from the class list and saves the change automatically. Remaining displayed classes are renumbered.
+* Any student assignments and attendance records for the deleted class are removed with it. The students remain in TAssist, and other classes and their assignments are unchanged.
+* If the index is invalid, an error is shown and no data is changed.
 
-Examples (assuming the corresponding classes exist):
+Examples (assuming the corresponding indices are displayed):
 
-* `deleteclass m/CS2103T c/F10-2` deletes class `F10-2` for module `CS2103T`.
-* `deleteclass c/t24 m/st2334` deletes class `T24` for module `ST2334`, using reversed parameter order and lowercase values.
+* `deleteclass 1` deletes the first displayed class.
+* `deleteclass 2` deletes the second displayed class.
 
-Expected output for the first example:
-
-* `Deleted class: CS2103T-F10-2`
+The success message starts with `Deleted class:` and identifies the removed class.
 
 Common errors:
 
-* Missing `m/` or `c/`, or extra text before the parameters: `Invalid command format!`, followed by the command usage.
-* Empty module code: `Module code cannot be empty`
-* Empty class name: `Class name cannot be empty`
-* Invalid module code, such as `2103` or `CS-2103`: `Module code must contain letters or digits`
-* Invalid class name, such as `T 24` or `---`: `Class names can only contain letters, digits, or '-'`
-* Repeated module code: `Multiple values specified for the following single-valued field(s): m/`
-* Repeated class name: `Multiple values specified for the following single-valued field(s): c/`
-* Unknown parameter, such as `x/`: `Unknown parameter: x/`
-* No matching class: `No class with module code CS2103T and class name F10-2 exists.`
-
-Invalid module codes and class names are rejected before searching for a class. Valid values that do not identify an existing class result in a "no matching class" error.
+* Missing index, non-positive or non-integer input, or extra arguments: `Invalid command format!`, followed by the command usage.
+* An index beyond the displayed list, including any index when the list is empty: `The class index provided is invalid.`
 
 ### Unassigning a student from an academic class: `unassign`
 
@@ -627,6 +622,33 @@ TAssist automatically saves data after every successful command. You do not need
 
 Data is saved to `[JAR file location]/data/addressbook.json`. If TAssist cannot save the data, it displays an error such as `Could not save data due to the following error: ...` or `Could not save data to file ... due to insufficient permissions to write to the file or the folder.`
 
+The JAR file location means the **folder containing `TAssist.jar`**, not the terminal's current folder.
+For example, running `java -jar "C:\TAssist\TAssist.jar"` from another folder still uses `C:\TAssist\data\addressbook.json`.
+
+| File relative to the JAR folder | Purpose |
+| --- | --- |
+| `data/addressbook.json` | Students, classes, memberships and attendance |
+| `preferences.json` | Window settings |
+| `addressbook.log.*` | Diagnostic logs |
+| `tassist.lock` | Prevents simultaneous launches from the same application folder |
+
+Keep the JAR in a writable folder. If a save fails, TAssist does not redirect your data to another folder.
+Separate JAR folders use separate data and preferences; copying only the JAR does not copy your records.
+When running from an IDE or with Gradle, files remain relative to the working directory.
+
+#### Moving existing data to the JAR folder
+
+Older builds may have saved files in the folder from which you ran the terminal command.
+TAssist does not automatically find, move or merge those files.
+
+1. Close all TAssist instances before copying files.
+1. Back up both the old files and any existing files in the destination folder.
+1. Copy the old `data/addressbook.json` into the `data` folder beside `TAssist.jar`. Create the `data` folder if needed.
+1. Optionally copy the old `preferences.json` beside the JAR to retain window settings. Logs and lock files do not need to be copied.
+1. Reopen TAssist and confirm that your students and classes are present.
+
+If the destination already contains data, choose which file to keep before replacing it; TAssist does not merge the records.
+
 ### Editing the data file
 
 TAssist data is saved automatically as a JSON file `[JAR file location]/data/addressbook.json`. Advanced users are welcome to update data directly by editing that data file.
@@ -657,7 +679,7 @@ If any of these command words are entered, TAssist displays `Unknown command.`
 ## FAQ
 
 **Q**: How do I transfer my data to another computer?<br>
-**A**: Install the app on the other computer and overwrite the data file it creates with the data file from your previous TAssist home folder.
+**A**: Close TAssist on both computers, back up any destination data, and copy `data/addressbook.json` from your old TAssist home folder into the `data` folder beside the JAR on the other computer. See [Moving existing data to the JAR folder](#moving-existing-data-to-the-jar-folder).
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -679,7 +701,7 @@ Action     | Format, Examples
 **Add attendance** | `addattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD`<br> e.g., `addattendance 1 2 d/2024-02-29`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
 **Delete attendance** | `deleteattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD`<br> e.g., `deleteattendance 1 2 d/2024-02-29`
-**Delete Class** | `deleteclass m/MODULE_CODE c/CLASS_NAME`<br> e.g., `deleteclass m/CS2103T c/F10-2`
+**Delete Class** | `deleteclass INDEX`<br> e.g., `deleteclass 1`
 **Edit**   | `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
 **Edit Class** | `editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]`<br> e.g., `editclass 1 m/CS2103 c/F11`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`

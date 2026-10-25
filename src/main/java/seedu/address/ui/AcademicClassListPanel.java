@@ -4,6 +4,7 @@ import java.util.logging.Logger;
 
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.Region;
@@ -27,6 +28,16 @@ public class AcademicClassListPanel extends UiPart<Region> {
         super(FXML);
         academicClassListView.setItems(academicClassList);
         academicClassListView.setCellFactory(listView -> new AcademicClassListViewCell());
+        Label emptyMessage = new Label("No classes shown.");
+        emptyMessage.setWrapText(true);
+        academicClassListView.setPlaceholder(emptyMessage);
+    }
+
+    /** Reveals a displayed class without selecting its row. */
+    public void scrollToClass(int displayedIndex) {
+        if (displayedIndex >= 0 && displayedIndex < academicClassListView.getItems().size()) {
+            academicClassListView.scrollTo(displayedIndex);
+        }
     }
 
     /**

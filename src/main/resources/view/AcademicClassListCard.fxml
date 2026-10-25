@@ -2,12 +2,17 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+<?import seedu.address.ui.WrappingTextFlow?>
 <HBox fx:id="cardPane" id="cardPane" minWidth="0" prefWidth="0"
-      styleClass="class-row" spacing="10" alignment="TOP_LEFT"
+      styleClass="class-row" alignment="TOP_LEFT"
       xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
-  <Label fx:id="id" styleClass="class-index" minWidth="-Infinity" />
-  <VBox spacing="6" minWidth="0" HBox.hgrow="ALWAYS">
-    <Label fx:id="className" styleClass="class-title" minWidth="0" wrapText="true" />
+  <Label fx:id="id" styleClass="card-index" minWidth="-Infinity" />
+  <VBox spacing="4" minWidth="0" HBox.hgrow="ALWAYS">
+    <WrappingTextFlow fx:id="classHeading" minWidth="0" accessibleRole="TEXT">
+      <Text fx:id="moduleCode" styleClass="module-code" />
+      <Text fx:id="className" styleClass="class-title" />
+    </WrappingTextFlow>
     <Label fx:id="studentCount" styleClass="muted" />
   </VBox>
 </HBox>

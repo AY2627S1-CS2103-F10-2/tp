@@ -1,87 +1,29 @@
 package seedu.address.logic.parser;
 
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
-import static seedu.address.logic.Messages.getErrorMessageForDuplicatePrefixes;
-import static seedu.address.logic.parser.CliSyntax.PREFIX_CLASS_NAME;
-import static seedu.address.logic.parser.CliSyntax.PREFIX_MODULE_CODE;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseFailure;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseSuccess;
-import static seedu.address.logic.parser.DeleteClassCommandParser.MESSAGE_UNKNOWN_PARAMETER;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.commons.core.index.Index;
 import seedu.address.logic.commands.DeleteClassCommand;
-import seedu.address.model.academicclass.ClassName;
-import seedu.address.model.academicclass.ModuleCode;
 
 public class DeleteClassCommandParserTest {
 
     private final DeleteClassCommandParser parser = new DeleteClassCommandParser();
 
     @Test
-    public void parse_allFieldsPresent_success() {
-        DeleteClassCommand expectedCommand = new DeleteClassCommand(new ModuleCode("CS2103"), new ClassName("F10-2"));
-        assertParseSuccess(parser, " m/CS2103 c/F10-2", expectedCommand);
-        assertParseSuccess(parser, " c/f10-2 m/cs2103", expectedCommand);
-        assertParseSuccess(parser, " m/   CS2103   c/   F10-2   ", expectedCommand);
+    public void parse_validIndex_success() {
+        assertParseSuccess(parser, "1", new DeleteClassCommand(Index.fromOneBased(1)));
+        assertParseSuccess(parser, "  2  ", new DeleteClassCommand(Index.fromOneBased(2)));
     }
 
     @Test
-    public void parse_missingParameter_failure() {
+    public void parse_invalidInput_failure() {
         String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteClassCommand.MESSAGE_USAGE);
-        assertParseFailure(parser, "", expectedMessage);
-        assertParseFailure(parser, "   ", expectedMessage);
-        assertParseFailure(parser, " m/CS2103", expectedMessage);
-        assertParseFailure(parser, " c/F10-2", expectedMessage);
-    }
-
-    @Test
-    public void parse_emptyValue_failure() {
-        assertParseFailure(parser, " m/ c/F10-2", ModuleCode.MESSAGE_EMPTY);
-        assertParseFailure(parser, " c/F10-2 m/   ", ModuleCode.MESSAGE_EMPTY);
-        assertParseFailure(parser, " m/CS2103 c/", ClassName.MESSAGE_EMPTY);
-        assertParseFailure(parser, " c/   m/CS2103", ClassName.MESSAGE_EMPTY);
-    }
-
-    @Test
-    public void parse_repeatedParameter_failure() {
-        assertParseFailure(parser, " m/CS2103 m/CS2101 c/F10-2",
-                getErrorMessageForDuplicatePrefixes(PREFIX_MODULE_CODE));
-        assertParseFailure(parser, " m/CS2103 m/CS2103 c/F10-2",
-                getErrorMessageForDuplicatePrefixes(PREFIX_MODULE_CODE));
-        assertParseFailure(parser, " m/CS2103 c/F10-2 c/F11-2",
-                getErrorMessageForDuplicatePrefixes(PREFIX_CLASS_NAME));
-        assertParseFailure(parser, " m/CS2103 c/F10-2 c/F10-2",
-                getErrorMessageForDuplicatePrefixes(PREFIX_CLASS_NAME));
-        assertParseFailure(parser, " m/CS2103 c/F10-2 m/CS2101 c/F11-2",
-                getErrorMessageForDuplicatePrefixes(PREFIX_MODULE_CODE, PREFIX_CLASS_NAME));
-    }
-
-    @Test
-    public void parse_unknownParameter_failure() {
-        String expectedMessage = String.format(MESSAGE_UNKNOWN_PARAMETER, "x/");
-        assertParseFailure(parser, " x/unknown m/CS2103 c/F10-2", expectedMessage);
-        assertParseFailure(parser, " m/CS2103 x/unknown c/F10-2", expectedMessage);
-        assertParseFailure(parser, " m/CS2103 c/F10-2 x/unknown", expectedMessage);
-    }
-
-    @Test
-    public void parse_nonEmptyPreamble_failure() {
-        assertParseFailure(parser, " extra m/CS2103 c/F10-2",
-                String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteClassCommand.MESSAGE_USAGE));
-    }
-
-    @Test
-    public void parse_invalidModuleCode_failure() {
-        assertParseFailure(parser, " m/2103 c/F10-2", ModuleCode.MESSAGE_CONSTRAINTS);
-        assertParseFailure(parser, " m/CS 2103 c/F10-2", ModuleCode.MESSAGE_CONSTRAINTS);
-        assertParseFailure(parser, " m/CS-2103 c/F10-2", ModuleCode.MESSAGE_CONSTRAINTS);
-    }
-
-    @Test
-    public void parse_invalidClassName_failure() {
-        assertParseFailure(parser, " m/CS2103 c/T 24", ClassName.MESSAGE_CONSTRAINTS);
-        assertParseFailure(parser, " m/CS2103 c///", ClassName.MESSAGE_CONSTRAINTS);
-        assertParseFailure(parser, " m/CS2103 c/---", ClassName.MESSAGE_CONSTRAINTS);
+        for (String input : new String[] {"", "   ", "0", "-1", "1.5", "abc", "2147483648", "1 2", "1 x/extra"}) {
+            assertParseFailure(parser, input, expectedMessage);
+        }
     }
 }
