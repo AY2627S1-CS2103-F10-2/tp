@@ -36,6 +36,36 @@ public class JsonSerializableAddressBookTest {
     public Path temporaryFolder;
 
     @Test
+    public void saveAndRead_historyWithSpecialCharacters_preservesStringsAndData() throws Exception {
+        AddressBook source = new AddressBook();
+        source.addPerson(ALICE);
+        List<String> commands = List.of("find \"Alice\"", "find C:\\temp\\file",
+                "find \"],\"persons\":[],\"injected\":\"", "find line\nnext\r\t\b\f"
+                        + (char) 0 + (char) 27, "find ?? ??");
+        source.setCommandHistory(commands);
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("escaped-history.json"));
+        storage.saveAddressBook(source);
+
+        var restored = storage.readAddressBook().orElseThrow();
+        assertEquals(commands, restored.getCommandHistory());
+        assertEquals(List.of(ALICE), restored.getPersonList());
+    }
+
+    @Test
+    public void toModelType_legacyFile_hasEmptyHistory() throws Exception {
+        JsonSerializableAddressBook data = JsonUtil.readJsonFile(TYPICAL_PERSONS_FILE,
+                JsonSerializableAddressBook.class).orElseThrow();
+        assertEquals(List.of(), data.toModelType().getCommandHistory());
+    }
+
+    @Test
+    public void toModelType_invalidHistory_throwsIllegalValueException() {
+        JsonSerializableAddressBook data = new JsonSerializableAddressBook(List.of(), List.of(), List.of(),
+                List.of("list", " "));
+        assertThrows(IllegalValueException.class, data::toModelType);
+    }
+
+    @Test
     public void saveAndRead_memberships_preservesStoredStudentReferences() throws Exception {
         AddressBook source = new AddressBook();
         source.addPerson(ALICE);

@@ -33,6 +33,26 @@ public class CommandBoxTest {
     }
 
     @Test
+    public void navigate_restoredHistory_startsAtDraftAndPreservesSavedCommands() throws Exception {
+        runOnFxThreadAndWait(() -> {
+            List<String> saved = List.of("list", "help");
+            CommandBox box = new CommandBox(command -> new CommandResult("Success"), saved);
+            TextField input = getInput(box);
+            input.setText("draft");
+            press(input, KeyCode.UP);
+            assertEquals("help", input.getText());
+            input.setText("edited help");
+            press(input, KeyCode.UP);
+            assertEquals("list", input.getText());
+            press(input, KeyCode.DOWN);
+            assertEquals("edited help", input.getText());
+            press(input, KeyCode.DOWN);
+            assertEquals("draft", input.getText());
+            assertEquals(List.of("list", "help"), saved);
+        });
+    }
+
+    @Test
     public void navigate_recallsCommandsAndEditsWithoutExecutingAndRestoresDraft() throws Exception {
         runOnFxThreadAndWait(() -> {
             List<String> executed = new ArrayList<>();

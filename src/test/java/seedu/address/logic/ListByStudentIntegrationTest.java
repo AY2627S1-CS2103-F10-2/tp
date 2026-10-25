@@ -85,18 +85,21 @@ public class ListByStudentIntegrationTest {
         ModelManager model = new ModelManager();
         LogicManager logic = createLogic(model, storage);
         populate(logic);
-        String savedData = Files.readString(file);
+        var savedData = storage.readAddressBook().orElseThrow();
 
         logic.execute("find AlphaDemoAlice");
         assertEquals("Listed 2 classes for AlphaDemoAlice (A0999801X).",
                 logic.execute("listbystudent 1").getFeedbackToUser());
         assertEquals(List.of("CS2103-DEMO-T01", "CS2100-DEMO-L01"), displayedClasses(model));
         assertEquals(1, model.getFilteredPersonList().size());
-        assertEquals(savedData, Files.readString(file));
+        var afterLookup = storage.readAddressBook().orElseThrow();
+        assertEquals(savedData.getPersonList(), afterLookup.getPersonList());
+        assertEquals(savedData.getAcademicClassList(), afterLookup.getAcademicClassList());
+        String savedContents = Files.readString(file);
 
         assertThrows(ParseException.class, () -> logic.execute("listbystudent 0"));
         assertThrows(CommandException.class, () -> logic.execute("listbystudent 2"));
-        assertEquals(savedData, Files.readString(file));
+        assertEquals(savedContents, Files.readString(file));
         assertEquals(List.of("CS2103-DEMO-T01", "CS2100-DEMO-L01"), displayedClasses(model));
 
         ModelManager reloaded = new ModelManager(storage.readAddressBook().orElseThrow(), new UserPrefs());

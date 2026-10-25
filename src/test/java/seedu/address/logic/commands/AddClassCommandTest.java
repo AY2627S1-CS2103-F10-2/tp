@@ -92,6 +92,17 @@ public class AddClassCommandTest {
      * A default model stub that has all of the methods failing.
      */
     private class ModelStub implements Model {
+
+        @Override
+        public java.util.List<String> getCommandHistory() {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public void setCommandHistory(java.util.List<String> commands) {
+            throw new AssertionError("This method should not be called.");
+        }
+
         @Override
         public List<Attendance> getAttendanceList() {
             throw new AssertionError("This method should not be called.");
