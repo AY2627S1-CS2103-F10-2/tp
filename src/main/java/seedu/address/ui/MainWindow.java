@@ -180,8 +180,10 @@ public class MainWindow extends UiPart<Stage> {
                 logic.getFilteredAcademicClassList().size() + " shown / "
                         + logic.getAcademicClassList().size() + " total",
                 logic.getFilteredAcademicClassList(), logic.getAcademicClassList()));
-        studentCount.textProperty().bind(Bindings.size(logic.getFilteredPersonList())
-                .asString("%d shown"));
+        studentCount.textProperty().bind(Bindings.createStringBinding(() ->
+                logic.getFilteredPersonList().size() + " shown / "
+                        + logic.getPersonList().size() + " total",
+                logic.getFilteredPersonList(), logic.getPersonList()));
 
         resultDisplay = new ResultDisplay();
         resultDisplayPlaceholder.getChildren().add(resultDisplay.getRoot());

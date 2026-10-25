@@ -49,6 +49,8 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -113,9 +115,20 @@ public class WorkspaceTest {
                 Node classHeading = classes.lookup("#classHeading");
                 Text className = (Text) classes.lookup("#className");
                 Label studentName = (Label) students.lookup("#name");
+                Text moduleCode = (Text) classes.lookup("#moduleCode");
                 assertEquals(classHeading.localToScene(0, 0).getX() - classIndex.localToScene(0, 0).getX(),
                         studentName.localToScene(0, 0).getX() - studentIndex.localToScene(0, 0).getX(), 0.5);
                 assertEquals(studentName.getFont(), className.getFont());
+                assertEquals(studentName.getFont(), moduleCode.getFont());
+                assertEquals(14, studentName.getFont().getSize());
+                for (String detail : List.of("id", "studentNumber", "email", "telegram", "attendance")) {
+                    assertNormalCardFont((Label) students.lookup("#" + detail));
+                }
+                for (Node tag : students.lookup("#tags").lookupAll(".label")) {
+                    assertNormalCardFont((Label) tag);
+                }
+                assertNormalCardFont(classIndex);
+                assertNormalCardFont((Label) classes.lookup("#studentCount"));
                 assertEquals(classHeading.localToScene(0, 0).getX(),
                         classes.lookup("#studentCount").localToScene(0, 0).getX(), 0.5);
                 for (String detail : List.of("details", "tags")) {
@@ -193,7 +206,7 @@ public class WorkspaceTest {
                         assertTrue(bounds.getMaxY() <= stage.getScene().getHeight() + 1);
                     }
                     execute(input, "find Alice");
-                    assertHeaders(stage, 32, 32, 1);
+                    assertHeaders(stage, 32, 32, 1, 3);
                     assertFalse(output.getText().isBlank());
                     execute(input, "list");
                     settle(stage);
@@ -380,52 +393,52 @@ public class WorkspaceTest {
                 TextField input = (TextField) stage.getScene().lookup("#commandTextField");
                 ListView<?> classes = (ListView<?>) stage.getScene().lookup("#academicClassListView");
                 ListView<?> students = (ListView<?>) stage.getScene().lookup("#personListView");
-                assertHeaders(stage, 3, 3, 3);
+                assertHeaders(stage, 3, 3, 3, 3);
                 for (String draft : List.of("find Alice", "listbystudent 1", "listbyclass 3")) {
                     input.setText(draft);
-                    assertHeaders(stage, 3, 3, 3);
+                    assertHeaders(stage, 3, 3, 3, 3);
                 }
                 execute(input, "listbystudent 1");
-                assertHeaders(stage, 1, 3, 3);
+                assertHeaders(stage, 1, 3, 3, 3);
                 execute(input, "assign sn/A0123456X m/CS2101 c/TUTORIAL-GROUP-WITH-A-LONG-NAME");
-                assertHeaders(stage, 2, 3, 3);
+                assertHeaders(stage, 2, 3, 3, 3);
                 execute(input, "addclass m/CS2100 c/EMPTY");
-                assertHeaders(stage, 2, 4, 3);
+                assertHeaders(stage, 2, 4, 3, 3);
                 capture(stage, "usability-filtered-counts");
                 execute(input, "unassign 1 2");
-                assertHeaders(stage, 1, 4, 3);
+                assertHeaders(stage, 1, 4, 3, 3);
                 execute(input, "edit 1 sn/A1111111X");
-                assertHeaders(stage, 1, 4, 3);
+                assertHeaders(stage, 1, 4, 3, 3);
                 execute(input, "deleteclass m/CS2103 c/F10");
-                assertHeaders(stage, 0, 3, 3);
+                assertHeaders(stage, 0, 3, 3, 3);
                 layout(stage);
                 assertLabelExists(classes, "No classes shown.");
                 assertTrue(classes.lookup(".placeholder").isVisible());
                 execute(input, "addclass m/CS2103 c/F12");
-                assertHeaders(stage, 0, 4, 3);
+                assertHeaders(stage, 0, 4, 3, 3);
                 execute(input, "listbyclass 9999");
-                assertHeaders(stage, 0, 4, 3);
+                assertHeaders(stage, 0, 4, 3, 3);
                 execute(input, "listclass");
-                assertHeaders(stage, 4, 4, 3);
+                assertHeaders(stage, 4, 4, 3, 3);
                 execute(input, "find Nobody");
-                assertHeaders(stage, 4, 4, 0);
+                assertHeaders(stage, 4, 4, 0, 3);
                 layout(stage);
                 assertLabelExists(students, "No students shown.");
                 assertTrue(students.lookup(".placeholder").isVisible());
                 execute(input, "list");
-                assertHeaders(stage, 4, 4, 3);
+                assertHeaders(stage, 4, 4, 3, 3);
                 execute(input, "add sn/DEMO0001 n/Ella Ng e/ella@example.com");
-                assertHeaders(stage, 4, 4, 4);
+                assertHeaders(stage, 4, 4, 4, 4);
                 execute(input, "find Ella");
-                assertHeaders(stage, 4, 4, 1);
+                assertHeaders(stage, 4, 4, 1, 4);
                 execute(input, "delete 1");
-                assertHeaders(stage, 4, 4, 0);
+                assertHeaders(stage, 4, 4, 0, 3);
                 execute(input, "list");
-                assertHeaders(stage, 4, 4, 3);
+                assertHeaders(stage, 4, 4, 3, 3);
                 execute(input, "listbyclass 3");
-                assertHeaders(stage, 4, 4, 0);
+                assertHeaders(stage, 4, 4, 0, 3);
                 execute(input, "clear");
-                assertHeaders(stage, 0, 0, 0);
+                assertHeaders(stage, 0, 0, 0, 0);
                 layout(stage);
                 assertLabelExists(classes, "No classes shown.");
                 assertLabelExists(students, "No students shown.");
@@ -453,7 +466,7 @@ public class WorkspaceTest {
                 input.setText("listbyclass 32");
                 assertTrue(scrollTargets.isEmpty());
                 assertEquals(initialFirstIndex, flow.getFirstVisibleCell().getIndex());
-                assertHeaders(stage, 32, 32, 3);
+                assertHeaders(stage, 32, 32, 3, 3);
                 for (String invalid : List.of("listbyclass 9999", "listbyclass", "listbyclass abc",
                         "editclass 999999999999999999 c/INVALID")) {
                     execute(input, invalid);
@@ -463,7 +476,7 @@ public class WorkspaceTest {
                 settle(stage);
                 assertEquals(List.of(31), scrollTargets);
                 assertEquals(31, flow.getLastVisibleCell().getIndex());
-                assertHeaders(stage, 32, 32, 0);
+                assertHeaders(stage, 32, 32, 0, 3);
                 press(classes, KeyCode.HOME);
                 execute(input, "  editclass   32   c/TARGET-RENAMED  ");
                 settle(stage);
@@ -489,10 +502,10 @@ public class WorkspaceTest {
                 assertEquals(31, flow.getLastVisibleCell().getIndex());
 
                 execute(input, "listbystudent 1");
-                assertHeaders(stage, 2, 32, 3);
+                assertHeaders(stage, 2, 32, 3, 3);
                 scrollTargets.clear();
                 execute(input, "unassign 1 2");
-                assertHeaders(stage, 1, 32, 3);
+                assertHeaders(stage, 1, 32, 3, 3);
                 assertTrue(scrollTargets.isEmpty(), "A class removed by the active filter must not reveal another row");
                 execute(input, "listclass");
                 press(classes, KeyCode.END);
@@ -569,7 +582,13 @@ public class WorkspaceTest {
         assertFalse(list.lookupAll(".list-cell").stream().map(ListCell.class::cast).anyMatch(ListCell::isSelected));
     }
 
-    private static void assertHeaders(Stage stage, int shownClasses, int totalClasses, int shownStudents) {
+    private static void assertNormalCardFont(Label label) {
+        assertEquals(12, label.getFont().getSize(), label.getId());
+        assertEquals(Font.font(label.getFont().getFamily(), FontWeight.NORMAL, 12), label.getFont(), label.getId());
+    }
+
+    private static void assertHeaders(Stage stage, int shownClasses, int totalClasses,
+            int shownStudents, int totalStudents) {
         Label classHeader = (Label) stage.getScene().lookup("#classHeader");
         Label studentHeader = (Label) stage.getScene().lookup("#studentHeader");
         Label classCount = (Label) stage.getScene().lookup("#classCount");
@@ -577,7 +596,7 @@ public class WorkspaceTest {
         assertEquals("Classes", classHeader.getText());
         assertEquals("Students", studentHeader.getText());
         assertEquals(shownClasses + " shown / " + totalClasses + " total", classCount.getText());
-        assertEquals(shownStudents + " shown", studentCount.getText());
+        assertEquals(shownStudents + " shown / " + totalStudents + " total", studentCount.getText());
     }
 
     private static void assertHeaderLayout(Stage stage, String prefix) {

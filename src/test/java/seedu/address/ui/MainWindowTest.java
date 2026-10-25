@@ -306,6 +306,11 @@ public class MainWindowTest {
         }
 
         @Override
+        public ObservableList<Person> getPersonList() {
+            return FXCollections.observableArrayList();
+        }
+
+        @Override
         public ObservableList<Person> getFilteredPersonList() {
             return FXCollections.observableArrayList();
         }
