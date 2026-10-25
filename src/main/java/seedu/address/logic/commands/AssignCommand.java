@@ -3,45 +3,40 @@ package seedu.address.logic.commands;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
+import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.ToStringBuilder;
+import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
 import seedu.address.model.academicclass.AcademicClass;
-import seedu.address.model.academicclass.ClassName;
-import seedu.address.model.academicclass.ModuleCode;
 import seedu.address.model.person.Person;
-import seedu.address.model.person.StudentNumber;
 
 /** Assigns an existing student to an existing class. */
 public class AssignCommand extends Command {
     public static final String COMMAND_WORD = "assign";
     public static final String MESSAGE_USAGE = COMMAND_WORD + ": Assigns a student to a class.\n"
-            + "Parameters: sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME\n"
-            + "Example: assign sn/A1111111H m/CS2103 c/F10";
+            + "Parameters: STUDENT_INDEX CLASS_INDEX (non-zero positive integers in their respective displayed lists)\n"
+            + "Example: assign 1 2";
     public static final String MESSAGE_SUCCESS = "Student (%1$s) has been assigned to %2$s.";
     public static final String MESSAGE_ALREADY_ASSIGNED = "Student (%1$s) is already assigned to class %2$s.";
-    public static final String MESSAGE_STUDENT_NOT_FOUND = "Student (%1$s) cannot be found in the address book.";
-    public static final String MESSAGE_CLASS_NOT_FOUND = "Class (%1$s-%2$s) cannot be found in the address book.";
 
-    private final StudentNumber studentNumber;
-    private final ModuleCode moduleCode;
-    private final ClassName className;
+    private final Index studentIndex;
+    private final Index classIndex;
 
-    /** Creates a command with identifiers validated by the parser. */
-    public AssignCommand(StudentNumber studentNumber, ModuleCode moduleCode, ClassName className) {
-        requireAllNonNull(studentNumber, moduleCode, className);
-        this.studentNumber = studentNumber;
-        this.moduleCode = moduleCode;
-        this.className = className;
+    /** Creates a command with validated displayed student and class indices. */
+    public AssignCommand(Index studentIndex, Index classIndex) {
+        requireAllNonNull(studentIndex, classIndex);
+        this.studentIndex = studentIndex;
+        this.classIndex = classIndex;
     }
 
     @Override
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
-        Person person = model.findPersonByStudentNumber(studentNumber)
-                .orElseThrow(() -> new CommandException(String.format(MESSAGE_STUDENT_NOT_FOUND, studentNumber)));
-        AcademicClass academicClass = model.findAcademicClass(moduleCode, className)
-                .orElseThrow(() -> new CommandException(String.format(MESSAGE_CLASS_NOT_FOUND, moduleCode, className)));
+        Person person = model.findDisplayedPerson(studentIndex)
+                .orElseThrow(() -> new CommandException(Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX));
+        AcademicClass academicClass = model.findDisplayedAcademicClass(classIndex)
+                .orElseThrow(() -> new CommandException(Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX));
         if (!model.assignStudentToClass(person, academicClass)) {
             throw new CommandException(String.format(MESSAGE_ALREADY_ASSIGNED,
                     person.getStudentNumber(), academicClass));
@@ -57,13 +52,12 @@ public class AssignCommand extends Command {
         if (!(other instanceof AssignCommand otherCommand)) {
             return false;
         }
-        return studentNumber.equals(otherCommand.studentNumber)
-                && moduleCode.equals(otherCommand.moduleCode) && className.equals(otherCommand.className);
+        return studentIndex.equals(otherCommand.studentIndex) && classIndex.equals(otherCommand.classIndex);
     }
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this).add("studentNumber", studentNumber)
-                .add("moduleCode", moduleCode).add("className", className).toString();
+        return new ToStringBuilder(this).add("studentIndex", studentIndex)
+                .add("classIndex", classIndex).toString();
     }
 }

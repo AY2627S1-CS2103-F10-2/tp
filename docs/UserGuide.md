@@ -176,17 +176,17 @@ The result message includes the student count and class (and the threshold when 
 * `Listed 2 students taking CS2103 (F10-2).`
 * `Listed 1 students taking CS2103 (F10-2) with fewer than 5 recorded attendance dates.`
 
-Classes created with `addclass` start empty. Use `assign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME`
+Classes created with `addclass` start empty. Use `assign STUDENT_INDEX CLASS_INDEX`
 to assign an existing student before listing the class. Memberships are saved across restarts.
 
-Example walkthrough (use unused student numbers, email addresses, and a new class):
+Example walkthrough (in a fresh data folder with no existing records):
 
 ```text
 add sn/A0999901X n/Zoe Test e/zoe.test@example.com
 add sn/A0999902Y n/Amy Test e/amy.test@example.com
 addclass m/CS2103 c/TEST-103
-assign sn/A0999901X m/CS2103 c/TEST-103
-assign sn/A0999902Y m/CS2103 c/TEST-103
+assign 1 1
+assign 2 1
 listbyclass 1
 ```
 
@@ -226,8 +226,7 @@ Examples:
 
 **Example walkthrough**
 
-Use unused student numbers, email addresses, and module/class pairs for this walkthrough. Enter each command separately.
-If you already created these demonstration records, reuse them and skip the corresponding creation commands.
+Use a fresh data folder with no existing records for this walkthrough so the indices below match. Enter each command separately.
 
 ```text
 add sn/A0999801X n/AlphaDemoAlice e/alpha.demo.alice@example.com
@@ -236,9 +235,9 @@ addclass m/CS2103 c/DEMO-T01
 addclass m/CS2100 c/DEMO-L01
 addclass m/CS2106 c/DEMO-BOB
 addclass m/CS2103 c/DEMO-EMPTY
-assign sn/A0999801X m/CS2103 c/DEMO-T01
-assign sn/A0999801X m/CS2100 c/DEMO-L01
-assign sn/A0999802Y m/CS2106 c/DEMO-BOB
+assign 1 1
+assign 1 2
+assign 2 3
 find AlphaDemoAlice
 listbystudent 1
 ```
@@ -266,7 +265,7 @@ listbystudent 1
 
 The Classes panel becomes empty after unassignment. The listing command reports:
 `Listed 0 classes for AlphaDemoBob (A0999802Y).`
-Restore the assignment with `assign sn/A0999802Y m/CS2106 c/DEMO-BOB`; Bob's class reappears automatically.
+To restore the assignment, run `listclass`, check the index of `CS2106 DEMO-BOB` (here `3`), then run `assign 1 3`. Bob is still student index `1` in the search results. Run `listbystudent 1` again to show only his classes.
 
 **Common errors**
 
@@ -332,33 +331,27 @@ Common errors:
 
 Assigns an existing student to an existing academic class.
 
-Format: `assign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME`
+Format: `assign STUDENT_INDEX CLASS_INDEX`
 
-* All three parameters are required and must be supplied exactly once. They can appear in any order.
-* Leading and trailing spaces are removed from parameter values.
-* Student numbers, module codes, and class names are matched case-insensitively. Hyphens matter: `F10` and `F-10` identify different classes.
-* `STUDENT_NUMBER` must contain 5 to 20 letters or digits, without spaces or special characters.
-* `MODULE_CODE` must begin with a letter and contain only letters or digits.
-* `CLASS_NAME` must contain at least one letter or digit, and may contain only letters, digits, or hyphens.
-* The student and class must already exist. A student hidden by the current search can still be assigned; assignment preserves the displayed student list.
+* Put the student index first and the class index second. Both must be positive integers from their respective displayed lists.
+* `STUDENT_INDEX` uses the current Students panel, including `find` and `listbyclass` results.
+* `CLASS_INDEX` uses the current Classes panel, including `listbystudent` results.
+* The student and class must already exist and be visible. Use `list` and `listclass` to restore the complete lists if needed.
+* Check the displayed indices after filtering, editing records, changing memberships, or recalling a previous command.
+* Assignment preserves active filters. Membership-based views and class student counts update automatically.
 * A student may belong to multiple classes. Repeating an assignment reports that the student is already assigned and leaves the membership unchanged.
 
-Examples:
-* `assign sn/A1111111H m/CS2103 c/F-10` assigns student `A1111111H` to class `F-10` for module `CS2103`.
-* `assign c/ f10-2 sn/ a0234567y m/ cs2103t` assigns student `A0234567Y` to class `F10-2` for module `CS2103T`.
+Example:
+* `assign 1 2` assigns the first displayed student to the second displayed class.
 
-Expected output:
+Expected output (if the selected student is `A1111111H` and the class is `CS2103 F-10`):
 * `Student (A1111111H) has been assigned to CS2103-F-10.`
 
 Common errors:
-* Missing parameter: `You're missing some parameters. The correct format is assign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME`
-* Student not found: `Student (A1234567H) cannot be found in the address book.`
-* Class not found: `Class (CS2100-F10) cannot be found in the address book.`
+* Missing, extra, zero, negative, non-integer, or prefixed arguments: `Invalid command format!` followed by the command usage.
+* Student index outside the displayed list: `The person index provided is invalid.`
+* Class index outside the displayed list: `The class index provided is invalid.`
 * Student already assigned: `Student (A1234567H) is already assigned to class CS2101-L1.`
-* Repeated parameter: `Multiple values specified for the following single-valued field(s):` followed by the repeated prefixes.
-* Unknown parameter: `Unknown parameter: PREFIX`
-* Unexpected text before the parameters: `Invalid command format!` followed by the command usage.
-* Empty or invalid student number, module code, or class name: the corresponding validation error from `add` or `addclass`.
 
 Rejected commands leave memberships and student counts unchanged.
 
@@ -389,7 +382,7 @@ Format: `addattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD`
 
 Example (after creating the student and class):
 
-1. `assign sn/A0123456X m/CS2103 c/F10-2`
+1. Run `list` and `listclass`, check the indices, then use `assign 1 2` (assuming student `1` and class `2`).
 2. Run `list` and `listclass`. Check the student's index (assumed to be `1`) and the class's index (assumed to be `2`).
 3. `addattendance 1 2 d/2024-02-29`
 
@@ -703,7 +696,7 @@ Action     | Format, Examples
 -----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 **Add**    | `add sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM] [t/TAG]... ` <br> e.g., `add sn/A0123456X n/James Ho e/jamesho@example.com tg/james_ho t/CS2103`
 **Add Class** | `addclass m/MODULE_CODE c/CLASS_NAME` <br> e.g., `addclass m/CS2103T c/F10-2`
-**Assign** | `assign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME` <br> e.g., `assign sn/A0123456X m/CS2103T c/F10-2`
+**Assign** | `assign STUDENT_INDEX CLASS_INDEX` <br> e.g., `assign 1 2`
 **Clear**  | `clear`
 **Add attendance** | `addattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD`<br> e.g., `addattendance 1 2 d/2024-02-29`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`

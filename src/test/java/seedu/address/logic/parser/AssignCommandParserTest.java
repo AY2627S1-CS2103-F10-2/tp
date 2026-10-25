@@ -2,103 +2,81 @@ package seedu.address.logic.parser;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseFailure;
-import static seedu.address.logic.parser.CommandParserTestUtil.assertParseSuccess;
-import static seedu.address.testutil.Assert.assertThrows;
+import static seedu.address.testutil.TypicalPersons.ALICE;
+import static seedu.address.testutil.TypicalPersons.BENSON;
 
-import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.AssignCommand;
-import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.logic.commands.Command;
+import seedu.address.model.ModelManager;
+import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
-import seedu.address.model.person.StudentNumber;
 
+/** Tests index validation and the displayed records targeted by the parsed command. */
 public class AssignCommandParserTest {
     private final AssignCommandParser parser = new AssignCommandParser();
 
     @Test
-    public void parse_repeatedIdenticalOrEmptyPrefixes_failure() {
-        for (String duplicate : List.of("sn/A1111111H", "sn/", "m/CS2103", "m/", "c/F10", "c/")) {
-            Prefix prefix = new Prefix(duplicate.substring(0, duplicate.indexOf('/') + 1));
-            assertParseFailure(parser, " sn/A1111111H m/CS2103 c/F10 " + duplicate,
-                    Messages.getErrorMessageForDuplicatePrefixes(prefix));
+    public void parse_validIndices_targetsDisplayedStudentAndClass() throws Exception {
+        assertParsedCommandTargetsExpectedRecords(parser.parse(" 2 1"));
+    }
+
+    @Test
+    public void parse_extraWhitespace_targetsDisplayedStudentAndClass() throws Exception {
+        assertParsedCommandTargetsExpectedRecords(parser.parse("  2\t 1  "));
+    }
+
+    @Test
+    public void parseCommand_assign_routesToAssignParser() throws Exception {
+        assertParsedCommandTargetsExpectedRecords(new AddressBookParser().parseCommand("assign 2 1"));
+    }
+
+    @Test
+    public void parse_missingOrExtraIndices_failure() {
+        for (String input : new String[] {"", " ", "1", "1 2 3", "extra 1 2"}) {
+            assertInvalidArguments(input);
         }
     }
 
     @Test
-    public void parse_extraKnownButUnsupportedPrefixes_failure() {
-        for (String prefix : List.of("n/", "e/", "tg/", "t/")) {
-            assertParseFailure(parser, " sn/A1111111H m/CS2103 c/F10 " + prefix + "value",
-                    String.format(AssignCommandParser.MESSAGE_UNKNOWN_PARAMETER, prefix));
+    public void parse_invalidIndices_failure() {
+        for (String input : new String[] {"0 1", "1 0", "-1 1", "1 -1", "+1 1", "1 +1",
+            "1.5 1", "1 1.5", "abc 1", "1 abc", "2147483648 1", "1 2147483648"}) {
+            assertInvalidArguments(input);
         }
     }
 
     @Test
-    public void parse_anyParameterOrderAndWhitespace_success() {
-        AssignCommand expected = new AssignCommand(new StudentNumber("A1111111H"),
-                new ModuleCode("CS2103"), new ClassName("F10"));
-        for (String args : List.of(" sn/A1111111H m/CS2103 c/F10", " sn/A1111111H c/F10 m/CS2103",
-                " m/CS2103 sn/A1111111H c/F10", " m/CS2103 c/F10 sn/A1111111H",
-                " c/F10 sn/A1111111H m/CS2103", " c/F10 m/CS2103 sn/A1111111H",
-                " sn/   A1111111H   m/   CS2103   c/   F10   ")) {
-            assertParseSuccess(parser, args, expected);
+    public void parse_prefixedArguments_failure() {
+        for (String input : new String[] {"sn/A1111111H m/CS2103 c/F10", "1 1 d/2024-02-29", "1 1 x/value"}) {
+            assertInvalidArguments(input);
         }
     }
 
-    @Test
-    public void parse_invalidIdentifiers_reportsValidationErrors() {
-        for (String number : List.of("random-numbers", "1234", "A012 3456X")) {
-            assertParseFailure(parser, " sn/" + number + " m/CS2103 c/F10", StudentNumber.MESSAGE_CONSTRAINTS);
-        }
-        for (String module : List.of("fake-module", "1234", "CS 2103")) {
-            assertParseFailure(parser, " sn/A1111111H m/" + module + " c/F10", ModuleCode.MESSAGE_CONSTRAINTS);
-        }
-        for (String name : List.of("---", "F/10", "F 10")) {
-            assertParseFailure(parser, " sn/A1111111H m/CS2103 c/" + name, ClassName.MESSAGE_CONSTRAINTS);
-        }
-    }
-
-    @Test
-    public void parse_missingParameter_failure() {
-        for (String args : List.of("", " m/CS2103 c/F10", " sn/A1111111H c/F10",
-                " sn/A1111111H m/CS2103")) {
-            assertParseFailure(parser, args, AssignCommandParser.MESSAGE_MISSING_PARAMETERS);
-        }
-    }
-
-    @Test
-    public void parse_emptyParameter_reportsIdentifierEmptyError() {
-        for (String value : List.of("", "   ", " \t ")) {
-            assertParseFailure(parser, " sn/" + value + " m/CS2103 c/F10", StudentNumber.MESSAGE_EMPTY);
-            assertParseFailure(parser, " sn/A1111111H m/" + value + " c/F10", ModuleCode.MESSAGE_EMPTY);
-            assertParseFailure(parser, " sn/A1111111H m/CS2103 c/" + value, ClassName.MESSAGE_EMPTY);
-        }
-    }
-
-    @Test
-    public void parse_unknownPrefixOrPreamble_failure() {
-        assertParseFailure(parser, " sn/A1111111H m/CS2103 c/F10 x/value",
-                String.format(AssignCommandParser.MESSAGE_UNKNOWN_PARAMETER, "x/"));
-        assertParseFailure(parser, "unexpected sn/A1111111H m/CS2103 c/F10",
+    private void assertInvalidArguments(String input) {
+        assertParseFailure(parser, input,
                 String.format(Messages.MESSAGE_INVALID_COMMAND_FORMAT, AssignCommand.MESSAGE_USAGE));
     }
 
-    @Test
-    public void parse_duplicatePrefixes_failure() {
-        for (Prefix prefix : new Prefix[] {CliSyntax.PREFIX_STUDENT_NUMBER, CliSyntax.PREFIX_MODULE_CODE,
-            CliSyntax.PREFIX_CLASS_NAME}) {
-            assertParseFailure(parser, " sn/A1111111H m/CS2103 c/F10 " + prefix + "again",
-                    Messages.getErrorMessageForDuplicatePrefixes(prefix));
-        }
-    }
+    private void assertParsedCommandTargetsExpectedRecords(Command command) throws Exception {
+        ModelManager model = new ModelManager();
+        model.addPerson(BENSON);
+        model.addPerson(ALICE);
+        AcademicClass target = new AcademicClass(new ModuleCode("CS2103"), new ClassName("F10"));
+        AcademicClass other = new AcademicClass(new ModuleCode("CS2103"), new ClassName("F11"));
+        model.addAcademicClass(target);
+        model.addAcademicClass(other);
+        model.assignStudentToClass(BENSON, target);
+        model.assignStudentToClass(ALICE, other);
 
-    @Test
-    public void parseCommand_assign_routesToParser() throws Exception {
-        assertEquals(new AssignCommand(new StudentNumber("A1111111H"), new ModuleCode("CS2103"), new ClassName("F10")),
-                new AddressBookParser().parseCommand("assign sn/A1111111H m/CS2103 c/F10"));
-        assertThrows(ParseException.class, () -> new AddressBookParser().parseCommand("assign"));
+        assertEquals(String.format(AssignCommand.MESSAGE_SUCCESS, ALICE.getStudentNumber(), target),
+                command.execute(model).getFeedbackToUser());
+        assertEquals(Set.of(ALICE, BENSON), target.getStudents());
+        assertEquals(Set.of(ALICE), other.getStudents());
     }
 }

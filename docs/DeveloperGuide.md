@@ -300,26 +300,26 @@ Invalid arguments cause a `ParseException` before command creation. If the class
 ### Assigning and unassigning students
 
 `AssignCommand` and `UnassignCommand` change a student's membership in one academic class without
-adding or deleting student records or classes. `AssignCommand` identifies records by student number,
-module code and class name, including records hidden by filters. `UnassignCommand` instead accepts
-student and class indices in their respective displayed lists; hidden records cannot be selected.
+adding or deleting student records or classes. `AssignCommand` and `UnassignCommand` accept student and class indices in their respective
+displayed lists, with the student index first. Hidden records cannot be selected.
 
 #### Assigning a student
 
-For example, `assign sn/A1111111H m/CS2103 c/F10` assigns an existing student to an existing class.
+For example, `assign 1 2` assigns an existing student to an existing class.
 The following sequence diagram starts at `LogicManager#execute(commandText)` and shows successful
 parsing, command creation and execution. Here, `commandText` is the example above and `args` is
 the argument string after the command word. Constructor arguments are abbreviated as `...`;
-the parser passes the validated student number, module code and class name to the command.
+the parser passes the two validated displayed indices to the command.
 `m:ModelManager` is accessed through the `Model` interface. The `Assign membership (model)`
 reference frame is expanded in the next diagram.
 
-<puml src="diagrams/AssignSequenceDiagram.puml" alt="Successful execution of AssignCommand, resolving the stored student and class through Model before assigning membership" />
+<puml src="diagrams/AssignSequenceDiagram.puml" alt="Successful execution of AssignCommand, resolving the displayed student and class through Model before assigning membership" />
 
 1. `LogicManager` asks `AddressBookParser` to parse the input. It creates an `AssignCommandParser`,
    which validates the arguments and constructs an `AssignCommand`.
-2. `LogicManager` executes the returned command, which resolves the stored `Person` and
-   `AcademicClass` through the model's lookup methods.
+2. `LogicManager` executes the returned command, which resolves the `Person` and `AcademicClass`
+   through `Model#findDisplayedPerson` and `Model#findDisplayedAcademicClass`. These lookups
+   encapsulate displayed-list access and bounds checks; the command reports invalid indices for empty results.
 3. The command calls `Model#assignStudentToClass(person, academicClass)`.
 4. On successful membership addition, the command returns a `CommandResult` to `LogicManager`,
    which saves the address book before returning the result to its caller.
@@ -369,8 +369,8 @@ records disappear from filtered views. Attendance history is retained for correc
 #### Validation and failure paths
 
 The activity diagram below complements the successful-execution sequence diagrams. Assignment
-and unassignment resolve records differently: assignment uses stored identifiers, while unassignment
-uses displayed indices. Both validate the selected records before updating membership and saving.
+and unassignment both resolve displayed indices and validate the selected records before updating
+membership and saving.
 
 <puml src="diagrams/AssignUnassignActivityDiagram.puml" alt="Assign and Unassign workflow showing invalid input, missing student or class, unchanged membership, save failure and successful completion" />
 
@@ -384,11 +384,10 @@ a successful membership change is different: the in-memory change has already oc
 The sequence diagrams focus on successful execution and omit individual parser validation calls,
 assertion lookups, formatting helpers and exception construction to keep the interactions readable.
 
-* The assignment parser rejects missing, repeated or unknown prefixes and invalid identifier values.
-  The unassignment parser rejects anything other than exactly two positive integer indices.
+* Both parsers reject anything other than exactly two positive integer indices, including prefixed input.
   Both report `ParseException` before constructing the command.
-* Assignment rejects empty lookup results with `CommandException`. Unassignment reports an invalid
-  displayed student or class index with `CommandException`, including when the relevant view is empty.
+* Both commands report an invalid displayed student or class index with `CommandException`,
+  including when the relevant view is empty.
   Both resolve the student before the class, before attempting a membership update.
 * A duplicate assignment or an absent membership is rejected without changing memberships.
 * On successful command execution, `LogicManager` saves the address book before returning the
@@ -648,8 +647,8 @@ Use case ends.
 
 **Main Success Scenario (MSS):**
 
-1. TA requests to assign a student to a class, providing the student number,
-   module code and class name.
+1. TA requests to assign a student to a class, providing the student index first and the class index second,
+   in their respective displayed lists.
 2. TAssist assigns the student to the specified class and automatically saves the assignment.
 3. TAssist returns a confirmation of the successful assignment, identifying the student and the class.
 
@@ -657,17 +656,17 @@ Use case ends.
 
 **Extensions:**
 
-- **1a. Required details are missing, values are empty or invalid, or repeated, unrecognised or extra details are supplied.**
-  - 1a1. TAssist informs TA of the error and the required details, without changing any assignments.
+- **1a. The request does not contain exactly two positive integer indices, or includes prefixed or extra arguments.**
+  - 1a1. TAssist reports an invalid command format and the required student-index-first format, without changing any assignments.
   - Use case ends.
 
-- **1b. No student matches the supplied student number.**
-  - 1b1. TAssist informs TA that the student does not exist, identifying the supplied student number.
+- **1b. The student index is outside the displayed student list.**
+  - 1b1. TAssist reports an invalid displayed student index.
   - 1b2. TAssist rejects the request without changing any assignments.
   - Use case ends.
 
-- **1c. No class matches the supplied module code and class name.**
-  - 1c1. TAssist informs TA that the class does not exist, identifying the supplied module code and class name.
+- **1c. The class index is outside the displayed class list.**
+  - 1c1. TAssist reports an invalid displayed class index.
   - 1c2. TAssist rejects the request without changing any assignments.
   - Use case ends.
 
@@ -828,38 +827,29 @@ testers are expected to do more *exploratory* testing.
 
 1. Successful assignment and live count updates
 
-   1. Prerequisites: Use student numbers, emails, and a class that do not already exist. Run
-      `add sn/A1111111H n/Alice Tan e/alice.assign@example.com`,
-      `add sn/A2222222J n/Bob Lim e/bob.assign@example.com`, and `addclass m/CS2103 c/F-10`.
-      Expected: The new class shows `Students: 0`.
-
-   1. Test case: `assign sn/A1111111H m/CS2103 c/F-10`<br>
-      Expected: Success feedback identifies the student and class; the count immediately becomes 1.
-
-   1. Test case: `find Nobody`, then `assign c/ f-10 sn/ a2222222j m/ cs2103`<br>
-      Expected: Assignment succeeds despite the filter, the count becomes 2, and the student list stays empty.
+   1. Prerequisites: In a fresh data folder, create Alice and Bob with `add`, then create a class with `addclass`.
+      Run `list` and `listclass`; check that Alice is student 1, Bob is student 2, and the class is class 1.
+   1. Test case: `assign 1 1`<br>
+      Expected: Success feedback identifies Alice and the class; its count becomes 1.
+   1. Test case: `find Bob`, then `assign 1 1`<br>
+      Expected: Bob is assigned using his displayed index; the count becomes 2 and the search stays active.
 
 1. Duplicate assignment and errors
 
-   1. Test case: `assign sn/A1111111H m/CS2103 c/F-10` again<br>
+   1. Test case: `assign 1 1` again<br>
       Expected: Already-assigned feedback; the count remains 2.
-
-   1. Test cases: `assign sn/A9999999Z m/CS2103 c/F-10` and `assign sn/A1111111H m/CS9999 c/F-10`
-      (assuming those identifiers do not exist)<br>
-      Expected: Student-not-found and class-not-found feedback respectively; memberships remain unchanged.
-
-   1. Incorrect commands to try: `assign sn/random-numbers m/CS2103 c/F-10`,
-      `assign sn/A1111111H m/CS2103`, `assign sn/A1111111H m/CS2103 c/`,
-      `assign sn/A1111111H sn/A1111111H m/CS2103 c/F-10`, and
-      `assign sn/A1111111H m/CS2103 c/F-10 x/extra`<br>
-      Expected: Validation, missing-parameter, empty-value, duplicate-prefix, and unknown-prefix errors
-      respectively. Memberships and the count remain unchanged.
+   1. Test cases: `assign 999 1` and `assign 1 999`<br>
+      Expected: Invalid displayed student/class index feedback; memberships remain unchanged.
+   1. Incorrect commands: `assign`, `assign 1`, `assign 0 1`, `assign 1 -1`, `assign 1 1 extra`,
+      and `assign sn/A1111111H m/CS2103 c/F-10`.<br>
+      Expected: Invalid command format; memberships and counts remain unchanged.
+   1. Test case: `find Nobody`, then `assign 1 1`<br>
+      Expected: Invalid displayed student index. Run `list` to make students selectable again.
 
 1. Persistence
 
-   1. Close and reopen the app after the successful assignments.<br>
-      Expected: The class still shows 2 students. Its `studentNumbers` JSON list contains each assigned
-      student number once. Repeating either assignment reports that the student is already assigned.
+   1. Close and reopen the app after successful assignments.<br>
+      Expected: The class still shows 2 students, and each student number occurs once in its `studentNumbers` JSON list.
 
 ### Listing classes by student
 
@@ -867,8 +857,8 @@ testers are expected to do more *exploratory* testing.
    `add sn/A0999801X n/AlphaDemoAlice e/alpha.demo.alice@example.com`,
    `add sn/A0999802Y n/AlphaDemoBob e/alpha.demo.bob@example.com`,
    `addclass m/CS2103 c/DEMO-T01`, and `addclass m/CS2100 c/DEMO-L01`.
-2. Assign Alice to both classes using `assign sn/A0999801X m/CS2103 c/DEMO-T01` and
-   `assign sn/A0999801X m/CS2100 c/DEMO-L01`.
+2. Run `list` and `listclass`. Check Alice's displayed student index and the two displayed class indices.
+   Assign her using `assign STUDENT_INDEX CLASS_INDEX` for each class.
 3. Run `find AlphaDemoAlice`, then `listbystudent 1`.
    Expected: both classes appear in creation order; feedback reports two classes and Alice's identity.
    The student search results remain unchanged.

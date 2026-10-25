@@ -80,7 +80,7 @@ public class DeleteClassIntegrationTest {
         model.addPerson(AMY);
         logic.execute("addclass m/CS2103 c/F10-2");
         logic.execute("addclass m/CS2103 c/F11-2");
-        logic.execute("assign sn/" + AMY.getStudentNumber() + " m/CS2103 c/F11-2");
+        logic.execute("assign 1 2");
         logic.execute("listbystudent 1");
         var displayed = logic.getFilteredAcademicClassList();
         AcademicClass hidden = model.getAcademicClassList().getFirst();
