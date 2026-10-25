@@ -13,11 +13,18 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import javafx.application.Platform;
+import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
@@ -49,6 +56,89 @@ public class CommandBoxTest {
             press(input, KeyCode.DOWN);
             assertEquals("draft", input.getText());
             assertEquals(List.of("list", "help"), saved);
+        });
+    }
+
+    @Test
+    public void hints_typingAndHistory_changeGuidanceWithoutExecuting() throws Exception {
+        runOnFxThreadAndWait(() -> {
+            List<String> executed = new ArrayList<>();
+            CommandBox box = new CommandBox(command -> {
+                executed.add(command);
+                return new CommandResult("Success");
+            });
+            TextField input = getInput(box);
+            Label hint = (Label) box.getRoot().lookup("#commandHint");
+            assertTrue(hint.isVisible());
+            assertTrue(hint.isManaged());
+            assertTrue(hint.isWrapText());
+            assertEquals(CommandHints.DEFAULT_HINT, hint.getText());
+            Label details = (Label) box.getRoot().lookup("#commandHintDetails");
+            assertFalse(details.isManaged());
+            assertFalse(details.isVisible());
+            for (String draft : List.of("del", "a", "add", "add sn/", "listbyclass 999",
+                    "deleteclass 1", "assign 1 2", "clear", "unknown", "")) {
+                input.setText(draft);
+                assertEquals(CommandHints.forInput(draft), getHintText(box));
+                assertTrue(executed.isEmpty());
+                assertFalse(input.getStyleClass().contains(CommandBox.ERROR_STYLE_CLASS));
+            }
+            assertFalse(details.isManaged(), "Default guidance must not reserve an empty detail row");
+            assertFalse(details.isVisible());
+            submit(input, "list");
+            assertEquals(List.of("list"), executed);
+            assertEquals(CommandHints.DEFAULT_HINT, hint.getText());
+            input.setText("edit 1");
+            press(input, KeyCode.UP);
+            assertEquals(CommandHints.forInput("list"), getHintText(box));
+            press(input, KeyCode.DOWN);
+            assertEquals(CommandHints.forInput("edit"), getHintText(box));
+            assertEquals(List.of("list"), executed);
+        });
+    }
+
+    @Test
+    public void hints_longSyntax_wrapsBetweenInputAndOutputAtNarrowWidths() throws Exception {
+        runOnFxThreadAndWait(() -> {
+            CommandBox box = new CommandBox(command -> {
+                throw new AssertionError("Layout must not execute commands");
+            });
+            ResultDisplay output = new ResultDisplay();
+            VBox container = new VBox(box.getRoot(), output.getRoot());
+            container.getStyleClass().add("app-shell");
+            Scene scene = new Scene(container, 720, 600);
+            scene.getStylesheets().add(getClass().getResource("/view/Workspace.css").toExternalForm());
+            Label hint = (Label) box.getRoot().lookup("#commandHint");
+            Label details = (Label) box.getRoot().lookup("#commandHintDetails");
+            for (String draft : List.of("del", "li", "edit 1")) {
+                getInput(box).setText(draft);
+                for (double width : new double[] {720, 450, 230, 720}) {
+                    container.resize(width, 600);
+                    container.applyCss();
+                    container.layout();
+                    container.layout();
+                    assertEquals(Font.font("Monospaced", FontWeight.BOLD, 13), hint.getFont());
+                    assertEquals(12, details.getFont().getSize());
+                    assertFalse(hint.getTextFill().equals(details.getTextFill()));
+                    assertTrue(details.isVisible());
+                    for (Label label : List.of(hint, details)) {
+                        assertTrue(label.localToScene(label.getBoundsInLocal()).getMaxX() <= width + 1);
+                        assertTrue(label.getHeight() >= label.prefHeight(label.getWidth()) - 1);
+                        assertEquals(label.getText(), ((Text) label.lookup(".text")).getText());
+                    }
+                    var hintBounds = hint.localToScene(hint.getBoundsInLocal());
+                    var detailBounds = details.localToScene(details.getBoundsInLocal());
+                    assertTrue(getInput(box).localToScene(getInput(box).getBoundsInLocal()).getMaxY()
+                            <= hintBounds.getMinY());
+                    assertTrue(hintBounds.getMaxY() <= detailBounds.getMinY());
+                    assertTrue(detailBounds.getMaxY()
+                            <= output.getRoot().localToScene(output.getRoot().getBoundsInLocal()).getMinY());
+                }
+            }
+            getInput(box).clear();
+            container.applyCss();
+            assertFalse(hint.getPseudoClassStates().contains(PseudoClass.getPseudoClass("syntax")));
+            assertFalse(details.isManaged());
         });
     }
 
@@ -192,6 +282,12 @@ public class CommandBoxTest {
         assertTrue(input.isUndoable());
         input.undo();
         assertEquals("draft text", input.getText());
+    }
+
+    private static String getHintText(CommandBox box) {
+        Label hint = (Label) box.getRoot().lookup("#commandHint");
+        Label details = (Label) box.getRoot().lookup("#commandHintDetails");
+        return hint.getText() + (details.isManaged() ? "\n" + details.getText() : "");
     }
 
     private static TextField getInput(CommandBox box) {

@@ -119,7 +119,7 @@ public class LogicManagerTest {
     public void execute_addAttendance_savesHistoryAndRejectsInvalidChanges() throws Exception {
         logic.execute("add sn/A0123456X n/Alice e/alice@example.com");
         logic.execute("addclass m/CS2103 c/F10-2");
-        logic.execute("assign sn/A0123456X m/CS2103 c/F10-2");
+        logic.execute("assign 1 1");
         String attendanceCommand = "addattendance 1 1 d/2024-02-29";
         logic.execute(attendanceCommand);
 
@@ -148,7 +148,7 @@ public class LogicManagerTest {
     public void execute_deleteAttendanceWhileUnassigned_persistsRemainingDate() throws Exception {
         logic.execute("add sn/A0123456X n/Alice e/alice@example.com");
         logic.execute("addclass m/CS2103 c/F10-2");
-        logic.execute("assign sn/A0123456X m/CS2103 c/F10-2");
+        logic.execute("assign 1 1");
         logic.execute("addattendance 1 1 d/2024-02-28");
         logic.execute("addattendance 1 1 d/2024-02-29");
         logic.execute("unassign 1 1");

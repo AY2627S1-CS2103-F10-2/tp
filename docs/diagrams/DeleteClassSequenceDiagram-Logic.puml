@@ -1,7 +1,7 @@
 @startuml
 !include style.puml
 skinparam ArrowFontStyle plain
-title Successful deletion of CS2103-F10-2
+title Successful deletion of the first displayed class
 
 box Logic LOGIC_COLOR_T1
 participant ":LogicManager" as LogicManager LOGIC_COLOR
@@ -12,28 +12,26 @@ end box
 
 box Model MODEL_COLOR_T1
 participant "m:Model" as Model MODEL_COLOR
-participant "ab:ReadOnlyAddressBook" as AddressBook MODEL_COLOR
 end box
 
-note over Model, AddressBook : CS2103-F10-2 exists before the command runs.
+note over Model : At least one class is displayed before the command runs.
 
-[-> LogicManager : execute("deleteclass m/CS2103 c/F10-2")
+[-> LogicManager : execute("deleteclass 1")
 activate LogicManager
 
-LogicManager -> AddressBookParser : parseCommand("deleteclass m/CS2103 c/F10-2")
+LogicManager -> AddressBookParser : parseCommand("deleteclass 1")
 activate AddressBookParser
 
 create DeleteClassCommandParser
 AddressBookParser -> DeleteClassCommandParser
-AddressBookParser -> DeleteClassCommandParser : parse(" m/CS2103 c/F10-2")
+AddressBookParser -> DeleteClassCommandParser : parse(" 1")
 activate DeleteClassCommandParser
 note right of DeleteClassCommandParser
-moduleCode = ModuleCode("CS2103")
-className = ClassName("F10-2")
+targetIndex = Index.fromOneBased(1)
 end note
 
 create DeleteClassCommand
-DeleteClassCommandParser -> DeleteClassCommand : DeleteClassCommand(moduleCode, className)
+DeleteClassCommandParser -> DeleteClassCommand : DeleteClassCommand(targetIndex)
 DeleteClassCommandParser --> AddressBookParser : d
 deactivate DeleteClassCommandParser
 
@@ -43,25 +41,25 @@ deactivate AddressBookParser
 LogicManager -> DeleteClassCommand : execute(m)
 activate DeleteClassCommand
 
-DeleteClassCommand -> Model : getAddressBook()
+DeleteClassCommand -> Model : getFilteredAcademicClassList()
 activate Model
-Model --> DeleteClassCommand : ab
+Model --> DeleteClassCommand : displayedClasses
 deactivate Model
 
-DeleteClassCommand -> AddressBook : findAcademicClass(moduleCode, className)
-activate AddressBook
-AddressBook --> DeleteClassCommand : Optional.of(classToDelete)
-deactivate AddressBook
+note right of DeleteClassCommand
+Validate targetIndex against displayedClasses.size()
+classToDelete = displayedClasses.get(targetIndex.getZeroBased())
+end note
 
 DeleteClassCommand -> Model : deleteAcademicClass(classToDelete)
 activate Model
 Model --> DeleteClassCommand
 deactivate Model
-note right of Model : CS2103-F10-2 has been removed.
+note right of Model : The selected class has been removed.
 
 DeleteClassCommand --> LogicManager : result
 deactivate DeleteClassCommand
-note over LogicManager : result.feedbackToUser = "Deleted class: CS2103-F10-2"
+note over LogicManager : result.feedbackToUser = "Deleted class: " + classToDelete
 
 [<-- LogicManager : result
 deactivate LogicManager

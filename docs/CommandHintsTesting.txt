@@ -1,0 +1,101 @@
+COMMAND HINTS: MANUAL TESTING
+Branch: add-command-hints
+
+These checks cover syntax guidance, wrapping and Enter-only execution.
+Counts, sizing, class scrolling and attendance presentation are outside
+this change. The companion guide is CommandHintsTesting.md.
+
+SETUP
+Use the project's Java 25 setup. Build with ./gradlew shadowJar
+(Windows: .\gradlew.bat shadowJar). Copy build/libs/TAssist.jar to a
+new, empty folder and run java -jar with that copy's path.
+Packaged TAssist stores data beside its JAR, isolating the test session.
+
+DEFAULT
+The highlighted HINT strip must be visible below input and above output:
+Type a command, then press Enter to run it.
+Blank input and whitespace restore this message without hiding the strip.
+
+SYNTAX: TYPE ONLY, DO NOT PRESS ENTER
+Type each command word and compare its hint with the syntax below.
+Required arguments are unbracketed; [ ] optional; ... repeatable.
+edit and editclass must also require at least one field to edit.
+Commands without arguments say none are needed.
+Each contextual hint includes an Enter-to-run reminder.
+
+add sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM] [t/TAG]...
+edit STUDENT_INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]...
+delete STUDENT_INDEX
+find NAME [MORE_NAMES]...
+list
+addclass m/MODULE_CODE c/CLASS_NAME
+editclass CLASS_INDEX [m/MODULE_CODE] [c/CLASS_NAME]
+deleteclass CLASS_INDEX
+listclass
+listbyclass CLASS_INDEX [t/THRESHOLD]
+listbystudent STUDENT_INDEX
+assign STUDENT_INDEX CLASS_INDEX
+unassign STUDENT_INDEX CLASS_INDEX
+addattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD
+deleteattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD
+help
+clear
+exit
+
+deleteclass uses the current displayed class index. assign uses the student
+index first, then the class index from their respective displayed lists.
+Student deletion remains delete STUDENT_INDEX.
+
+PARTIAL AND UNKNOWN WORDS
+Type del: Matching commands: delete  |  deleteclass  |  deleteattendance
+Names should be brighter and monospace, with a quieter reminder below.
+Type li: suggest list, listclass, listbyclass and listbystudent.
+Type add: show its syntax rather than longer-command suggestions.
+Type LIST or unknown: point to help without an error or error styling.
+
+NO EXECUTION OR DATA CHANGES WHILE TYPING
+Note the current lists, attendance text and command output.
+Type the following drafts WITHOUT ENTER, replacing the previous draft:
+
+find Alice
+listbyclass 1
+listbyclass 1 t/2
+listbystudent 1
+edit 1
+deleteclass 1
+assign 1 1
+unassign 1 1
+addattendance 1 1 d/2020-01-03
+deleteattendance 1 1 d/2020-01-03
+listbyclass 999999
+clear
+
+Only input and hint text should change. Lists, attendance and output must
+remain unchanged. Typing must not scroll to a class, show data previews,
+or validate arguments. If isolated data/addressbook.json already exists,
+compare its contents before and after typing: they must remain unchanged.
+
+ENTER AND HISTORY: PRESS ENTER ONLY WHERE STATED
+1. Enter find HintsNoMatch: normal filtering/output, input clears and
+   the default hint returns. Enter list to restore the student list.
+2. Enter listbyclass: retain input and syntax hint; normal parser error
+   appears in the output.
+3. Enter listbyclass 999999: normal invalid-index error appears in output;
+   the hint remains syntax guidance.
+4. Enter list successfully. Type edit 1 without Enter. Up recalls list
+   and its hint; Down restores edit 1 and its hint. No execution or data
+   changes should occur during history navigation.
+5. Tab from input still reaches output; F1 still opens Help.
+
+WRAPPING
+At the narrowest supported window width, type edit 1. All hint text should
+wrap within the slate-blue strip. Check the HINT caption and contrast.
+Input, strip, output and lists must not overlap.
+Widen and narrow again: text should reflow and height should recover.
+Clear the input: the shorter default strip returns.
+
+AUTOMATED CHECKS
+./gradlew check coverage shadowJar
+Windows: .\gradlew.bat check coverage shadowJar
+Headless Linux: xvfb-run ./gradlew check coverage shadowJar
+Focused suites: CommandHintsTest, CommandBoxTest, WorkspaceTest.

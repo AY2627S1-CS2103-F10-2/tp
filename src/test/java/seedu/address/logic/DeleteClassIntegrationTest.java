@@ -50,7 +50,7 @@ public class DeleteClassIntegrationTest {
         logic.execute("addclass m/CS2103 c/F11-2");
         var view = logic.getAcademicClassList();
 
-        CommandResult result = logic.execute("deleteclass c/f10-2 m/cs2103");
+        CommandResult result = logic.execute("deleteclass 1");
 
         AcademicClass remaining = new AcademicClass(new ModuleCode("CS2103"), new ClassName("F11-2"));
         assertEquals("Deleted class: CS2103-F10-2", result.getFeedbackToUser());
@@ -59,7 +59,7 @@ public class DeleteClassIntegrationTest {
         assertEquals(model.getAddressBook(), savedAddressBook);
         assertEquals(List.of(AMY), savedAddressBook.getPersonList());
 
-        logic.execute("deleteclass m/CS2103 c/F11-2");
+        logic.execute("deleteclass 1");
         assertEquals(List.of(), storage.readAddressBook().orElseThrow().getAcademicClassList());
     }
 
@@ -67,27 +67,33 @@ public class DeleteClassIntegrationTest {
     public void execute_deleteClassInvalidInput_preservesModelAndSavedData() throws Exception {
         logic.execute("addclass m/CS2103 c/F10-2");
 
-        assertCommandFailurePreservesData("deleteclass m/CS2103 c/F10-2 x/extra",
-                ParseException.class, "Unknown parameter: x/");
-        assertCommandFailurePreservesData("deleteclass m/2103 c/F10-2",
-                ParseException.class, ModuleCode.MESSAGE_CONSTRAINTS);
-        assertCommandFailurePreservesData("deleteclass m/CS2103 c/---",
-                ParseException.class, ClassName.MESSAGE_CONSTRAINTS);
-        assertCommandFailurePreservesData("deleteclass m/CS2103 c/F11-2", CommandException.class,
-                String.format(DeleteClassCommand.MESSAGE_CLASS_NOT_FOUND, "CS2103", "F11-2"));
+        String usage = String.format(Messages.MESSAGE_INVALID_COMMAND_FORMAT, DeleteClassCommand.MESSAGE_USAGE);
+        assertCommandFailurePreservesData("deleteclass 1 x/extra", ParseException.class, usage);
+        assertCommandFailurePreservesData("deleteclass 0", ParseException.class, usage);
+        assertCommandFailurePreservesData("deleteclass 1 2", ParseException.class, usage);
+        assertCommandFailurePreservesData("deleteclass 2", CommandException.class,
+                Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX);
     }
 
     @Test
-    public void execute_deleteClassUnicodeExpansion_preservesExistingClass() throws Exception {
-        logic.execute("addclass m/CS2103 c/SS1");
-        AcademicClass existingClass = new AcademicClass(new ModuleCode("CS2103"), new ClassName("SS1"));
+    public void execute_deleteFilteredClass_savesDisplayedSelection() throws Exception {
+        model.addPerson(AMY);
+        logic.execute("addclass m/CS2103 c/F10-2");
+        logic.execute("addclass m/CS2103 c/F11-2");
+        logic.execute("assign 1 2");
+        logic.execute("listbystudent 1");
+        var displayed = logic.getFilteredAcademicClassList();
+        AcademicClass hidden = model.getAcademicClassList().getFirst();
+        assertEquals(1, displayed.size());
 
-        // Uppercasing ß produces SS, but invalid input must be rejected before normalization.
-        assertCommandFailurePreservesData("deleteclass m/CS2103 c/\u00df1",
-                ParseException.class, ClassName.MESSAGE_CONSTRAINTS);
+        assertCommandFailurePreservesData("deleteclass 2", CommandException.class,
+                Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX);
+        logic.execute("deleteclass 1");
 
-        assertEquals(List.of(existingClass), logic.getAcademicClassList());
-        assertEquals(List.of(existingClass), storage.readAddressBook().orElseThrow().getAcademicClassList());
+        assertEquals(List.of(), displayed);
+        assertEquals(List.of(hidden), model.getAcademicClassList());
+        assertEquals(model.getAddressBook(), storage.readAddressBook().orElseThrow());
+        assertEquals(List.of(AMY), model.getAddressBook().getPersonList());
     }
 
     private void assertCommandFailurePreservesData(String inputCommand, Class<? extends Throwable> expectedException,
