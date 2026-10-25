@@ -131,7 +131,7 @@
 .app-shell #resultDisplay .scroll-pane, .app-shell #resultDisplay .viewport,
 .app-shell #resultDisplay .corner { -fx-background-color: transparent; }
 .app-shell .status-bar { -fx-background-color: #1d232b; }
-.app-shell .status-bar .label { -fx-text-fill: #aab7c7; -fx-font-size: 10px; -fx-padding: 5 10; }
+.app-shell .status-bar .label { -fx-text-fill: #aab7c7; -fx-font-size: 12px; -fx-padding: 5 10; }
 .app-shell .scroll-bar { -fx-background-color: transparent; }
 .app-shell .scroll-bar .thumb { -fx-background-color: #627a91; -fx-background-radius: 5; }
 .context-menu { -fx-background-color: #252f3b; -fx-border-color: #53677c; }
