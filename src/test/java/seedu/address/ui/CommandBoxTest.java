@@ -15,9 +15,13 @@ import org.junit.jupiter.api.Test;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
@@ -30,6 +34,68 @@ public class CommandBoxTest {
         } catch (IllegalStateException e) {
             // JavaFX toolkit has already been initialized.
         }
+    }
+
+    @Test
+    public void hints_typingAndHistory_changeGuidanceWithoutExecuting() throws Exception {
+        runOnFxThreadAndWait(() -> {
+            List<String> executed = new ArrayList<>();
+            CommandBox box = new CommandBox(command -> {
+                executed.add(command);
+                return new CommandResult("Success");
+            });
+            TextField input = getInput(box);
+            Label hint = (Label) box.getRoot().lookup("#commandHint");
+            assertTrue(hint.isVisible());
+            assertTrue(hint.isManaged());
+            assertTrue(hint.isWrapText());
+            assertEquals(CommandHints.DEFAULT_HINT, hint.getText());
+            for (String draft : List.of("a", "add", "add sn/", "listbyclass 999", "clear", "unknown", "")) {
+                input.setText(draft);
+                assertEquals(CommandHints.forInput(draft), hint.getText());
+                assertTrue(executed.isEmpty());
+                assertFalse(input.getStyleClass().contains(CommandBox.ERROR_STYLE_CLASS));
+            }
+            submit(input, "list");
+            assertEquals(List.of("list"), executed);
+            assertEquals(CommandHints.DEFAULT_HINT, hint.getText());
+            input.setText("edit 1");
+            press(input, KeyCode.UP);
+            assertEquals(CommandHints.forInput("list"), hint.getText());
+            press(input, KeyCode.DOWN);
+            assertEquals(CommandHints.forInput("edit"), hint.getText());
+            assertEquals(List.of("list"), executed);
+        });
+    }
+
+    @Test
+    public void hints_longSyntax_wrapsBetweenInputAndOutputAtNarrowWidths() throws Exception {
+        runOnFxThreadAndWait(() -> {
+            CommandBox box = new CommandBox(command -> {
+                throw new AssertionError("Layout must not execute commands");
+            });
+            ResultDisplay output = new ResultDisplay();
+            VBox container = new VBox(box.getRoot(), output.getRoot());
+            container.getStyleClass().add("app-shell");
+            Scene scene = new Scene(container, 720, 600);
+            scene.getStylesheets().add(getClass().getResource("/view/Workspace.css").toExternalForm());
+            getInput(box).setText("edit 1");
+            Label hint = (Label) box.getRoot().lookup("#commandHint");
+            for (double width : new double[] {720, 450, 230, 720}) {
+                container.resize(width, 600);
+                container.applyCss();
+                container.layout();
+                container.layout();
+                var hintBounds = hint.localToScene(hint.getBoundsInLocal());
+                assertTrue(hintBounds.getMaxX() <= width + 1);
+                assertTrue(hint.getHeight() >= hint.prefHeight(hint.getWidth()) - 1);
+                assertEquals(hint.getText(), ((Text) hint.lookup(".text")).getText());
+                assertTrue(getInput(box).localToScene(getInput(box).getBoundsInLocal()).getMaxY()
+                        <= hintBounds.getMinY());
+                assertTrue(hintBounds.getMaxY()
+                        <= output.getRoot().localToScene(output.getRoot().getBoundsInLocal()).getMinY());
+            }
+        });
     }
 
     @Test

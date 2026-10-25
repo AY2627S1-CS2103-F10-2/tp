@@ -2,6 +2,7 @@ package seedu.address.ui;
 
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -24,6 +25,9 @@ public class CommandBox extends UiPart<Region> {
     @FXML
     private TextField commandTextField;
 
+    @FXML
+    private Label commandHint;
+
     /**
      * Creates a {@code CommandBox} with the given {@code CommandExecutor}.
      */
@@ -31,8 +35,12 @@ public class CommandBox extends UiPart<Region> {
         super(FXML);
         this.commandExecutor = commandExecutor;
         // calls #setStyleToDefault() whenever there is a change to the text of the command box.
-        commandTextField.textProperty().addListener((unused1, unused2, unused3) -> setStyleToDefault());
+        commandTextField.textProperty().addListener((observable, previous, current) -> {
+            setStyleToDefault();
+            commandHint.setText(CommandHints.forInput(current));
+        });
         commandTextField.addEventFilter(KeyEvent.KEY_PRESSED, this::handleHistoryNavigation);
+        commandHint.setText(CommandHints.DEFAULT_HINT);
     }
 
     /**
