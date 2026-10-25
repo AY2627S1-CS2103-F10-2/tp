@@ -107,10 +107,18 @@ public class WorkspaceTest {
                 assertEquals(classIndex.getFont(), studentIndex.getFont());
                 assertEquals(classIndex.getTextFill(), studentIndex.getTextFill());
                 assertEquals(classIndex.getPadding(), studentIndex.getPadding());
-                Node className = classes.lookup("#className");
-                Node studentName = students.lookup("#name");
-                assertEquals(className.localToScene(0, 0).getX() - classIndex.localToScene(0, 0).getX(),
+                Node classHeading = classes.lookup("#classHeading");
+                Label className = (Label) classes.lookup("#className");
+                Label studentName = (Label) students.lookup("#name");
+                assertEquals(classHeading.localToScene(0, 0).getX() - classIndex.localToScene(0, 0).getX(),
                         studentName.localToScene(0, 0).getX() - studentIndex.localToScene(0, 0).getX(), 0.5);
+                assertEquals(studentName.getFont(), className.getFont());
+                assertEquals(classHeading.localToScene(0, 0).getX(),
+                        classes.lookup("#studentCount").localToScene(0, 0).getX(), 0.5);
+                for (String detail : List.of("details", "tags")) {
+                    assertEquals(studentName.localToScene(0, 0).getX(),
+                            students.lookup("#" + detail).localToScene(0, 0).getX(), 0.5);
+                }
                 Node input = stage.getScene().lookup("#commandTextField");
                 Node output = stage.getScene().lookup("#resultDisplay");
                 assertTrue(input.localToScene(input.getBoundsInLocal()).getMaxY()

@@ -42,7 +42,12 @@ rows are now passive. The split places
 Students on the left and Classes on the right to match STUDENT_INDEX CLASS_INDEX commands.
 Classes receive more default width, while Students remain readable and resizable.
 There is no extra sentence repeating the displayed student count.
-Class and student indices should have matching font, weight, colour and spacing.
+Class and student indices should be white, with matching font, weight and spacing.
+Student names and class headings should share the same font size and weight.
+Module codes should have a light blue accent, with class names in light text.
+Student numbers should stand out slightly from contact details. Supporting
+details and tags should align beneath the headings, with faint card borders and
+soft, rounded tag backgrounds. Long names, contacts and tags must still wrap.
 
 3. Executed filters and zero-result students
 

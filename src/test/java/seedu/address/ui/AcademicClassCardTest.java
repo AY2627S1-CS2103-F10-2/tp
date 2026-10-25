@@ -16,7 +16,9 @@ import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.text.Text;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
@@ -42,7 +44,8 @@ public class AcademicClassCardTest {
 
             assertNotNull(academicClassCard.getRoot());
             assertLabelTextExists(academicClassCard.getRoot(), "1. ");
-            assertLabelTextExists(academicClassCard.getRoot(), "CS2103T F10-2");
+            assertLabelTextExists(academicClassCard.getRoot(), "CS2103T");
+            assertLabelTextExists(academicClassCard.getRoot(), "F10-2");
             assertLabelTextExists(academicClassCard.getRoot(), "Students: 0");
         });
     }
@@ -54,15 +57,23 @@ public class AcademicClassCardTest {
                     new ClassName("TUTORIAL-GROUP-WITH-A-VERY-LONG-NAME"));
             AcademicClassCard card = new AcademicClassCard(academicClass, 123);
             StackPane container = new StackPane(card.getRoot());
+            container.getStyleClass().addAll("app-shell", "workspace-bottom");
             Scene scene = new Scene(container, 180, 400);
-            scene.getStylesheets().add(getClass().getResource("/view/DarkTheme.css").toExternalForm());
+            scene.getStylesheets().add(getClass().getResource("/view/Workspace.css").toExternalForm());
             container.applyCss();
             container.layout();
+            container.layout();
 
+            FlowPane heading = (FlowPane) card.getRoot().lookup("#classHeading");
             Label name = (Label) card.getRoot().lookup("#className");
-            assertTrue(name.isWrapText());
-            assertTrue(name.getHeight() > name.getFont().getSize() * 2);
-            assertTrue(name.localToScene(name.getBoundsInLocal()).getMaxX() <= container.getWidth());
+            Label moduleCode = (Label) card.getRoot().lookup("#moduleCode");
+            assertTrue(heading.getHeight() > name.getFont().getSize() * 2);
+            assertTrue(heading.localToScene(heading.getBoundsInLocal()).getMaxX() <= container.getWidth());
+            assertEquals("CS2103T", moduleCode.getText());
+            assertEquals(academicClass.getClassName().value, ((Text) name.lookup(".text")).getText());
+            Label membership = (Label) card.getRoot().lookup("#studentCount");
+            assertTrue(membership.localToScene(0, 0).getY()
+                    >= heading.localToScene(heading.getBoundsInLocal()).getMaxY());
             assertLabelTextExists(card.getRoot(), "123. ");
             assertLabelTextExists(card.getRoot(), "Students: 0");
         });

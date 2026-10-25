@@ -40,26 +40,31 @@
 .workspace-bottom .list-cell:filled #cardPane {
     -fx-background-color: #2a3440;
     -fx-background-radius: 6;
-    -fx-border-color: transparent;
+    -fx-border-color: #3b4959;
     -fx-border-radius: 6;
     -fx-border-width: 1;
     -fx-padding: 10 12;
 }
-.workspace-bottom .class-title { -fx-font-size: 13px; -fx-font-weight: bold; }
+.workspace-bottom .class-title, .workspace-bottom .module-code, .workspace-bottom .cell_big_label {
+    -fx-font-family: "System";
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+.workspace-bottom .module-code { -fx-text-fill: #b2cee9; }
 .workspace-bottom .card-index {
     -fx-font-family: "System";
     -fx-font-size: 13px;
     -fx-font-weight: bold;
-    -fx-text-fill: #b4cadf;
+    -fx-text-fill: #ffffff;
     -fx-padding: 0 8 0 0;
 }
-.workspace-bottom .cell_big_label { -fx-font-size: 15px; -fx-font-weight: bold; }
 .workspace-bottom .cell_small_label { -fx-font-size: 12px; -fx-text-fill: #b9c6d5; }
+.workspace-bottom .student-identifier { -fx-font-weight: bold; -fx-text-fill: #ccd9e7; }
 .workspace-bottom #tags { -fx-hgap: 5; -fx-vgap: 4; }
 .workspace-bottom #tags .label {
-    -fx-background-color: #405367;
-    -fx-background-radius: 4;
-    -fx-text-fill: #e0eaf5;
+    -fx-background-color: #354657;
+    -fx-background-radius: 6;
+    -fx-text-fill: #cddbe8;
     -fx-padding: 2 6;
     -fx-font-size: 10px;
 }
