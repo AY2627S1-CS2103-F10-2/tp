@@ -7,18 +7,28 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import seedu.address.commons.core.LogsCenter;
+import seedu.address.model.AddressBook;
 
 /**
  * Stores the latest 20 successful commands and preserves temporary edits while browsing them.
  */
 public class CommandHistory {
     private static final Logger logger = LogsCenter.getLogger(CommandHistory.class);
-    private static final int MAX_COMMANDS = 20;
+    private static final int MAX_COMMANDS = AddressBook.MAX_COMMAND_HISTORY;
 
     private final List<String> commands = new ArrayList<>();
     private final List<String> workingCommands = new ArrayList<>();
     private int position;
     private String draft = "";
+
+    /** Creates empty navigation history. */
+    public CommandHistory() {
+    }
+
+    /** Restores successful commands without restoring drafts or navigation edits. */
+    public CommandHistory(List<String> savedCommands) {
+        requireNonNull(savedCommands).forEach(this::add);
+    }
 
     /**
      * Records a successful, non-blank command and resets navigation to the end of history.

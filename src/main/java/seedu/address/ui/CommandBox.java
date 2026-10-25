@@ -1,5 +1,7 @@
 package seedu.address.ui;
 
+import java.util.List;
+
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
@@ -22,7 +24,7 @@ public class CommandBox extends UiPart<Region> {
     private static final PseudoClass SYNTAX_HINT = PseudoClass.getPseudoClass("syntax");
 
     private final CommandExecutor commandExecutor;
-    private final CommandHistory commandHistory = new CommandHistory();
+    private final CommandHistory commandHistory;
 
     @FXML
     private TextField commandTextField;
@@ -37,7 +39,13 @@ public class CommandBox extends UiPart<Region> {
      * Creates a {@code CommandBox} with the given {@code CommandExecutor}.
      */
     public CommandBox(CommandExecutor commandExecutor) {
+        this(commandExecutor, List.of());
+    }
+
+    /** Creates a command box with previously saved successful commands. */
+    public CommandBox(CommandExecutor commandExecutor, List<String> savedCommands) {
         super(FXML);
+        commandHistory = new CommandHistory(savedCommands);
         this.commandExecutor = commandExecutor;
         // calls #setStyleToDefault() whenever there is a change to the text of the command box.
         commandTextField.textProperty().addListener((observable, previous, current) -> {

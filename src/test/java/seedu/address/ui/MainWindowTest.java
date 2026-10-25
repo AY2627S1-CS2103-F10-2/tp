@@ -301,6 +301,12 @@ public class MainWindowTest {
     private static class LogicStub implements Logic {
 
         @Override
+        public java.util.List<String> getCommandHistory() {
+            return java.util.List.of();
+        }
+
+
+        @Override
         public CommandResult execute(String commandText) throws CommandException, ParseException {
             throw new AssertionError("This method should not be called.");
         }

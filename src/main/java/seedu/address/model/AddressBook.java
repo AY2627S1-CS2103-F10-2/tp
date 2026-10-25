@@ -29,6 +29,9 @@ import seedu.address.model.person.UniquePersonList;
  */
 public class AddressBook implements ReadOnlyAddressBook {
 
+    public static final int MAX_COMMAND_HISTORY = 20;
+
+    private final List<String> commandHistory = new ArrayList<>();
     private final UniquePersonList persons = new UniquePersonList();
     private final UniqueAcademicClassList academicClasses = new UniqueAcademicClassList();
     private final List<Attendance> attendanceRecords = new ArrayList<>();
@@ -48,6 +51,22 @@ public class AddressBook implements ReadOnlyAddressBook {
     public AddressBook(ReadOnlyAddressBook toBeCopied) {
         this();
         resetData(toBeCopied);
+    }
+
+    @Override
+    public List<String> getCommandHistory() {
+        return List.copyOf(commandHistory);
+    }
+
+    /** Replaces history with at most the latest 20 non-blank commands. */
+    public void setCommandHistory(List<String> commands) {
+        requireAllNonNull(commands);
+        List<String> validated = List.copyOf(commands);
+        if (validated.stream().anyMatch(String::isBlank)) {
+            throw new IllegalArgumentException("Command history must not contain blank commands.");
+        }
+        commandHistory.clear();
+        commandHistory.addAll(validated.subList(Math.max(0, validated.size() - MAX_COMMAND_HISTORY), validated.size()));
     }
 
     //// list overwrite operations
@@ -88,6 +107,7 @@ public class AddressBook implements ReadOnlyAddressBook {
         UniqueAcademicClassList replacementClasses = new UniqueAcademicClassList();
         replacementClasses.setAcademicClasses(newData.getAcademicClassList());
         List<Attendance> replacementAttendance = copyAttendance(newData);
+        List<String> replacementHistory = List.copyOf(newData.getCommandHistory());
 
         resetStudentObservers(newData.getAcademicClassList());
 
@@ -95,6 +115,7 @@ public class AddressBook implements ReadOnlyAddressBook {
         academicClasses.setAcademicClasses(replacementClasses.asUnmodifiableObservableList());
         attendanceRecords.clear();
         attendanceRecords.addAll(replacementAttendance);
+        setCommandHistory(replacementHistory);
     }
 
     private void resetStudentObservers(Iterable<AcademicClass> academicClasses) {

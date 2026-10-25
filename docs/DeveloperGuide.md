@@ -221,7 +221,11 @@ current browsing position.
 Up moves towards older entries and Down moves towards the draft (newer entries). 
 Navigation stops at either boundary, and empty history leaves the input unchanged. 
 Modified arrow keys (such as Shift+Up or Ctrl+Down) do not trigger history navigation. 
-History lasts only for the current session and does not survive between restarts.
+`AddressBook` stores the latest 20 successful command strings, serialized as `commandHistory` in the existing JSON file.
+`LogicManager` appends each successful command before saving and restores the previous history if saving fails.
+History survives `clear` and application restarts. Older JSON files without this field load with empty history.
+`MainWindow` seeds `CommandBox` through `Logic.getCommandHistory()` on startup; drafts, browsing positions and temporary
+edits remain in memory only.
 
 <puml src="diagrams/CommandHistoryObjects.puml" alt="CommandBox linked to CommandHistory, its draft and position, and its original and working command lists" />
 

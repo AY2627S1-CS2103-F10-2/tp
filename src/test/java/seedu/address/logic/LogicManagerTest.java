@@ -60,6 +60,44 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_blankInput_rejectsWithoutChangingHistoryOrSavedData() throws Exception {
+        logic.execute("list");
+        Path savedFile = temporaryFolder.resolve("addressBook.json");
+        String savedContents = Files.readString(savedFile);
+        for (String blank : List.of("", " ", "\t\r\n")) {
+            assertThrows(ParseException.class, () -> logic.execute(blank));
+            assertEquals(List.of("list"), logic.getCommandHistory());
+            assertEquals(savedContents, Files.readString(savedFile));
+        }
+    }
+
+    @Test
+    public void execute_history_survivesRestartAndClearAndExcludesFailures() throws Exception {
+        logic.execute("help");
+        logic.execute("list");
+        assertThrows(ParseException.class, () -> logic.execute("invalid"));
+        assertThrows(CommandException.class, () -> logic.execute("delete 999"));
+        logic.execute("clear");
+        List<String> expected = List.of("help", "list", "clear");
+        assertEquals(expected, logic.getCommandHistory());
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
+        Model restarted = new ModelManager(storage.readAddressBook().orElseThrow(), new UserPrefs());
+        assertEquals(expected, restarted.getAddressBook().getCommandHistory());
+    }
+
+    @Test
+    public void execute_history_keepsLatestTwentyAcrossRestart() throws Exception {
+        for (int i = 0; i < 25; i++) {
+            logic.execute(i % 2 == 0 ? "help" : "list");
+        }
+        List<String> history = logic.getCommandHistory();
+        assertEquals(20, history.size());
+        assertEquals("list", history.getFirst());
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
+        assertEquals(history, storage.readAddressBook().orElseThrow().getCommandHistory());
+    }
+
+    @Test
     public void execute_invalidCommandFormat_throwsParseException() {
         String invalidCommand = "uicfhmowqewca";
         assertParseException(invalidCommand, MESSAGE_UNKNOWN_COMMAND);
@@ -255,5 +293,6 @@ public class LogicManagerTest {
         ModelManager expectedModel = new ModelManager();
         expectedModel.addPerson(expectedPerson);
         assertCommandFailure(addCommand, CommandException.class, expectedMessage, expectedModel);
+        assertEquals(List.of(), logic.getCommandHistory());
     }
 }
