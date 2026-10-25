@@ -175,7 +175,6 @@ public class ModelManager implements Model {
     @Override
     public void addPerson(Person person) {
         addressBook.addPerson(person);
-        updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
     }
 
     @Override
@@ -183,6 +182,7 @@ public class ModelManager implements Model {
         requireAllNonNull(target, editedPerson);
 
         addressBook.setPerson(target, editedPerson);
+        refreshFilteredPersonList();
         if (target.getStudentNumber().equals(classFilterStudentNumber)) {
             classFilterStudentNumber = editedPerson.getStudentNumber();
             logger.fine(() -> "Updated selected student for class filter from " + target.getStudentNumber()

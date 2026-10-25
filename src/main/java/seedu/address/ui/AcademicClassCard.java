@@ -3,8 +3,8 @@ package seedu.address.ui;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
+import javafx.scene.text.Text;
 import seedu.address.model.academicclass.AcademicClass;
 
 /**
@@ -17,11 +17,11 @@ public class AcademicClassCard extends UiPart<Region> {
     private final AcademicClass academicClass;
 
     @FXML
-    private HBox cardPane;
-    @FXML
     private Label id;
     @FXML
-    private Label className;
+    private Text moduleCode;
+    @FXML
+    private Text className;
     @FXML
     private Label studentCount;
 
@@ -32,7 +32,8 @@ public class AcademicClassCard extends UiPart<Region> {
         super(FXML);
         this.academicClass = academicClass;
         id.setText(displayedIndex + ". ");
-        className.setText(academicClass.getModuleCode().value + " " + academicClass.getClassName().value);
+        moduleCode.setText(academicClass.getModuleCode().value + " ");
+        className.setText(academicClass.getClassName().value);
         studentCount.textProperty().bind(Bindings.size(academicClass.getStudents()).asString("Students: %d"));
     }
 }

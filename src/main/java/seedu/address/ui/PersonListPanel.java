@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.Region;
@@ -36,6 +37,9 @@ public class PersonListPanel extends UiPart<Region> {
         this.attendanceClassSupplier = attendanceClassSupplier;
         this.attendanceListSupplier = attendanceListSupplier;
         personListView.setItems(personList);
+        Label emptyMessage = new Label("No students shown.");
+        emptyMessage.setWrapText(true);
+        personListView.setPlaceholder(emptyMessage);
         personList.addListener((ListChangeListener<Person>) change -> {
             logger.fine("Refreshing person cards after the displayed person list changed.");
             personListView.refresh();

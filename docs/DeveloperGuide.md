@@ -200,6 +200,18 @@ a `CommandException` before the student filter or attendance display changes. A 
 the student view becomes empty and the result reports zero students. If saving fails after filtering,
 `LogicManager` reports a `CommandException`; the already-updated view is not rolled back.
 
+### Listing all classes
+
+The `listclass` command restores the complete academic-class list by applying
+`PREDICATE_SHOW_ALL_ACADEMIC_CLASSES`. It takes no arguments and leaves the
+student list unchanged.
+
+The following sequence diagram shows the successful execution of `listclass`.
+Parsing helpers, model-internal predicate updates, result construction, and
+storage calls are shown at a high level or omitted for clarity.
+
+<puml src="diagrams/ListClassSequenceDiagram.puml" alt="Successful listclass execution through the Logic and Model components" />
+
 ### Arrow key command history navigation
 
 Arrow key navigation lets users recall previously executed commands without executing them again. `CommandBox` delegates
@@ -331,7 +343,7 @@ duplicate membership. If the student is already assigned, the model returns `fal
 For example, `unassign 2 1` removes the second displayed student from the first displayed class.
 The following sequence diagram starts at `LogicManager#execute(commandText)`, where `commandText`
 is the example above. It assumes that both records exist and the student belongs to the class.
-The parser validates exactly two positive indices using `AttendanceParserUtil#parseIndices`.
+The parser validates exactly two positive indices using `ParserUtil#parseIndices`.
 The command resolves the student through `Model#getFilteredPersonList()` and the class through
 `Model#getFilteredAcademicClassList()`, checking each index against its displayed list size.
 Membership changes go through the `Model` interface.
