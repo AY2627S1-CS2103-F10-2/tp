@@ -95,7 +95,7 @@ public class AttendanceLifecycleTest {
         logic.execute("addclass m/CS2101 c/F10-2");
         logic.execute("assign sn/A0123456X m/CS2101 c/F10-2");
         logic.execute("addattendance 1 2 d/2024-02-29");
-        logic.execute("deleteclass m/CS2103 c/F10-2");
+        logic.execute("deleteclass 1");
         reload();
         assertDates(Set.of(DATE));
         assertEquals("CS2101", model.getAttendanceList().getFirst().getAcademicClass().getModuleCode().toString());
