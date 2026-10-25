@@ -41,7 +41,7 @@ TAssist is a **desktop application for NUS Teaching Assistants who need to manag
 
    * `delete 3` : Deletes the 3rd student shown in the current list.
 
-   * `deleteclass m/CS2103T c/F10-2` : Deletes the class named `F10-2` for module `CS2103T`.
+   * `deleteclass 1` : Deletes the first class in the displayed class list.
 
    * `clear` : Deletes all students and classes.
 
@@ -79,7 +79,7 @@ Edits of past commands are kept while browsing and cleared when you submit a com
   For example, `n/` is used for student names, `m/` for module codes, and `c/` for class names.
 
 * Repeated prefixes are accepted only when the command explicitly allows multiple values.<br>
-  For example, `add` and `edit` accept multiple `t/TAG` values, but `addclass` and `deleteclass` accept exactly one `m/MODULE_CODE` and one `c/CLASS_NAME`.
+  For example, `add` and `edit` accept multiple `t/TAG` values, but `addclass` accepts exactly one `m/MODULE_CODE` and one `c/CLASS_NAME`.
 
 * Extraneous parameters for commands that take no parameters, such as `help`, `list`, `exit`, and `clear`, are ignored.<br>
   For example, `help 123` is interpreted as `help`.
@@ -551,41 +551,29 @@ The current build deletes students by displayed list index, not by student numbe
 
 ### Deleting a class: `deleteclass`
 
-Deletes the class identified by its module code and class name from TAssist.
+Deletes the class at the specified index in the currently displayed class list from TAssist.
 
-Format: `deleteclass m/MODULE_CODE c/CLASS_NAME`
+Format: `deleteclass INDEX`
 
-* Both parameters are required, must have nonempty values, and must each be supplied exactly once. They can be supplied in either order.
-* `MODULE_CODE` must begin with a letter and contain only letters or digits, as for `addclass`.
-* `CLASS_NAME` must contain at least one letter or digit, and may contain only letters, digits, or hyphens, as for `addclass`.
-* The module code and class name must match the same existing class. Matching ignores letter case and leading or trailing spaces.
-* Searches all classes, regardless of the current student list filter. No list index is required.
-* Removes the class from the class list and saves the change automatically.
-* Any student assignments to the deleted class are removed with it. The students remain in TAssist, and other classes and their assignments are unchanged.
-* If no matching class exists, an error is shown and no data is changed.
+* `INDEX` is required and must be a positive integer such as `1`, `2`, or `3`.
+* The index refers to the number shown beside a class in the current class list, starting from `1`.
+* The index must be within the displayed class list. If the list is filtered, only the displayed classes can be selected.
+* Use `listclass` to display all classes before choosing an index when needed.
+* Removes the class from the class list and saves the change automatically. Remaining displayed classes are renumbered.
+* Any student assignments and attendance records for the deleted class are removed with it. The students remain in TAssist, and other classes and their assignments are unchanged.
+* If the index is invalid, an error is shown and no data is changed.
 
-Examples (assuming the corresponding classes exist):
+Examples (assuming the corresponding indices are displayed):
 
-* `deleteclass m/CS2103T c/F10-2` deletes class `F10-2` for module `CS2103T`.
-* `deleteclass c/t24 m/st2334` deletes class `T24` for module `ST2334`, using reversed parameter order and lowercase values.
+* `deleteclass 1` deletes the first displayed class.
+* `deleteclass 2` deletes the second displayed class.
 
-Expected output for the first example:
-
-* `Deleted class: CS2103T-F10-2`
+The success message starts with `Deleted class:` and identifies the removed class.
 
 Common errors:
 
-* Missing `m/` or `c/`, or extra text before the parameters: `Invalid command format!`, followed by the command usage.
-* Empty module code: `Module code cannot be empty`
-* Empty class name: `Class name cannot be empty`
-* Invalid module code, such as `2103` or `CS-2103`: `Module code must contain letters or digits`
-* Invalid class name, such as `T 24` or `---`: `Class names can only contain letters, digits, or '-'`
-* Repeated module code: `Multiple values specified for the following single-valued field(s): m/`
-* Repeated class name: `Multiple values specified for the following single-valued field(s): c/`
-* Unknown parameter, such as `x/`: `Unknown parameter: x/`
-* No matching class: `No class with module code CS2103T and class name F10-2 exists.`
-
-Invalid module codes and class names are rejected before searching for a class. Valid values that do not identify an existing class result in a "no matching class" error.
+* Missing index, non-positive or non-integer input, or extra arguments: `Invalid command format!`, followed by the command usage.
+* An index beyond the displayed list, including any index when the list is empty: `The class index provided is invalid.`
 
 ### Unassigning a student from an academic class: `unassign`
 
@@ -720,7 +708,7 @@ Action     | Format, Examples
 **Add attendance** | `addattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD`<br> e.g., `addattendance 1 2 d/2024-02-29`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
 **Delete attendance** | `deleteattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD`<br> e.g., `deleteattendance 1 2 d/2024-02-29`
-**Delete Class** | `deleteclass m/MODULE_CODE c/CLASS_NAME`<br> e.g., `deleteclass m/CS2103T c/F10-2`
+**Delete Class** | `deleteclass INDEX`<br> e.g., `deleteclass 1`
 **Edit**   | `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
 **Edit Class** | `editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]`<br> e.g., `editclass 1 m/CS2103 c/F11`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`

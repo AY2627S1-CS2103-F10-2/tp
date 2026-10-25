@@ -1,64 +1,54 @@
 package seedu.address.logic.commands;
 
 import static java.util.Objects.requireNonNull;
-import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
-import static seedu.address.logic.parser.CliSyntax.PREFIX_CLASS_NAME;
-import static seedu.address.logic.parser.CliSyntax.PREFIX_MODULE_CODE;
 
+import java.util.List;
 import java.util.logging.Logger;
 
 import seedu.address.commons.core.LogsCenter;
+import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.ToStringBuilder;
+import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
 import seedu.address.model.academicclass.AcademicClass;
-import seedu.address.model.academicclass.ClassName;
-import seedu.address.model.academicclass.ModuleCode;
 
 /**
- * Deletes an academic class identified by its module code and class name.
+ * Deletes an academic class identified using its displayed index from the address book.
  */
 public class DeleteClassCommand extends Command {
 
     public static final String COMMAND_WORD = "deleteclass";
 
     public static final String MESSAGE_USAGE = COMMAND_WORD
-            + ": Deletes the academic class with the specified module code and class name. "
-            + "Parameters: "
-            + PREFIX_MODULE_CODE + "MODULE_CODE "
-            + PREFIX_CLASS_NAME + "CLASS_NAME\n"
-            + "Example: " + COMMAND_WORD + " "
-            + PREFIX_MODULE_CODE + "CS2103 "
-            + PREFIX_CLASS_NAME + "F10-2";
+            + ": Deletes the academic class identified by the index number used in the displayed class list.\n"
+            + "Parameters: INDEX (must be a positive integer)\n"
+            + "Example: " + COMMAND_WORD + " 1";
 
     public static final String MESSAGE_DELETE_CLASS_SUCCESS = "Deleted class: %1$s";
-    public static final String MESSAGE_CLASS_NOT_FOUND =
-            "No class with module code %1$s and class name %2$s exists.";
 
     private static final Logger logger = LogsCenter.getLogger(DeleteClassCommand.class);
 
-    private final ModuleCode moduleCode;
-    private final ClassName className;
+    private final Index targetIndex;
 
     /**
-     * Creates a command to delete the class matching the given module code and class name.
+     * Creates a command to delete the class at the given displayed index.
      */
-    public DeleteClassCommand(ModuleCode moduleCode, ClassName className) {
-        requireAllNonNull(moduleCode, className);
-        this.moduleCode = moduleCode;
-        this.className = className;
+    public DeleteClassCommand(Index targetIndex) {
+        this.targetIndex = requireNonNull(targetIndex);
     }
 
     @Override
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
-        AcademicClass classToDelete = model.getAddressBook().findAcademicClass(moduleCode, className)
-                .orElseThrow(() -> {
-                    logger.fine("Class deletion rejected: specified class does not exist.");
-                    return new CommandException(
-                            String.format(MESSAGE_CLASS_NOT_FOUND, moduleCode, className));
-                });
+        List<AcademicClass> lastShownList = model.getFilteredAcademicClassList();
 
+        if (targetIndex.getZeroBased() >= lastShownList.size()) {
+            logger.fine("Class deletion rejected: displayed index is invalid.");
+            throw new CommandException(Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX);
+        }
+
+        AcademicClass classToDelete = lastShownList.get(targetIndex.getZeroBased());
         model.deleteAcademicClass(classToDelete);
         logger.info("Deleted academic class " + classToDelete);
         return new CommandResult(String.format(MESSAGE_DELETE_CLASS_SUCCESS, classToDelete));
@@ -75,15 +65,13 @@ public class DeleteClassCommand extends Command {
             return false;
         }
 
-        return moduleCode.equals(otherDeleteClassCommand.moduleCode)
-                && className.equals(otherDeleteClassCommand.className);
+        return targetIndex.equals(otherDeleteClassCommand.targetIndex);
     }
 
     @Override
     public String toString() {
         return new ToStringBuilder(this)
-                .add("moduleCode", moduleCode)
-                .add("className", className)
+                .add("targetIndex", targetIndex)
                 .toString();
     }
 }
