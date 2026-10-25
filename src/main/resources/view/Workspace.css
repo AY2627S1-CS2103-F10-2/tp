@@ -8,13 +8,25 @@
 .workspace-bottom .label {
     -fx-font-family: "System";
     -fx-font-size: 12px;
+    -fx-font-weight: normal;
     -fx-text-fill: #e7edf5;
     -fx-opacity: 1;
 }
 .workspace-bottom .section-title { -fx-font-size: 17px; -fx-font-weight: bold; }
-.workspace-bottom .muted { -fx-font-size: 11px; -fx-text-fill: #aab7c7; }
-.class-sidebar { -fx-padding: 6 12 2 2; }
-.student-workspace { -fx-padding: 6 2 2 14; }
+.workspace-bottom .count-pill {
+    -fx-background-color: #304457;
+    -fx-background-radius: 999;
+    -fx-border-color: #53677c;
+    -fx-border-radius: 999;
+    -fx-padding: 4 10;
+    -fx-font-size: 12px;
+    -fx-font-weight: normal;
+    -fx-text-fill: #dce8f5;
+    -fx-alignment: center;
+}
+.workspace-bottom .muted { -fx-text-fill: #aab7c7; }
+.student-workspace { -fx-padding: 6 12 2 2; }
+.class-sidebar { -fx-padding: 6 2 2 14; }
 .workspace-bottom .split-pane-divider {
     -fx-background-color: #3d4a59;
     -fx-border-width: 0;
@@ -29,22 +41,34 @@
 .workspace-bottom .list-cell:filled #cardPane {
     -fx-background-color: #2a3440;
     -fx-background-radius: 6;
-    -fx-border-color: transparent;
+    -fx-border-color: #3b4959;
     -fx-border-radius: 6;
     -fx-border-width: 1;
     -fx-padding: 10 12;
 }
-.workspace-bottom .class-title { -fx-font-size: 13px; -fx-font-weight: bold; }
-.workspace-bottom .class-index { -fx-font-size: 13px; -fx-text-fill: #b4cadf; }
-.workspace-bottom .cell_big_label { -fx-font-size: 15px; -fx-font-weight: bold; }
+.workspace-bottom .class-title, .workspace-bottom .module-code, .workspace-bottom .cell_big_label {
+    -fx-font-family: "System";
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+.workspace-bottom .module-code { -fx-fill: #b2cee9; }
+.workspace-bottom .class-title { -fx-fill: #e7edf5; }
+.workspace-bottom .card-index {
+    -fx-font-family: "System";
+    -fx-font-size: 12px;
+    -fx-font-weight: normal;
+    -fx-text-fill: #ffffff;
+    -fx-padding: 0 8 0 0;
+}
 .workspace-bottom .cell_small_label { -fx-font-size: 12px; -fx-text-fill: #b9c6d5; }
+.workspace-bottom .student-identifier { -fx-text-fill: #ccd9e7; }
 .workspace-bottom #tags { -fx-hgap: 5; -fx-vgap: 4; }
 .workspace-bottom #tags .label {
-    -fx-background-color: #405367;
-    -fx-background-radius: 4;
-    -fx-text-fill: #e0eaf5;
+    -fx-background-color: #354657;
+    -fx-background-radius: 6;
+    -fx-text-fill: #cddbe8;
     -fx-padding: 2 6;
-    -fx-font-size: 10px;
+    -fx-font-size: 12px;
 }
 .workspace-bottom .scroll-bar { -fx-background-color: transparent; }
 .workspace-bottom .scroll-bar .thumb { -fx-background-color: #627a91; -fx-background-radius: 5; }
@@ -107,7 +131,7 @@
 .app-shell #resultDisplay .scroll-pane, .app-shell #resultDisplay .viewport,
 .app-shell #resultDisplay .corner { -fx-background-color: transparent; }
 .app-shell .status-bar { -fx-background-color: #1d232b; }
-.app-shell .status-bar .label { -fx-text-fill: #aab7c7; -fx-font-size: 10px; -fx-padding: 5 10; }
+.app-shell .status-bar .label { -fx-text-fill: #aab7c7; -fx-font-size: 12px; -fx-padding: 5 10; }
 .app-shell .scroll-bar { -fx-background-color: transparent; }
 .app-shell .scroll-bar .thumb { -fx-background-color: #627a91; -fx-background-radius: 5; }
 .context-menu { -fx-background-color: #252f3b; -fx-border-color: #53677c; }
@@ -117,8 +141,8 @@
 
 .app-shell .corner { -fx-background-color: #1d232b; }
 
-/* Keep class rows passive and show keyboard focus on the list as a whole. */
-.workspace-bottom #academicClassListView .list-cell:filled:selected #cardPane {
+/* Keep both lists passive and show keyboard focus on the list as a whole. */
+.workspace-bottom .list-cell:filled:selected #cardPane {
     -fx-border-color: transparent;
 }
 .workspace-bottom #academicClassListView, .workspace-bottom #personListView {
@@ -127,9 +151,6 @@
     -fx-border-radius: 5;
 }
 .workspace-bottom #academicClassListView:focused, .workspace-bottom #personListView:focused {
-    -fx-border-color: #91b4d3;
-}
-.workspace-bottom #personListView:focused .list-cell:filled:focused #cardPane {
     -fx-border-color: #91b4d3;
 }
 .app-shell #resultDisplay:focused { -fx-border-color: #91b4d3; }
