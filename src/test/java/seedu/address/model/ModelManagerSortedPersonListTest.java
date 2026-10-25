@@ -112,7 +112,7 @@ public class ModelManagerSortedPersonListTest {
         new EditCommand(Index.fromOneBased(1), descriptor).execute(model);
 
         assertEquals(List.of(BENSON, renamedAlice, DANIEL), model.getAddressBook().getPersonList());
-        assertEquals(List.of(BENSON, renamedAlice, DANIEL), model.getFilteredPersonList());
+        assertEquals(List.of(BENSON, DANIEL, renamedAlice), model.getFilteredPersonList());
     }
 
     @Test
@@ -137,14 +137,15 @@ public class ModelManagerSortedPersonListTest {
     }
 
     @Test
-    public void addPerson_afterSortedFilter_restoresAllPersonsInInsertionOrder() {
+    public void addPerson_afterSortedFilter_preservesMatchingPersons() {
         model.updateFilteredPersonListAlphabetically(person -> person.isSamePerson(ALICE));
         Person anotherAlice = new PersonBuilder(ALICE).withStudentNumber("A1111111B")
                 .withEmail("anotheralice@example.com").withTelegram(null).build();
 
         model.addPerson(anotherAlice);
 
-        assertEquals(List.of(BENSON, ALICE, DANIEL, anotherAlice), model.getFilteredPersonList());
+        assertEquals(List.of(ALICE), model.getFilteredPersonList());
+        assertEquals(List.of(BENSON, ALICE, DANIEL, anotherAlice), model.getAddressBook().getPersonList());
     }
 
     @Test

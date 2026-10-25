@@ -280,19 +280,19 @@ public class EditClassCommandTest {
         command(null, new ClassName("OB6")).execute(model);
         assertEquals(List.of(ALICE, BENSON), model.getFilteredPersonList());
 
-        // Leaving via student add clears threshold
+        // Student add preserves the class filter and threshold
         new ListByClassCommand(FIRST, Optional.of(5)).execute(model);
         new AddCommand(CARL).execute(model);
         command(null, new ClassName("OB7")).execute(model);
-        assertEquals(List.of(ALICE, BENSON, CARL), model.getFilteredPersonList());
+        assertEquals(List.of(ALICE), model.getFilteredPersonList());
 
-        // Leaving via student edit clears threshold
+        // Student edit preserves the class filter and threshold
         new ListByClassCommand(FIRST, Optional.of(5)).execute(model);
         EditCommand.EditPersonDescriptor editPersonDescriptor = new EditCommand.EditPersonDescriptor();
         editPersonDescriptor.setName(ALICE.getName());
         new EditCommand(FIRST, editPersonDescriptor).execute(model);
         command(null, new ClassName("OB8")).execute(model);
-        assertEquals(List.of(ALICE, BENSON, CARL), model.getFilteredPersonList());
+        assertEquals(List.of(ALICE), model.getFilteredPersonList());
 
         // Leaving via clear resets everything
         new ListByClassCommand(FIRST, Optional.of(5)).execute(model);
