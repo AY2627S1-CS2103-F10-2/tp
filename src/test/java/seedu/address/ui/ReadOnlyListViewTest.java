@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 
 import javafx.application.Platform;
 import javafx.scene.Scene;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.Skin;
 import javafx.scene.control.skin.VirtualFlow;
 import javafx.scene.input.KeyCode;
@@ -94,8 +95,52 @@ public class ReadOnlyListViewTest {
                 press(list, KeyCode.F1);
                 assertFalse(consumedBeforeDefaultHandler.get());
                 assertEquals(1, helpKeys.get(), "Help must remain available when the list is empty");
+                assertDoesNotThrow(() -> list.scrollTo(0));
             } finally {
                 list.setSkin(null);
+            }
+        });
+    }
+
+    @Test
+    public void lastRow_variableHeightsAndSmallViewports_endAndScrollToRevealBottom() throws Exception {
+        runOnFxThreadAndWait(() -> {
+            for (double height : new double[] {40, 60, 119, 193.5}) {
+                ReadOnlyListView<Integer> list = new ReadOnlyListView<>();
+                list.getItems().setAll(IntStream.range(0, 32).boxed().toList());
+                list.setCellFactory(view -> new ListCell<>() {
+                    @Override
+                    protected void updateItem(Integer item, boolean empty) {
+                        super.updateItem(item, empty);
+                        setText(empty ? null : "Row " + item);
+                        setPrefHeight(empty ? 24 : 37.25 + item % 5 * 17.5);
+                    }
+                });
+                StackPane container = new StackPane(list);
+                new Scene(container, 320, height);
+                container.applyCss();
+                container.layout();
+                try {
+                    VirtualFlow<?> flow = (VirtualFlow<?>) list.lookup(".virtual-flow");
+                    for (boolean useKeyboard : new boolean[] {true, false}) {
+                        press(list, KeyCode.HOME);
+                        container.layout();
+                        if (useKeyboard) {
+                            press(list, KeyCode.END);
+                        } else {
+                            list.scrollTo(list.getItems().size() - 1);
+                        }
+                        container.layout();
+                        container.layout();
+                        assertEquals(31, flow.getLastVisibleCell().getIndex());
+                        assertTrue(flow.getLastVisibleCell().getBoundsInParent().getMaxY()
+                                <= flow.getHeight() + 1,
+                                "The final row's bottom must be reachable at height " + height);
+                        assertNull(list.getSelectionModel());
+                    }
+                } finally {
+                    list.setSkin(null);
+                }
             }
         });
     }
