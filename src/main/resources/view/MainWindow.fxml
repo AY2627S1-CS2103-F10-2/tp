@@ -50,13 +50,13 @@
 
         <SplitPane fx:id="workspaceSplitPane" dividerPositions="0.45" VBox.vgrow="ALWAYS"
                    styleClass="workspace-bottom">
-          <VBox minWidth="170" spacing="12" styleClass="class-sidebar">
-            <Label fx:id="classHeader" text="Classes" styleClass="section-title" wrapText="true" minWidth="0" />
-            <StackPane fx:id="academicClassListPanelPlaceholder" minWidth="0" VBox.vgrow="ALWAYS" />
-          </VBox>
           <VBox minWidth="220" spacing="12" styleClass="student-workspace">
             <Label fx:id="studentHeader" text="Students" styleClass="section-title" wrapText="true" minWidth="0" />
             <StackPane fx:id="personListPanelPlaceholder" minWidth="0" VBox.vgrow="ALWAYS" />
+          </VBox>
+          <VBox minWidth="170" spacing="12" styleClass="class-sidebar">
+            <Label fx:id="classHeader" text="Classes" styleClass="section-title" wrapText="true" minWidth="0" />
+            <StackPane fx:id="academicClassListPanelPlaceholder" minWidth="0" VBox.vgrow="ALWAYS" />
           </VBox>
         </SplitPane>
 

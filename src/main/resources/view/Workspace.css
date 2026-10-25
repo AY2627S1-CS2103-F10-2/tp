@@ -13,8 +13,8 @@
 }
 .workspace-bottom .section-title { -fx-font-size: 17px; -fx-font-weight: bold; }
 .workspace-bottom .muted { -fx-font-size: 11px; -fx-text-fill: #aab7c7; }
-.class-sidebar { -fx-padding: 6 12 2 2; }
-.student-workspace { -fx-padding: 6 2 2 14; }
+.student-workspace { -fx-padding: 6 12 2 2; }
+.class-sidebar { -fx-padding: 6 2 2 14; }
 .workspace-bottom .split-pane-divider {
     -fx-background-color: #3d4a59;
     -fx-border-width: 0;

@@ -39,8 +39,10 @@ assign sn/DEMO0001 m/CS2101 c/TUTORIAL-GROUP-WITH-A-LONG-NAME
 ```
 
 Expect `Classes — 3 shown / 3 total` and `Students — 3 shown`. Card membership
-counts remain 2, 1 and 1. Retain the input/output at the top, adjustable classes-left
-split, compact students, slate theme and passive class rows from branch A.
+counts remain 2, 1 and 1. Keep the input/output at the top, compact students, slate
+theme and passive class rows from branch A. The revised split places Students on
+the left and Classes on the right to match `STUDENT_INDEX CLASS_INDEX` commands.
+Classes receive more default width, while Students remain readable and resizable.
 There is no extra sentence repeating the displayed student count.
 Class and student indices should have matching font, weight, colour and spacing.
 
@@ -66,7 +68,7 @@ Expected in order:
 - Students: 3 shown; classes unchanged.
 
 Execute `find Nobody`. Expect `Students — 0 shown` and `No students shown.` in
-the right list. Execute `list` to restore all three students.
+the left list. Execute `list` to restore all three students.
 
 Type `find Alice`, `listbystudent 1` and `listbyclass 3` without Enter, replacing
 one draft with the next. Counts, lists, attendance, scroll position and output must
@@ -132,8 +134,9 @@ selection or a row highlight. The shown count uses the displayed class list; the
 total always uses the complete class collection.
 
 For each following scrolling check, first return the Classes list to the top:
-Tab from input to output, then Classes, and press Home. Shift+Tab twice returns
-to input. On a Mac keyboard without Home/End, use Fn+Left/Fn+Right.
+Tab from input through output and Students to Classes, and press Home. Shift+Tab
+three times returns to input. From Classes, Tab also wraps forward to input.
+On a Mac keyboard without Home/End, use Fn+Left/Fn+Right.
 
 Execute `editclass 15 c/SCROLL12UPDATED`. Expect the edited last row to become
 visible, with Students still showing Alice. Execute `list` to restore all students.
@@ -196,7 +199,7 @@ screen. Keep the original JSON structure and other settings intact.
 At this resolution and scaling:
 
 - Execute `find Alice` and `list`; verify that input, feedback and counts work.
-- Tab from input to output, then Classes and Students. All four controls should
+- Tab from input to output, then Students and Classes. All four controls should
   remain visible and reachable.
 - In Classes, use Home, End and page keys to inspect all 15 classes. Rows must
   remain passive, and executing `listbyclass 15` must reveal its class.

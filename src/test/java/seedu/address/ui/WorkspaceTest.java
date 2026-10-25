@@ -86,12 +86,13 @@ public class WorkspaceTest {
                 SplitPane split = (SplitPane) stage.getScene().lookup("#workspaceSplitPane");
                 assertEquals(Orientation.HORIZONTAL, split.getOrientation());
                 assertEquals(0.45, split.getDividerPositions()[0], 0.04);
-                Node classes = split.getItems().get(0);
-                Node students = split.getItems().get(1);
+                Node students = split.getItems().get(0);
+                Node classes = split.getItems().get(1);
                 assertTrue(classes.lookup("#academicClassListView") instanceof ListView);
                 assertTrue(students.lookup("#personListView") instanceof ListView);
-                assertTrue(classes.localToScene(classes.getBoundsInLocal()).getMaxX()
-                        <= students.localToScene(students.getBoundsInLocal()).getMinX());
+                assertTrue(students.localToScene(students.getBoundsInLocal()).getMaxX()
+                        <= classes.localToScene(classes.getBoundsInLocal()).getMinX());
+                assertTrue(classes.getBoundsInLocal().getWidth() > students.getBoundsInLocal().getWidth());
                 Label classIndex = (Label) classes.lookup("#id");
                 Label studentIndex = (Label) students.lookup("#id");
                 assertEquals(classIndex.getText(), studentIndex.getText());
@@ -110,7 +111,7 @@ public class WorkspaceTest {
                         <= split.localToScene(split.getBoundsInLocal()).getMinY());
                 double previousClassWidth = classes.getBoundsInLocal().getWidth();
                 double previousStudentWidth = students.getBoundsInLocal().getWidth();
-                split.setDividerPositions(0.6);
+                split.setDividerPositions(0.3);
                 layout(stage);
                 assertTrue(classes.getBoundsInLocal().getWidth() > previousClassWidth);
                 assertTrue(students.getBoundsInLocal().getWidth() < previousStudentWidth);
@@ -122,9 +123,9 @@ public class WorkspaceTest {
                 assertTrue(window.getPersonListPanel().getRoot().getWidth() > 200);
                 stage.setWidth(720);
                 settle(stage);
-                assertTrue(split.getItems().get(1).getBoundsInLocal().getWidth() >= 220);
+                assertTrue(students.getBoundsInLocal().getWidth() >= 220);
                 capture(stage, "layout-minimum");
-                split.setDividerPositions(0);
+                split.setDividerPositions(1);
                 settle(stage);
                 Label classHeader = (Label) stage.getScene().lookup("#classHeader");
                 assertTrue(classHeader.getHeight() > classHeader.getFont().getSize() * 1.5);
@@ -169,23 +170,24 @@ public class WorkspaceTest {
                     assertHeaders(stage, 32, 32, 1);
                     assertFalse(output.getText().isBlank());
                     execute(input, "list");
+                    settle(stage);
                     input.requestFocus();
                     press(input, KeyCode.TAB);
                     assertSame(output, stage.getScene().getFocusOwner());
                     press(output, KeyCode.TAB);
-                    assertSame(classes, stage.getScene().getFocusOwner());
-                    press(classes, KeyCode.END);
-                    settle(stage);
-                    VirtualFlow<?> classFlow = (VirtualFlow<?>) classes.lookup(".virtual-flow");
-                    assertEquals(classes.getItems().size() - 1, classFlow.getLastVisibleCell().getIndex());
-                    assertNull(classes.getSelectionModel());
-                    press(classes, KeyCode.TAB);
                     assertSame(students, stage.getScene().getFocusOwner());
                     press(students, KeyCode.END);
                     settle(stage);
                     VirtualFlow<?> studentFlow = (VirtualFlow<?>) students.lookup(".virtual-flow");
                     assertEquals(students.getItems().size() - 1, studentFlow.getLastVisibleCell().getIndex());
                     assertEquals(3, students.getItems().size());
+                    press(students, KeyCode.TAB);
+                    assertSame(classes, stage.getScene().getFocusOwner());
+                    press(classes, KeyCode.END);
+                    settle(stage);
+                    VirtualFlow<?> classFlow = (VirtualFlow<?>) classes.lookup(".virtual-flow");
+                    assertEquals(classes.getItems().size() - 1, classFlow.getLastVisibleCell().getIndex());
+                    assertNull(classes.getSelectionModel());
                     capture(stage, "usability-scaled-screen-" + (int) usableHeight);
                 } finally {
                     stage.hide();
@@ -215,6 +217,8 @@ public class WorkspaceTest {
                 press(input, KeyCode.TAB);
                 assertSame(output, stage.getScene().getFocusOwner());
                 press(output, KeyCode.TAB);
+                assertSame(students, stage.getScene().getFocusOwner());
+                press(students, KeyCode.TAB);
                 assertSame(classes, stage.getScene().getFocusOwner());
 
                 assertEquals(initialFirstIndex, flow.getFirstVisibleCell().getIndex());
@@ -259,10 +263,12 @@ public class WorkspaceTest {
                 assertTrue(logic.getAttendanceDisplayClass().isEmpty());
                 capture(stage, "layout-class-keyboard-focus");
                 press(classes, KeyCode.TAB);
-                assertSame(students, stage.getScene().getFocusOwner());
-                press(students, KeyCode.TAB, true);
+                assertSame(input, stage.getScene().getFocusOwner());
+                press(input, KeyCode.TAB, true);
                 assertSame(classes, stage.getScene().getFocusOwner());
                 press(classes, KeyCode.TAB, true);
+                assertSame(students, stage.getScene().getFocusOwner());
+                press(students, KeyCode.TAB, true);
                 assertSame(output, stage.getScene().getFocusOwner());
 
                 execute(input, "clear");
@@ -274,7 +280,7 @@ public class WorkspaceTest {
                 }
                 assertTrue(classes.getItems().isEmpty());
                 press(classes, KeyCode.TAB);
-                assertSame(students, stage.getScene().getFocusOwner());
+                assertSame(input, stage.getScene().getFocusOwner());
             } finally {
                 stage.hide();
             }
