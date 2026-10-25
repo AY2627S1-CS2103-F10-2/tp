@@ -16,6 +16,7 @@ import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
+import seedu.address.commons.core.index.Index;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
@@ -313,6 +314,21 @@ public class ModelManager implements Model {
     @Override
     public ObservableList<Person> getFilteredPersonList() {
         return displayedPersons;
+    }
+
+    @Override
+    public Optional<Person> findDisplayedPerson(Index index) {
+        requireNonNull(index);
+        int position = index.getZeroBased();
+        return position < displayedPersons.size() ? Optional.of(displayedPersons.get(position)) : Optional.empty();
+    }
+
+    @Override
+    public Optional<AcademicClass> findDisplayedAcademicClass(Index index) {
+        requireNonNull(index);
+        int position = index.getZeroBased();
+        return position < displayedAcademicClasses.size()
+                ? Optional.of(displayedAcademicClasses.get(position)) : Optional.empty();
     }
 
 
