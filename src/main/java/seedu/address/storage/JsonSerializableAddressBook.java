@@ -99,11 +99,10 @@ class JsonSerializableAddressBook {
             addressBook.addAcademicClass(academicClass);
         }
         restoreAttendance(addressBook);
-        try {
-            addressBook.setCommandHistory(commandHistory);
-        } catch (IllegalArgumentException | NullPointerException e) {
-            throw new IllegalValueException("Invalid command history: commands must be non-null and non-blank.");
-        }
+        // Malformed history entries must not prevent student and class data from loading.
+        addressBook.setCommandHistory(commandHistory.stream()
+                .filter(command -> command != null && !command.isBlank())
+                .toList());
         return addressBook;
     }
 

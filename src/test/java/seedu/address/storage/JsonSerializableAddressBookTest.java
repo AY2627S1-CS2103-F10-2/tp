@@ -9,6 +9,8 @@ import static seedu.address.testutil.TypicalPersons.BENSON;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -59,10 +61,39 @@ public class JsonSerializableAddressBookTest {
     }
 
     @Test
-    public void toModelType_invalidHistory_throwsIllegalValueException() {
-        JsonSerializableAddressBook data = new JsonSerializableAddressBook(List.of(), List.of(), List.of(),
-                List.of("list", " "));
-        assertThrows(IllegalValueException.class, data::toModelType);
+    public void toModelType_invalidHistory_skipsInvalidEntriesAndPreservesData() throws Exception {
+        JsonAdaptedAcademicClass academicClass = new JsonAdaptedAcademicClass("CS2103", "T01",
+                List.of(ALICE.getStudentNumber().value));
+        JsonSerializableAddressBook data = new JsonSerializableAddressBook(List.of(new JsonAdaptedPerson(ALICE)),
+                List.of(academicClass), List.of(), Arrays.asList(null, "list", "", " \t\n", "find Alice", null));
+        AddressBook restored = data.toModelType();
+        assertEquals(List.of("list", "find Alice"), restored.getCommandHistory());
+        assertEquals(List.of(ALICE), restored.getPersonList());
+        assertEquals(1, restored.getAcademicClassList().size());
+        assertEquals(Set.of(ALICE), restored.getAcademicClassList().getFirst().getStudents());
+    }
+
+    @Test
+    public void toModelType_allHistoryEntriesInvalid_loadsEmptyHistory() throws Exception {
+        JsonSerializableAddressBook data = new JsonSerializableAddressBook(List.of(new JsonAdaptedPerson(ALICE)),
+                List.of(), List.of(), Arrays.asList(null, "", " \t"));
+        AddressBook restored = data.toModelType();
+        assertEquals(List.of(), restored.getCommandHistory());
+        assertEquals(List.of(ALICE), restored.getPersonList());
+    }
+
+    @Test
+    public void toModelType_invalidHistoryEntries_doNotCountTowardsHistoryLimit() throws Exception {
+        List<String> commands = new ArrayList<>();
+        for (int i = 0; i < 25; i++) {
+            commands.add("find Student" + i);
+            commands.add(null);
+            commands.add(" ");
+        }
+        AddressBook restored = new JsonSerializableAddressBook(List.of(), List.of(), List.of(), commands).toModelType();
+        assertEquals(20, restored.getCommandHistory().size());
+        assertEquals("find Student5", restored.getCommandHistory().getFirst());
+        assertEquals("find Student24", restored.getCommandHistory().getLast());
     }
 
     @Test
