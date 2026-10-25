@@ -20,7 +20,7 @@ TAssist is a **desktop application for NUS Teaching Assistants who need to manag
 
 1. Download the latest `.jar` file from [here](https://github.com/AY2627S1-CS2103-F10-2/tp/releases).
 
-1. Copy the file to the folder you want to use as the _home folder_ for TAssist.
+1. Copy the file to a folder you can write to. This is the _home folder_ for TAssist and its saved files.
 
 1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar TAssist.jar`.<br>
    A GUI similar to the one below should appear in a few seconds. The app shows students and classes in separate sections.<br>
@@ -641,6 +641,33 @@ TAssist automatically saves data after every successful command. You do not need
 
 Data is saved to `[JAR file location]/data/addressbook.json`. If TAssist cannot save the data, it displays an error such as `Could not save data due to the following error: ...` or `Could not save data to file ... due to insufficient permissions to write to the file or the folder.`
 
+The JAR file location means the **folder containing `TAssist.jar`**, not the terminal's current folder.
+For example, running `java -jar "C:\TAssist\TAssist.jar"` from another folder still uses `C:\TAssist\data\addressbook.json`.
+
+| File relative to the JAR folder | Purpose |
+| --- | --- |
+| `data/addressbook.json` | Students, classes, memberships and attendance |
+| `preferences.json` | Window settings |
+| `addressbook.log.*` | Diagnostic logs |
+| `tassist.lock` | Prevents simultaneous launches from the same application folder |
+
+Keep the JAR in a writable folder. If a save fails, TAssist does not redirect your data to another folder.
+Separate JAR folders use separate data and preferences; copying only the JAR does not copy your records.
+When running from an IDE or with Gradle, files remain relative to the working directory.
+
+#### Moving existing data to the JAR folder
+
+Older builds may have saved files in the folder from which you ran the terminal command.
+TAssist does not automatically find, move or merge those files.
+
+1. Close all TAssist instances before copying files.
+1. Back up both the old files and any existing files in the destination folder.
+1. Copy the old `data/addressbook.json` into the `data` folder beside `TAssist.jar`. Create the `data` folder if needed.
+1. Optionally copy the old `preferences.json` beside the JAR to retain window settings. Logs and lock files do not need to be copied.
+1. Reopen TAssist and confirm that your students and classes are present.
+
+If the destination already contains data, choose which file to keep before replacing it; TAssist does not merge the records.
+
 ### Editing the data file
 
 TAssist data is saved automatically as a JSON file `[JAR file location]/data/addressbook.json`. Advanced users are welcome to update data directly by editing that data file.
@@ -671,7 +698,7 @@ If any of these command words are entered, TAssist displays `Unknown command.`
 ## FAQ
 
 **Q**: How do I transfer my data to another computer?<br>
-**A**: Install the app on the other computer and overwrite the data file it creates with the data file from your previous TAssist home folder.
+**A**: Close TAssist on both computers, back up any destination data, and copy `data/addressbook.json` from your old TAssist home folder into the `data` folder beside the JAR on the other computer. See [Moving existing data to the JAR folder](#moving-existing-data-to-the-jar-folder).
 
 --------------------------------------------------------------------------------------------------------------------
 
