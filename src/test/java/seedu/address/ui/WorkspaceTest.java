@@ -47,6 +47,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
+import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -98,6 +99,8 @@ public class WorkspaceTest {
                 assertTrue(students.localToScene(students.getBoundsInLocal()).getMaxX()
                         <= classes.localToScene(classes.getBoundsInLocal()).getMinX());
                 assertTrue(classes.getBoundsInLocal().getWidth() > students.getBoundsInLocal().getWidth());
+                assertHeaderLayout(stage, "student");
+                assertHeaderLayout(stage, "class");
                 Label classIndex = (Label) classes.lookup("#id");
                 Label studentIndex = (Label) students.lookup("#id");
                 assertEquals(classIndex.getText(), studentIndex.getText());
@@ -132,11 +135,15 @@ public class WorkspaceTest {
                 capture(stage, "layout-minimum");
                 split.setDividerPositions(1);
                 settle(stage);
-                Label classHeader = (Label) stage.getScene().lookup("#classHeader");
-                assertTrue(classHeader.getHeight() > classHeader.getFont().getSize() * 1.5);
-                assertTrue(classHeader.localToScene(classHeader.getBoundsInLocal()).getMaxX()
-                        <= classes.localToScene(classes.getBoundsInLocal()).getMaxX());
+                Label classCount = (Label) stage.getScene().lookup("#classCount");
+                assertTrue(classCount.getHeight() > classCount.getFont().getSize() * 2);
+                assertHeaderLayout(stage, "student");
+                assertHeaderLayout(stage, "class");
                 capture(stage, "usability-narrow-class-header");
+                split.setDividerPositions(0);
+                settle(stage);
+                assertHeaderLayout(stage, "student");
+                assertHeaderLayout(stage, "class");
             } finally {
                 stage.hide();
             }
@@ -551,9 +558,26 @@ public class WorkspaceTest {
     private static void assertHeaders(Stage stage, int shownClasses, int totalClasses, int shownStudents) {
         Label classHeader = (Label) stage.getScene().lookup("#classHeader");
         Label studentHeader = (Label) stage.getScene().lookup("#studentHeader");
-        assertEquals("Classes — " + shownClasses + " shown / " + totalClasses + " total",
-                classHeader.getText());
-        assertEquals("Students — " + shownStudents + " shown", studentHeader.getText());
+        Label classCount = (Label) stage.getScene().lookup("#classCount");
+        Label studentCount = (Label) stage.getScene().lookup("#studentCount");
+        assertEquals("Classes", classHeader.getText());
+        assertEquals("Students", studentHeader.getText());
+        assertEquals(shownClasses + " shown / " + totalClasses + " total", classCount.getText());
+        assertEquals(shownStudents + " shown", studentCount.getText());
+    }
+
+    private static void assertHeaderLayout(Stage stage, String prefix) {
+        Label title = (Label) stage.getScene().lookup("#" + prefix + "Header");
+        Label count = (Label) stage.getScene().lookup("#" + prefix + "Count");
+        Region row = (Region) title.getParent();
+        assertSame(row, count.getParent());
+        assertTrue(title.getBoundsInParent().getMaxX() < count.getBoundsInParent().getMinX());
+        assertEquals(row.getWidth(), count.getBoundsInParent().getMaxX(), 1);
+        assertTrue(count.getBoundsInParent().getMinY() >= 0);
+        assertTrue(count.getBoundsInParent().getMaxY() <= row.getHeight() + 1);
+        assertTrue(count.getStyleClass().contains("count-pill"));
+        assertTrue(count.getBackground().getFills().get(0).getRadii().getTopLeftHorizontalRadius()
+                >= count.getHeight() / 2);
     }
 
     private MainWindow openWindow(Stage stage, Logic logic) {

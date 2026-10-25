@@ -61,10 +61,10 @@ public class MainWindow extends UiPart<Stage> {
     private HelpWindow helpWindow;
 
     @FXML
-    private Label classHeader;
+    private Label classCount;
 
     @FXML
-    private Label studentHeader;
+    private Label studentCount;
 
     @FXML
     private StackPane commandBoxPlaceholder;
@@ -170,12 +170,12 @@ public class MainWindow extends UiPart<Stage> {
         academicClassListPanel = new AcademicClassListPanel(logic.getFilteredAcademicClassList());
         academicClassListPanelPlaceholder.getChildren().add(academicClassListPanel.getRoot());
 
-        classHeader.textProperty().bind(Bindings.createStringBinding(() ->
-                "Classes — " + logic.getFilteredAcademicClassList().size() + " shown / "
+        classCount.textProperty().bind(Bindings.createStringBinding(() ->
+                logic.getFilteredAcademicClassList().size() + " shown / "
                         + logic.getAcademicClassList().size() + " total",
                 logic.getFilteredAcademicClassList(), logic.getAcademicClassList()));
-        studentHeader.textProperty().bind(Bindings.size(logic.getFilteredPersonList())
-                .asString("Students — %d shown"));
+        studentCount.textProperty().bind(Bindings.size(logic.getFilteredPersonList())
+                .asString("%d shown"));
 
         resultDisplay = new ResultDisplay();
         resultDisplayPlaceholder.getChildren().add(resultDisplay.getRoot());

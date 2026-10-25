@@ -34,9 +34,11 @@ assign sn/DEMO0002 m/CS2103 c/F10
 assign sn/DEMO0003 m/CS2103 c/F11
 assign sn/DEMO0001 m/CS2101 c/TUTORIAL-GROUP-WITH-A-LONG-NAME
 
-Expect Classes — 3 shown / 3 total and Students — 3 shown. Card membership
-counts remain 2, 1 and 1. Keep the input/output at the top, compact students, slate
-theme from branch A. Both student and class rows are now passive. The split places
+Expect 3 shown / 3 total in a rounded pill at the right end of the Classes header
+and 3 shown in a matching pill at the right end of the Students header. Titles
+stay on the left. Card membership counts remain 2, 1 and 1. Keep the input/output
+at the top, compact students and slate theme from branch A. Both student and class
+rows are now passive. The split places
 Students on the left and Classes on the right to match STUDENT_INDEX CLASS_INDEX commands.
 Classes receive more default width, while Students remain readable and resizable.
 There is no extra sentence repeating the displayed student count.
@@ -61,7 +63,7 @@ Expected in order:
 - Students: 2 shown (Alice and Ben); classes unchanged.
 - Students: 3 shown; classes unchanged.
 
-Execute find Nobody. Expect Students — 0 shown and No students shown. in
+Execute find Nobody. Expect 0 shown in the Students pill and No students shown. in
 the left list. Execute list to restore all three students.
 
 Type find Alice, listbystudent 1 and listbyclass 3 without Enter, replacing
@@ -151,9 +153,10 @@ active list should have the focus border, without a highlight on an individual r
 
 On a monitor with enough usable space, resize the window: it must stop at 720 by
 600. On smaller usable screens, each minimum dimension is capped at the available
-space. Drag the split divider toward each side. Headers and counts should remain
-readable, wrapping when needed, and student cards should retain the layout and
-wrapping from branch A.
+space. Drag the split divider toward each side. Each count pill should stay flush
+with the right edge of its header row, with the title on the left. Counts should
+wrap inside their pills when needed, without overlapping titles or clipping.
+Student cards should retain the layout and wrapping from branch A.
 
 Execute exit, then edit only this demo file:
 _temp/improve-ui-usability/session/preferences.json.
@@ -215,8 +218,8 @@ confirm that no selection highlight or command action appears. F1 must still ope
 Help from either focused list.
 
 Execute clear only in the isolated app. Expect:
-- Classes — 0 shown / 0 total with No classes shown.
-- Students — 0 shown with No students shown.
+- Classes pill: 0 shown / 0 total with No classes shown.
+- Students pill: 0 shown with No students shown.
 
 Tab into each empty list and press End, Home, arrow and page keys. Expect no
 exceptions; Tab and Shift+Tab still traverse the controls, and F1 still opens Help.
