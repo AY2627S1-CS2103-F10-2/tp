@@ -1,7 +1,9 @@
 package seedu.address.ui;
 
 import javafx.collections.ObservableList;
+import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -17,12 +19,19 @@ public class CommandBox extends UiPart<Region> {
 
     public static final String ERROR_STYLE_CLASS = "error";
     private static final String FXML = "CommandBox.fxml";
+    private static final PseudoClass SYNTAX_HINT = PseudoClass.getPseudoClass("syntax");
 
     private final CommandExecutor commandExecutor;
     private final CommandHistory commandHistory = new CommandHistory();
 
     @FXML
     private TextField commandTextField;
+
+    @FXML
+    private Label commandHint;
+
+    @FXML
+    private Label commandHintDetails;
 
     /**
      * Creates a {@code CommandBox} with the given {@code CommandExecutor}.
@@ -31,8 +40,23 @@ public class CommandBox extends UiPart<Region> {
         super(FXML);
         this.commandExecutor = commandExecutor;
         // calls #setStyleToDefault() whenever there is a change to the text of the command box.
-        commandTextField.textProperty().addListener((unused1, unused2, unused3) -> setStyleToDefault());
+        commandTextField.textProperty().addListener((observable, previous, current) -> {
+            setStyleToDefault();
+            updateHint(current);
+        });
         commandTextField.addEventFilter(KeyEvent.KEY_PRESSED, this::handleHistoryNavigation);
+        updateHint(commandTextField.getText());
+    }
+
+    /** Separates command syntax from its explanation while keeping both labels read-only. */
+    private void updateHint(String draft) {
+        String[] lines = CommandHints.forInput(draft).split("\n", 2);
+        boolean hasDetails = lines.length == 2;
+        commandHint.setText(lines[0]);
+        commandHint.pseudoClassStateChanged(SYNTAX_HINT, hasDetails);
+        commandHintDetails.setText(hasDetails ? lines[1] : "");
+        commandHintDetails.setVisible(hasDetails);
+        commandHintDetails.setManaged(hasDetails);
     }
 
     /**

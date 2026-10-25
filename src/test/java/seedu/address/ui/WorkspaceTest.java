@@ -135,9 +135,13 @@ public class WorkspaceTest {
                     assertEquals(studentName.localToScene(0, 0).getX(),
                             students.lookup("#" + detail).localToScene(0, 0).getX(), 0.5);
                 }
-                Node input = stage.getScene().lookup("#commandTextField");
+                TextField input = (TextField) stage.getScene().lookup("#commandTextField");
                 Node output = stage.getScene().lookup("#resultDisplay");
+                Label hint = (Label) stage.getScene().lookup("#commandHint");
+                assertEquals(CommandHints.DEFAULT_HINT, hint.getText());
                 assertTrue(input.localToScene(input.getBoundsInLocal()).getMaxY()
+                        <= hint.localToScene(hint.getBoundsInLocal()).getMinY());
+                assertTrue(hint.localToScene(hint.getBoundsInLocal()).getMaxY()
                         <= output.localToScene(output.getBoundsInLocal()).getMinY());
                 assertTrue(output.localToScene(output.getBoundsInLocal()).getMaxY()
                         <= split.localToScene(split.getBoundsInLocal()).getMinY());
@@ -157,6 +161,14 @@ public class WorkspaceTest {
                 settle(stage);
                 assertTrue(students.getBoundsInLocal().getWidth() >= 220);
                 capture(stage, "layout-minimum");
+                input.setText("del");
+                settle(stage);
+                capture(stage, "command-hints-matches");
+                input.setText("edit 1");
+                settle(stage);
+                capture(stage, "command-hints-narrow");
+                input.clear();
+                settle(stage);
                 split.setDividerPositions(1);
                 settle(stage);
                 Label classCount = (Label) stage.getScene().lookup("#classCount");
@@ -198,13 +210,17 @@ public class WorkspaceTest {
                     TextArea output = (TextArea) stage.getScene().lookup("#resultDisplay");
                     ListView<?> classes = (ListView<?>) stage.getScene().lookup("#academicClassListView");
                     ListView<?> students = (ListView<?>) stage.getScene().lookup("#personListView");
-                    for (Node control : List.of(input, output, classes, students)) {
+                    Label hint = (Label) stage.getScene().lookup("#commandHint");
+                    input.setText("edit 1");
+                    settle(stage);
+                    for (Node control : List.of(input, hint, output, classes, students)) {
                         var bounds = control.localToScene(control.getBoundsInLocal());
                         assertTrue(bounds.getWidth() > 0 && bounds.getHeight() > 0);
                         assertTrue(bounds.getMinX() >= 0 && bounds.getMinY() >= 0);
                         assertTrue(bounds.getMaxX() <= stage.getScene().getWidth() + 1);
                         assertTrue(bounds.getMaxY() <= stage.getScene().getHeight() + 1);
                     }
+                    capture(stage, "command-hints-scaled-screen-" + (int) usableHeight);
                     execute(input, "find Alice");
                     assertHeaders(stage, 32, 32, 1, 3);
                     assertFalse(output.getText().isBlank());
@@ -317,9 +333,14 @@ public class WorkspaceTest {
                 List<?> originalStudents = List.copyOf(students.getItems());
                 List<?> originalClasses = List.copyOf(classes.getItems());
                 String originalOutput = output.getText();
+                Label hint = (Label) stage.getScene().lookup("#commandHint");
+                Label hintDetails = (Label) stage.getScene().lookup("#commandHintDetails");
                 for (String draft : List.of("find Alice", "listbyclass 1", "listbystudent 1",
-                        "addattendance 1 1 d/2020-01-03", "listbyclass 9999", "clear", "")) {
+                        "deleteclass 1", "assign 1 1", "addattendance 1 1 d/2020-01-03",
+                        "listbyclass 9999", "clear", "")) {
                     input.setText(draft);
+                    assertEquals(CommandHints.forInput(draft), hint.getText()
+                            + (hintDetails.isManaged() ? "\n" + hintDetails.getText() : ""));
                     assertEquals(originalStudents, students.getItems());
                     assertEquals(originalClasses, classes.getItems());
                     assertEquals(originalOutput, output.getText());
