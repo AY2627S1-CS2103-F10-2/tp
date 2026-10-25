@@ -17,6 +17,19 @@
       "headingKeywords": {}
     },
     {
+      "src": "CommandHintsTesting.md",
+      "headings": {
+        "command-hints-manual-testing": "Command hints: manual testing",
+        "start-with-isolated-data": "Start with isolated data",
+        "default-and-contextual-guidance": "Default and contextual guidance",
+        "typing-must-leave-the-workspace-unchanged": "Typing must leave the workspace unchanged",
+        "enter-errors-and-command-history": "Enter, errors and command history",
+        "wrapping-and-appearance": "Wrapping and appearance",
+        "automated-checks": "Automated checks"
+      },
+      "headingKeywords": {}
+    },
+    {
       "src": "Configuration.md",
       "title": "Configuration guide",
       "headings": {
