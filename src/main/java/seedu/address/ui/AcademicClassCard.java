@@ -1,13 +1,10 @@
 package seedu.address.ui;
 
-import java.util.List;
-
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
+import javafx.scene.text.Text;
 import seedu.address.model.academicclass.AcademicClass;
 
 /**
@@ -20,15 +17,11 @@ public class AcademicClassCard extends UiPart<Region> {
     private final AcademicClass academicClass;
 
     @FXML
-    private HBox cardPane;
-    @FXML
     private Label id;
     @FXML
-    private FlowPane classHeading;
+    private Text moduleCode;
     @FXML
-    private Label moduleCode;
-    @FXML
-    private Label className;
+    private Text className;
     @FXML
     private Label studentCount;
 
@@ -39,15 +32,8 @@ public class AcademicClassCard extends UiPart<Region> {
         super(FXML);
         this.academicClass = academicClass;
         id.setText(displayedIndex + ". ");
-        moduleCode.setText(academicClass.getModuleCode().value);
+        moduleCode.setText(academicClass.getModuleCode().value + " ");
         className.setText(academicClass.getClassName().value);
-        classHeading.prefWrapLengthProperty().bind(classHeading.widthProperty());
-        // Keep each heading part within the card, including a single long class name.
-        for (Label part : List.of(moduleCode, className)) {
-            part.maxWidthProperty().bind(classHeading.widthProperty());
-            part.minHeightProperty().bind(Bindings.createDoubleBinding(() -> part.prefHeight(classHeading.getWidth()),
-                    classHeading.widthProperty(), part.fontProperty(), part.textProperty(), part.insetsProperty()));
-        }
         studentCount.textProperty().bind(Bindings.size(academicClass.getStudents()).asString("Students: %d"));
     }
 }

@@ -50,7 +50,8 @@
     -fx-font-size: 14px;
     -fx-font-weight: bold;
 }
-.workspace-bottom .module-code { -fx-text-fill: #b2cee9; }
+.workspace-bottom .module-code { -fx-fill: #b2cee9; }
+.workspace-bottom .class-title { -fx-fill: #e7edf5; }
 .workspace-bottom .card-index {
     -fx-font-family: "System";
     -fx-font-size: 13px;

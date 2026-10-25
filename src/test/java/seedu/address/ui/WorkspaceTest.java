@@ -49,6 +49,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import seedu.address.commons.core.GuiSettings;
@@ -99,6 +100,8 @@ public class WorkspaceTest {
                 assertTrue(students.localToScene(students.getBoundsInLocal()).getMaxX()
                         <= classes.localToScene(classes.getBoundsInLocal()).getMinX());
                 assertTrue(classes.getBoundsInLocal().getWidth() > students.getBoundsInLocal().getWidth());
+                VirtualFlow<?> classFlow = (VirtualFlow<?>) classes.lookup(".virtual-flow");
+                double wideClassHeight = classFlow.getVisibleCell(1).getHeight();
                 assertHeaderLayout(stage, "student");
                 assertHeaderLayout(stage, "class");
                 Label classIndex = (Label) classes.lookup("#id");
@@ -108,7 +111,7 @@ public class WorkspaceTest {
                 assertEquals(classIndex.getTextFill(), studentIndex.getTextFill());
                 assertEquals(classIndex.getPadding(), studentIndex.getPadding());
                 Node classHeading = classes.lookup("#classHeading");
-                Label className = (Label) classes.lookup("#className");
+                Text className = (Text) classes.lookup("#className");
                 Label studentName = (Label) students.lookup("#name");
                 assertEquals(classHeading.localToScene(0, 0).getX() - classIndex.localToScene(0, 0).getX(),
                         studentName.localToScene(0, 0).getX() - studentIndex.localToScene(0, 0).getX(), 0.5);
@@ -148,10 +151,13 @@ public class WorkspaceTest {
                 assertHeaderLayout(stage, "student");
                 assertHeaderLayout(stage, "class");
                 capture(stage, "usability-narrow-class-header");
+                assertTrue(classFlow.getVisibleCell(1).getHeight() > wideClassHeight);
                 split.setDividerPositions(0);
                 settle(stage);
                 assertHeaderLayout(stage, "student");
                 assertHeaderLayout(stage, "class");
+                assertEquals(wideClassHeight, classFlow.getVisibleCell(1).getHeight(), 1,
+                        "Rendered class rows must shrink again when the divider moves back");
             } finally {
                 stage.hide();
             }

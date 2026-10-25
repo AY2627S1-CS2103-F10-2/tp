@@ -52,6 +52,9 @@ Module codes should have a light blue accent, with class names in light text.
 Student numbers should stand out slightly from contact details. Supporting
 details and tags should align beneath the headings, with faint card borders and
 soft, rounded tag backgrounds. Long names, contacts and tags must still wrap.
+Class headings should wrap as one continuous line of text, with module codes
+remaining blue. Narrow and widen the class pane repeatedly: wrapped headings must
+fit above membership counts, then shrink back without leaving excess blank space.
 
 ## 3. Executed filters and zero-result students
 
