@@ -177,12 +177,6 @@ public class MainWindowTest {
                 assertTrue(primary.contains(stage.getX(), stage.getY(), stage.getWidth(), stage.getHeight()));
                 stage.setX(200);
                 assertEquals(200, stage.getX(), "Normal dragging within a monitor must retain its position");
-                stage.setIconified(true);
-                stage.setX(2000);
-                assertEquals(600, stage.getMinHeight(), "Defer resizing while the window is minimized");
-                stage.setIconified(false);
-                assertEquals(430, stage.getMinHeight());
-                assertTrue(secondary.contains(stage.getX(), stage.getY(), stage.getWidth(), stage.getHeight()));
             } finally {
                 stage.hide();
             }
@@ -204,6 +198,35 @@ public class MainWindowTest {
                 stage.hide();
                 screen.set(small);
                 stage.show();
+                assertEquals(430, stage.getMinHeight());
+                assertTrue(small.contains(stage.getX(), stage.getY(), stage.getWidth(), stage.getHeight()));
+            } finally {
+                stage.hide();
+            }
+        });
+    }
+
+    @Test
+    public void restoreWindow_monitorChangesWhileMinimized_updatesLimitsWhenRestored() {
+        runOnFxThreadAndWait(() -> {
+            Stage stage = new Stage();
+            Rectangle2D large = new Rectangle2D(50, 50, 1920, 1080);
+            Rectangle2D small = new Rectangle2D(50, 50, 854, 430);
+            AtomicReference<Rectangle2D> screen = new AtomicReference<>(large);
+            LogicStub logic = new LogicStub() {
+                @Override
+                public GuiSettings getGuiSettings() {
+                    return new GuiSettings(740, 600, 100, 50);
+                }
+            };
+            new MainWindow(stage, logic, temporaryFolder.resolve("addressBook.json"), () ->
+                    List.of(screen.get()), screen::get);
+            try {
+                stage.show();
+                stage.setIconified(true);
+                screen.set(small);
+                assertEquals(600, stage.getMinHeight(), "Defer resizing while the window is minimized");
+                stage.setIconified(false);
                 assertEquals(430, stage.getMinHeight());
                 assertTrue(small.contains(stage.getX(), stage.getY(), stage.getWidth(), stage.getHeight()));
             } finally {
