@@ -92,6 +92,16 @@ public class WorkspaceTest {
                 assertTrue(students.lookup("#personListView") instanceof ListView);
                 assertTrue(classes.localToScene(classes.getBoundsInLocal()).getMaxX()
                         <= students.localToScene(students.getBoundsInLocal()).getMinX());
+                Label classIndex = (Label) classes.lookup("#id");
+                Label studentIndex = (Label) students.lookup("#id");
+                assertEquals(classIndex.getText(), studentIndex.getText());
+                assertEquals(classIndex.getFont(), studentIndex.getFont());
+                assertEquals(classIndex.getTextFill(), studentIndex.getTextFill());
+                assertEquals(classIndex.getPadding(), studentIndex.getPadding());
+                Node className = classes.lookup("#className");
+                Node studentName = students.lookup("#name");
+                assertEquals(className.localToScene(0, 0).getX() - classIndex.localToScene(0, 0).getX(),
+                        studentName.localToScene(0, 0).getX() - studentIndex.localToScene(0, 0).getX(), 0.5);
                 Node input = stage.getScene().lookup("#commandTextField");
                 Node output = stage.getScene().lookup("#resultDisplay");
                 assertTrue(input.localToScene(input.getBoundsInLocal()).getMaxY()

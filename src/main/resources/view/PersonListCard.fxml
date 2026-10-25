@@ -8,8 +8,8 @@
 <HBox id="cardPane" fx:id="cardPane" minWidth="0" prefWidth="0"
       xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
   <VBox spacing="6" minWidth="0" HBox.hgrow="ALWAYS">
-    <HBox spacing="2" alignment="TOP_LEFT" minWidth="0">
-      <Label fx:id="id" styleClass="cell_big_label" minWidth="-Infinity" />
+    <HBox alignment="TOP_LEFT" minWidth="0">
+      <Label fx:id="id" styleClass="card-index" minWidth="-Infinity" />
       <Label fx:id="name" styleClass="cell_big_label" minWidth="0" maxWidth="Infinity"
              wrapText="true" HBox.hgrow="ALWAYS" />
     </HBox>

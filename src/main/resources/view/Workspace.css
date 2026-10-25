@@ -35,7 +35,13 @@
     -fx-padding: 10 12;
 }
 .workspace-bottom .class-title { -fx-font-size: 13px; -fx-font-weight: bold; }
-.workspace-bottom .class-index { -fx-font-size: 13px; -fx-text-fill: #b4cadf; }
+.workspace-bottom .card-index {
+    -fx-font-family: "System";
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #b4cadf;
+    -fx-padding: 0 8 0 0;
+}
 .workspace-bottom .cell_big_label { -fx-font-size: 15px; -fx-font-weight: bold; }
 .workspace-bottom .cell_small_label { -fx-font-size: 12px; -fx-text-fill: #b9c6d5; }
 .workspace-bottom #tags { -fx-hgap: 5; -fx-vgap: 4; }

@@ -38,6 +38,7 @@ Expect Classes — 3 shown / 3 total and Students — 3 shown. Card membership
 counts remain 2, 1 and 1. Retain the input/output at the top, adjustable classes-left
 split, compact students, slate theme and passive class rows from branch A.
 There is no extra sentence repeating the displayed student count.
+Class and student indices should have matching font, weight, colour and spacing.
 
 3. Executed filters and zero-result students
 
