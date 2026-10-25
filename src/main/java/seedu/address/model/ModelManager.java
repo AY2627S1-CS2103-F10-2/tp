@@ -123,6 +123,16 @@ public class ModelManager implements Model {
     }
 
     @Override
+    public List<String> getCommandHistory() {
+        return addressBook.getCommandHistory();
+    }
+
+    @Override
+    public void setCommandHistory(List<String> commands) {
+        addressBook.setCommandHistory(commands);
+    }
+
+    @Override
     public ReadOnlyAddressBook getAddressBook() {
         return addressBook;
     }

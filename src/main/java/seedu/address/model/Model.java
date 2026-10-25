@@ -67,6 +67,12 @@ public interface Model {
     /** Returns the AddressBook */
     ReadOnlyAddressBook getAddressBook();
 
+    /** Returns saved successful commands, oldest first, as an unmodifiable list. */
+    List<String> getCommandHistory();
+
+    /** Replaces saved command history. */
+    void setCommandHistory(List<String> commands);
+
     /**
      * Returns true if a person with the same identity as {@code person} exists in the address book.
      */

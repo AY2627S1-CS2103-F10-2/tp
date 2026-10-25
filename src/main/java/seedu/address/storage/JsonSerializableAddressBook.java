@@ -25,6 +25,7 @@ class JsonSerializableAddressBook {
     public static final String MESSAGE_DUPLICATE_ACADEMIC_CLASS =
             "Academic classes list contains duplicate academic class(es).";
 
+    private final List<String> commandHistory = new ArrayList<>();
     private final List<JsonAdaptedPerson> persons = new ArrayList<>();
     private final List<JsonAdaptedAcademicClass> classes = new ArrayList<>();
     private final List<JsonAdaptedAttendance> attendance = new ArrayList<>();
@@ -37,10 +38,21 @@ class JsonSerializableAddressBook {
     }
 
     /** Creates JSON data; absent attendance in older files defaults to an empty list. */
+    public JsonSerializableAddressBook(List<JsonAdaptedPerson> persons,
+            List<JsonAdaptedAcademicClass> classes,
+            List<JsonAdaptedAttendance> attendance) {
+        this(persons, classes, attendance, null);
+    }
+
+    /** Creates JSON data; older files default to empty command history. */
     @JsonCreator
     public JsonSerializableAddressBook(@JsonProperty("persons") List<JsonAdaptedPerson> persons,
             @JsonProperty("classes") List<JsonAdaptedAcademicClass> classes,
-            @JsonProperty("attendance") List<JsonAdaptedAttendance> attendance) {
+            @JsonProperty("attendance") List<JsonAdaptedAttendance> attendance,
+            @JsonProperty("commandHistory") List<String> commandHistory) {
+        if (commandHistory != null) {
+            this.commandHistory.addAll(commandHistory);
+        }
         this.persons.addAll(persons);
         if (classes != null) {
             this.classes.addAll(classes);
@@ -56,6 +68,7 @@ class JsonSerializableAddressBook {
      * @param source future changes to this will not affect the created {@code JsonSerializableAddressBook}.
      */
     public JsonSerializableAddressBook(ReadOnlyAddressBook source) {
+        commandHistory.addAll(source.getCommandHistory());
         persons.addAll(source.getPersonList().stream().map(JsonAdaptedPerson::new).collect(Collectors.toList()));
         classes.addAll(source.getAcademicClassList().stream()
                 .map(JsonAdaptedAcademicClass::new)
@@ -86,6 +99,11 @@ class JsonSerializableAddressBook {
             addressBook.addAcademicClass(academicClass);
         }
         restoreAttendance(addressBook);
+        try {
+            addressBook.setCommandHistory(commandHistory);
+        } catch (IllegalArgumentException | NullPointerException e) {
+            throw new IllegalValueException("Invalid command history: commands must be non-null and non-blank.");
+        }
         return addressBook;
     }
 
