@@ -17,7 +17,7 @@ public class AssignCommandParser implements Parser<AssignCommand> {
     @Override
     public AssignCommand parse(String args) throws ParseException {
         ArgumentMultimap arguments = ArgumentTokenizer.tokenize(args);
-        Index[] indices = AttendanceParserUtil.parseIndices(arguments, AssignCommand.MESSAGE_USAGE);
+        Index[] indices = ParserUtil.parseIndices(arguments.getPreamble(), AssignCommand.MESSAGE_USAGE);
 
         return new AssignCommand(indices[0], indices[1]);
     }
