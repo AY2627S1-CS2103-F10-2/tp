@@ -277,9 +277,9 @@ Step 5. The command returns a successful `CommandResult` with the message `New c
 
 ### Deleting an academic class
 
-The `deleteclass` command identifies an existing class by its module code and class name. `AddressBookParser` delegates argument validation to `DeleteClassCommandParser`, which creates a `DeleteClassCommand`. The command looks up the class through `Model#getAddressBook()` and calls `Model#deleteAcademicClass()` before returning a successful `CommandResult`.
+The `deleteclass` command identifies an existing class by its one-based index in the currently displayed class list. `AddressBookParser` delegates argument validation to `DeleteClassCommandParser`, which uses `ParserUtil.parseIndex()` and creates a `DeleteClassCommand` containing an `Index`. At execution time, the command retrieves `Model#getFilteredAcademicClassList()`, checks the index against its size, and calls `Model#deleteAcademicClass()` with the selected stored class. This is the same observable list used by the class panel, so selection respects the current class filter and display order. Invalid indices are rejected without changing the model.
 
-The following diagram shows a successful run of `deleteclass m/CS2103 c/F10-2`, assuming that class exists. The class is removed and the returned feedback is `Deleted class: CS2103-F10-2`. Parsing helpers, result construction, and storage calls are omitted for clarity; `LogicManager` saves the updated address book before returning the result to the UI.
+The following diagram shows a successful run of `deleteclass 1`, assuming at least one class is displayed. The first displayed class is removed and the returned feedback identifies the deleted class. The existing model deletion path removes its assignments and attendance records while retaining student records. Remaining displayed classes are renumbered automatically. Parsing helpers and result construction are omitted for clarity; `LogicManager` saves the updated address book before returning the result to the UI. No storage schema or model interface change is required for index-based selection.
 
 <puml src="diagrams/DeleteClassSequenceDiagram-Logic.puml" alt="Deleting an academic class through the Logic component" />
 
