@@ -60,6 +60,18 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_blankInput_rejectsWithoutChangingHistoryOrSavedData() throws Exception {
+        logic.execute("list");
+        Path savedFile = temporaryFolder.resolve("addressBook.json");
+        String savedContents = Files.readString(savedFile);
+        for (String blank : List.of("", " ", "\t\r\n")) {
+            assertThrows(ParseException.class, () -> logic.execute(blank));
+            assertEquals(List.of("list"), logic.getCommandHistory());
+            assertEquals(savedContents, Files.readString(savedFile));
+        }
+    }
+
+    @Test
     public void execute_history_survivesRestartAndClearAndExcludesFailures() throws Exception {
         logic.execute("help");
         logic.execute("list");

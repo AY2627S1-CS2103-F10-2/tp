@@ -38,6 +38,25 @@ public class AddressBookTest {
     private final AddressBook addressBook = new AddressBook();
 
     @Test
+    public void setCommandHistory_blankEntry_rejectsWithoutReplacingExistingHistory() {
+        addressBook.setCommandHistory(List.of("list"));
+        for (String blank : List.of("", " ", "\t\r\n")) {
+            assertThrows(IllegalArgumentException.class, ()
+                    -> addressBook.setCommandHistory(List.of("help", blank)));
+            assertEquals(List.of("list"), addressBook.getCommandHistory());
+        }
+    }
+
+    @Test
+    public void setCommandHistory_nullListOrEntry_rejectsWithoutReplacingExistingHistory() {
+        addressBook.setCommandHistory(List.of("list"));
+        assertThrows(NullPointerException.class, () -> addressBook.setCommandHistory(null));
+        assertThrows(NullPointerException.class, ()
+                -> addressBook.setCommandHistory(Arrays.asList("help", null)));
+        assertEquals(List.of("list"), addressBook.getCommandHistory());
+    }
+
+    @Test
     public void assignStudentToClass_storedObjects_preservesReferencesAndIsIdempotent() {
         AcademicClass storedClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
         AcademicClass otherClass = new AcademicClass(new ModuleCode("CS2101"), new ClassName("T01"));
