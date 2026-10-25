@@ -114,20 +114,6 @@
       "headingKeywords": {}
     },
     {
-      "src": "UiLayoutTesting.md",
-      "headings": {
-        "tassist-layout-refresh-manual-testing": "TAssist layout refresh manual testing",
-        "start-an-isolated-session": "Start an isolated session",
-        "1-populate-classes-and-students": "1. Populate classes and students",
-        "2-typing-and-executed-filtering": "2. Typing and executed filtering",
-        "3-existing-attendance-and-membership-regression": "3. Existing attendance and membership regression",
-        "4-theme-focus-and-persistence": "4. Theme, focus and persistence",
-        "5-keyboard-scrolling-with-overflowing-classes": "5. Keyboard scrolling with overflowing classes",
-        "automated-validation-and-optional-captures": "Automated validation and optional captures"
-      },
-      "headingKeywords": {}
-    },
-    {
       "src": "UserGuide.md",
       "title": "TAssist User Guide",
       "headings": {
