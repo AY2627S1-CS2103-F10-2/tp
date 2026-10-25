@@ -43,20 +43,15 @@ deactivate AddressBookParser
 LogicManager -> AssignCommand : execute(m)
 activate AssignCommand
 
-AssignCommand -> Model : findDisplayedPerson(studentIndex)
+AssignCommand -> Model : findPersonByStudentNumber(studentNumber)
 activate Model
 Model --> AssignCommand : Optional.of(person)
 deactivate Model
 
-AssignCommand -> Model : findDisplayedAcademicClass(classIndex)
+AssignCommand -> Model : findAcademicClass(moduleCode, className)
 activate Model
 Model --> AssignCommand : Optional.of(academicClass)
 deactivate Model
-
-note over AssignCommand
-Reject empty lookup results with
-invalid displayed-index feedback.
-end note
 
 AssignCommand -> Model : assignStudentToClass(person, academicClass)
 activate Model
