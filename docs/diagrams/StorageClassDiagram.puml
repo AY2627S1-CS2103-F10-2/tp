@@ -18,14 +18,9 @@ Class JsonAddressBookStorage
 Class JsonSerializableAddressBook
 Class JsonAdaptedPerson
 Class JsonAdaptedTag
-Class JsonAdaptedAcademicClass
-Class JsonAdaptedAttendance
 }
 
 }
-
-Class AcademicClass MODEL_COLOR
-Class Attendance MODEL_COLOR
 
 Class HiddenOutside #FFFFFF
 HiddenOutside ..> Storage
@@ -37,9 +32,5 @@ StorageManager -down-> "1" JsonAddressBookStorage
 JsonAddressBookStorage ..> JsonSerializableAddressBook
 JsonSerializableAddressBook --> "*" JsonAdaptedPerson
 JsonAdaptedPerson --> "*" JsonAdaptedTag
-JsonSerializableAddressBook --> "*" JsonAdaptedAcademicClass : classes
-JsonSerializableAddressBook --> "*" JsonAdaptedAttendance : attendance
-JsonAdaptedAcademicClass ..> AcademicClass : creates
-JsonAdaptedAttendance ..> Attendance : creates
 
 @enduml
