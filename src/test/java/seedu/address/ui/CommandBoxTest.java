@@ -23,6 +23,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.exceptions.CommandException;
@@ -96,7 +97,8 @@ public class CommandBoxTest {
                     container.applyCss();
                     container.layout();
                     container.layout();
-                    assertEquals(Font.font("Monospaced", 12).getFamily(), hint.getFont().getFamily());
+                    assertEquals(Font.font("Monospaced", FontWeight.BOLD, 13), hint.getFont());
+                    assertEquals(12, details.getFont().getSize());
                     assertFalse(hint.getTextFill().equals(details.getTextFill()));
                     assertTrue(details.isVisible());
                     for (Label label : List.of(hint, details)) {

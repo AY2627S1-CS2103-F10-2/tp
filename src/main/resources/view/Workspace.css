@@ -123,7 +123,12 @@
     -fx-font-weight: bold;
 }
 .app-shell .command-hint-text { -fx-text-fill: #e0eaf5; -fx-font-size: 12px; }
-.app-shell .command-hint-text:syntax { -fx-text-fill: #f0f6ff; -fx-font-family: "Monospaced"; }
+.app-shell .command-hint-text:syntax {
+    -fx-text-fill: #f0f6ff;
+    -fx-font-family: "Monospaced";
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
 .app-shell .command-hint-details { -fx-text-fill: #b9c6d5; -fx-font-size: 12px; }
 .app-shell .error { -fx-text-fill: #efb0a2 !important; }
 .app-shell #resultDisplay {
