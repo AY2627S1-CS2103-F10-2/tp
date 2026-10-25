@@ -28,6 +28,7 @@ import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.geometry.Orientation;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -122,6 +123,63 @@ public class WorkspaceTest {
                 capture(stage, "usability-narrow-class-header");
             } finally {
                 stage.hide();
+            }
+        });
+    }
+
+    @Test
+    public void workspace_scaledSmallScreen_keepsCommandsAndBothListsUsable() throws Exception {
+        runOnFxThreadAndWait(() -> {
+            // 1280 x 720 at 150%, with a second case reserving space for desktop bars.
+            for (double usableHeight : new double[] {720 / 1.5, 720 / 1.5 - 50}) {
+                Rectangle2D screen = new Rectangle2D(50, 50, 1280 / 1.5, usableHeight);
+                Stage stage = new Stage();
+                try {
+                    Logic logic = createLogic(30);
+                    logic.setGuiSettings(new GuiSettings(1040, 760, 50, 50));
+                    MainWindow window = new MainWindow(stage, logic, testFolder.resolve("addressbook.json"), () ->
+                            List.of(screen), () -> screen);
+                    window.fillInnerParts();
+                    window.show();
+                    settle(stage);
+                    assertTrue(stage.getWidth() <= screen.getWidth() + 1);
+                    assertTrue(stage.getHeight() <= screen.getHeight() + 1);
+                    TextField input = (TextField) stage.getScene().lookup("#commandTextField");
+                    TextArea output = (TextArea) stage.getScene().lookup("#resultDisplay");
+                    ListView<?> classes = (ListView<?>) stage.getScene().lookup("#academicClassListView");
+                    ListView<?> students = (ListView<?>) stage.getScene().lookup("#personListView");
+                    for (Node control : List.of(input, output, classes, students)) {
+                        var bounds = control.localToScene(control.getBoundsInLocal());
+                        assertTrue(bounds.getWidth() > 0 && bounds.getHeight() > 0);
+                        assertTrue(bounds.getMinX() >= 0 && bounds.getMinY() >= 0);
+                        assertTrue(bounds.getMaxX() <= stage.getScene().getWidth() + 1);
+                        assertTrue(bounds.getMaxY() <= stage.getScene().getHeight() + 1);
+                    }
+                    execute(input, "find Alice");
+                    assertHeaders(stage, 32, 32, 1);
+                    assertFalse(output.getText().isBlank());
+                    execute(input, "list");
+                    input.requestFocus();
+                    press(input, KeyCode.TAB);
+                    assertSame(output, stage.getScene().getFocusOwner());
+                    press(output, KeyCode.TAB);
+                    assertSame(classes, stage.getScene().getFocusOwner());
+                    press(classes, KeyCode.END);
+                    settle(stage);
+                    VirtualFlow<?> classFlow = (VirtualFlow<?>) classes.lookup(".virtual-flow");
+                    assertEquals(classes.getItems().size() - 1, classFlow.getLastVisibleCell().getIndex());
+                    assertNull(classes.getSelectionModel());
+                    press(classes, KeyCode.TAB);
+                    assertSame(students, stage.getScene().getFocusOwner());
+                    press(students, KeyCode.END);
+                    settle(stage);
+                    VirtualFlow<?> studentFlow = (VirtualFlow<?>) students.lookup(".virtual-flow");
+                    assertEquals(students.getItems().size() - 1, studentFlow.getLastVisibleCell().getIndex());
+                    assertEquals(3, students.getItems().size());
+                    capture(stage, "usability-scaled-screen-" + (int) usableHeight);
+                } finally {
+                    stage.hide();
+                }
             }
         });
     }

@@ -3,8 +3,11 @@ package seedu.address.ui;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.OptionalInt;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 
+import javafx.beans.InvalidationListener;
+import javafx.beans.WeakInvalidationListener;
 import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -45,6 +48,11 @@ public class MainWindow extends UiPart<Stage> {
     private Stage primaryStage;
     private Logic logic;
     private Path dataFilePath;
+    private final Supplier<List<Rectangle2D>> screenBounds;
+    private final Supplier<Rectangle2D> primaryScreenBounds;
+    private final InvalidationListener screenChangeListener = observable -> updateWindowScreen();
+    private Rectangle2D currentScreenBounds;
+    private boolean applyingWindowBounds;
 
     // Independent Ui parts residing in this Ui container
     private PersonListPanel personListPanel;
@@ -81,15 +89,32 @@ public class MainWindow extends UiPart<Stage> {
      * and the data file path to show in the status bar.
      */
     public MainWindow(Stage primaryStage, Logic logic, Path dataFilePath) {
+        this(primaryStage, logic, dataFilePath, () ->
+                Screen.getScreens().stream().map(Screen::getVisualBounds).toList(), () ->
+                Screen.getPrimary().getVisualBounds());
+    }
+
+    /** Creates a window using the supplied monitor geometry. */
+    MainWindow(Stage primaryStage, Logic logic, Path dataFilePath,
+            Supplier<List<Rectangle2D>> screenBounds, Supplier<Rectangle2D> primaryScreenBounds) {
         super(FXML, primaryStage);
 
         // Set dependencies
         this.primaryStage = primaryStage;
         this.logic = logic;
         this.dataFilePath = dataFilePath;
+        this.screenBounds = screenBounds;
+        this.primaryScreenBounds = primaryScreenBounds;
 
         // Configure the UI
         setWindowDefaultSize(logic.getGuiSettings());
+        primaryStage.xProperty().addListener(screenChangeListener);
+        primaryStage.yProperty().addListener(screenChangeListener);
+        primaryStage.widthProperty().addListener(screenChangeListener);
+        primaryStage.heightProperty().addListener(screenChangeListener);
+        primaryStage.showingProperty().addListener(screenChangeListener);
+        primaryStage.iconifiedProperty().addListener(screenChangeListener);
+        Screen.getScreens().addListener(new WeakInvalidationListener(screenChangeListener));
 
         setAccelerators();
 
@@ -166,23 +191,25 @@ public class MainWindow extends UiPart<Stage> {
      * Sets the default size based on {@code guiSettings}.
      */
     private void setWindowDefaultSize(GuiSettings guiSettings) {
-        Rectangle2D bounds = getVisibleWindowBounds(guiSettings,
-                Screen.getScreens().stream().map(Screen::getVisualBounds).toList(),
-                Screen.getPrimary().getVisualBounds());
-        applyWindowBounds(primaryStage, bounds);
+        List<Rectangle2D> screens = screenBounds.get();
+        Rectangle2D primaryScreen = primaryScreenBounds.get();
+        Rectangle2D bounds = getVisibleWindowBounds(guiSettings, screens, primaryScreen);
+        currentScreenBounds = getWindowScreen(bounds, screens, primaryScreen);
+        applyWindowBounds(primaryStage, bounds, currentScreenBounds);
     }
 
-    /** Applies restored bounds while enforcing the workspace's minimum size. */
-    static void applyWindowBounds(Stage stage, Rectangle2D bounds) {
-        stage.setMinWidth(MIN_WINDOW_WIDTH);
-        stage.setMinHeight(MIN_WINDOW_HEIGHT);
-        stage.setWidth(Math.max(MIN_WINDOW_WIDTH, bounds.getWidth()));
-        stage.setHeight(Math.max(MIN_WINDOW_HEIGHT, bounds.getHeight()));
-        stage.setX(bounds.getMinX());
-        stage.setY(bounds.getMinY());
+    /** Fits the window and its normal minimum dimensions inside the monitor's usable bounds. */
+    static void applyWindowBounds(Stage stage, Rectangle2D bounds, Rectangle2D usableBounds) {
+        Rectangle2D fitted = fitWindowBounds(bounds, usableBounds);
+        stage.setMinWidth(Math.min(MIN_WINDOW_WIDTH, usableBounds.getWidth()));
+        stage.setMinHeight(Math.min(MIN_WINDOW_HEIGHT, usableBounds.getHeight()));
+        stage.setWidth(fitted.getWidth());
+        stage.setHeight(fitted.getHeight());
+        stage.setX(fitted.getMinX());
+        stage.setY(fitted.getMinY());
     }
 
-    /** Restores usable saved bounds, or centers on the primary screen subject to the minimum size. */
+    /** Restores saved bounds on their monitor, or centers on the primary screen if disconnected. */
     static Rectangle2D getVisibleWindowBounds(GuiSettings settings, List<Rectangle2D> screens,
             Rectangle2D primaryScreen) {
         double width = settings.getWindowWidth();
@@ -190,19 +217,67 @@ public class MainWindow extends UiPart<Stage> {
         GuiSettings defaults = new GuiSettings();
         width = Double.isFinite(width) && width > 0 ? width : defaults.getWindowWidth();
         height = Double.isFinite(height) && height > 0 ? height : defaults.getWindowHeight();
-        width = Math.max(MIN_WINDOW_WIDTH, width);
-        height = Math.max(MIN_WINDOW_HEIGHT, height);
         if (settings.getWindowCoordinates() != null) {
             Rectangle2D savedBounds = new Rectangle2D(settings.getWindowCoordinates().getX(),
                     settings.getWindowCoordinates().getY(), width, height);
-            if (screens.stream().anyMatch(screen -> screen.contains(savedBounds))) {
-                return savedBounds;
+            Rectangle2D screen = getWindowScreen(savedBounds, screens, primaryScreen);
+            if (intersectionArea(savedBounds, screen) > 0) {
+                return fitWindowBounds(savedBounds, screen);
             }
         }
-        width = Math.max(MIN_WINDOW_WIDTH, Math.min(width, primaryScreen.getWidth()));
-        height = Math.max(MIN_WINDOW_HEIGHT, Math.min(height, primaryScreen.getHeight()));
-        return new Rectangle2D(primaryScreen.getMinX() + Math.max(0, (primaryScreen.getWidth() - width) / 2),
-                primaryScreen.getMinY() + Math.max(0, (primaryScreen.getHeight() - height) / 2), width, height);
+        width = Math.min(primaryScreen.getWidth(), Math.max(MIN_WINDOW_WIDTH, width));
+        height = Math.min(primaryScreen.getHeight(), Math.max(MIN_WINDOW_HEIGHT, height));
+        return new Rectangle2D(primaryScreen.getMinX() + (primaryScreen.getWidth() - width) / 2,
+                primaryScreen.getMinY() + (primaryScreen.getHeight() - height) / 2, width, height);
+    }
+
+    /** Updates limits only on monitor changes so normal dragging and resizing remain unrestricted. */
+    private void updateWindowScreen() {
+        if (applyingWindowBounds || !primaryStage.isShowing() || primaryStage.isIconified()) {
+            return;
+        }
+        Rectangle2D bounds = new Rectangle2D(primaryStage.getX(), primaryStage.getY(),
+                primaryStage.getWidth(), primaryStage.getHeight());
+        Rectangle2D screen = getWindowScreen(bounds, screenBounds.get(), primaryScreenBounds.get());
+        if (!screen.equals(currentScreenBounds)) {
+            applyingWindowBounds = true;
+            try {
+                currentScreenBounds = screen;
+                applyWindowBounds(primaryStage, bounds, screen);
+            } finally {
+                applyingWindowBounds = false;
+            }
+        }
+    }
+
+    private static Rectangle2D fitWindowBounds(Rectangle2D bounds, Rectangle2D screen) {
+        double width = Math.min(screen.getWidth(), Math.max(MIN_WINDOW_WIDTH, bounds.getWidth()));
+        double height = Math.min(screen.getHeight(), Math.max(MIN_WINDOW_HEIGHT, bounds.getHeight()));
+        double x = Math.max(screen.getMinX(), Math.min(bounds.getMinX(), screen.getMaxX() - width));
+        double y = Math.max(screen.getMinY(), Math.min(bounds.getMinY(), screen.getMaxY() - height));
+        return new Rectangle2D(x, y, width, height);
+    }
+
+    private static Rectangle2D getWindowScreen(Rectangle2D bounds, List<Rectangle2D> screens,
+            Rectangle2D primaryScreen) {
+        Rectangle2D selected = primaryScreen;
+        double largestArea = 0;
+        for (Rectangle2D screen : screens) {
+            double area = intersectionArea(bounds, screen);
+            if (area > largestArea) {
+                selected = screen;
+                largestArea = area;
+            }
+        }
+        return selected;
+    }
+
+    private static double intersectionArea(Rectangle2D window, Rectangle2D screen) {
+        double width = Math.max(0, Math.min(window.getMaxX(), screen.getMaxX())
+                - Math.max(window.getMinX(), screen.getMinX()));
+        double height = Math.max(0, Math.min(window.getMaxY(), screen.getMaxY())
+                - Math.max(window.getMinY(), screen.getMinY()));
+        return width * height;
     }
 
     /**

@@ -157,9 +157,11 @@ Erase the draft. Clicking class rows must still leave displayed students unchang
 
 ## 6. Minimum size and saved dimensions
 
-Resize the window: it must stop at 720 by 600. Drag the split divider toward each
-side. Headers and counts should remain readable, wrapping when needed, and student
-cards should retain the layout and wrapping from branch A.
+On a monitor with enough usable space, resize the window: it must stop at 720 by
+600. On smaller usable screens, each minimum dimension is capped at the available
+space. Drag the split divider toward each side. Headers and counts should remain
+readable, wrapping when needed, and student cards should retain the layout and
+wrapping from branch A.
 
 Execute `exit`, then edit only this demo file:
 `_temp/improve-ui-usability/session/preferences.json`.
@@ -170,12 +172,47 @@ leaving the JSON structure valid. Relaunch:
 ./gradlew -I config/ui-usability-demo.gradle run
 ```
 
-Expect a window at least 720 by 600, even though the saved dimensions are smaller.
-Larger usable saved dimensions and on-screen positions remain supported. If usable
-screen space is smaller than the minimum, the minimum takes precedence and the
-window starts at the screen's visible top-left corner.
-Exit again and inspect the demo preferences: the saved dimensions must now be at
-least 720 by 600. Relaunch for the final check.
+Expect a window at least 720 by 600 when the monitor has enough usable space, even
+though the saved dimensions are smaller. Saved sizes and positions are clamped to
+the selected monitor's usable bounds. Disconnected or entirely off-screen saved
+windows recover on the primary monitor.
+Exit again and inspect the demo preferences: the saved dimensions must meet these
+screen-aware minimums. Relaunch for the following checks.
+
+### Small screens, scaling and monitor changes
+
+For a physical scaling check, set the desktop resolution to 1280 by 720 and scaling
+to 150% using the operating system's display settings, then launch the isolated
+demo again. The logical desktop is approximately 853 by 480 before taskbars and
+other reserved space. JavaFX reports the usable bounds after scaling; do not apply
+another scaling factor to the saved dimensions.
+
+Expect the whole window to fit the usable screen, including its title bar and
+footer. Its minimum height must shrink below 600 if necessary. Repeat with saved
+dimensions of 1040 by 760 and then 450 by 500: both launches must fit the usable
+screen. Keep the original JSON structure and other settings intact.
+
+At this resolution and scaling:
+
+- Execute `find Alice` and `list`; verify that input, feedback and counts work.
+- Tab from input to output, then Classes and Students. All four controls should
+  remain visible and reachable.
+- In Classes, use Home, End and page keys to inspect all 15 classes. Rows must
+  remain passive, and executing `listbyclass 15` must reveal its class.
+- Execute `list` and scroll Students to reach every card and its details.
+- Check that output remains readable and scrollable when feedback is long.
+- Adjust the split divider and confirm that both lists remain usable.
+
+If two monitors with different usable sizes are available, drag the window from
+the larger monitor to the smaller one. Once most of the window is on the smaller
+monitor, it should fit that monitor and use its screen-aware minimums. Move it back
+and verify that the normal 720 by 600 minimum returns. Ordinary dragging within one
+monitor must remain possible. Also check a changed resolution or disconnected
+monitor while the app is open. Restore your original desktop settings afterward.
+
+Automated tests use equivalent logical bounds of approximately 853 by 480 and
+853 by 430, including reserved desktop space. These tests do not replace the
+physical operating-system scaling and multi-monitor checks above.
 
 ## 7. Empty data and keyboard regression
 
@@ -192,8 +229,9 @@ confirm the same zero counts and empty messages persist.
 
 `./gradlew check coverage` runs the full suite and Checkstyle. Regression coverage
 includes live counts during filters and membership/data changes, zero-result lists,
-restored and minimum sizes, successful class-index scrolling, failed commands and
-targets that disappear under the active class filter.
+screen-aware restored and minimum sizes, monitor transitions, small-screen keyboard
+access and scrolling, successful class-index scrolling, failed commands and targets
+that disappear under the active class filter.
 
 Optional JavaFX captures on a desktop:
 
