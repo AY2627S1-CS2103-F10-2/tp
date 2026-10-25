@@ -6,6 +6,7 @@ import java.util.OptionalInt;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
+import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
 import javafx.beans.binding.Bindings;
@@ -113,7 +114,12 @@ public class MainWindow extends UiPart<Stage> {
         primaryStage.widthProperty().addListener(screenChangeListener);
         primaryStage.heightProperty().addListener(screenChangeListener);
         primaryStage.showingProperty().addListener(screenChangeListener);
-        primaryStage.iconifiedProperty().addListener(screenChangeListener);
+        primaryStage.iconifiedProperty().addListener((observable, wasIconified, isIconified) -> {
+            if (!isIconified) {
+                // Native window managers can restore saved bounds after the property changes.
+                Platform.runLater(() -> updateWindowScreen(true));
+            }
+        });
         Screen.getScreens().addListener(new WeakInvalidationListener(screenChangeListener));
 
         setAccelerators();
@@ -233,13 +239,17 @@ public class MainWindow extends UiPart<Stage> {
 
     /** Updates limits only on monitor changes so normal dragging and resizing remain unrestricted. */
     private void updateWindowScreen() {
+        updateWindowScreen(false);
+    }
+
+    private void updateWindowScreen(boolean fitAfterRestore) {
         if (applyingWindowBounds || !primaryStage.isShowing() || primaryStage.isIconified()) {
             return;
         }
         Rectangle2D bounds = new Rectangle2D(primaryStage.getX(), primaryStage.getY(),
                 primaryStage.getWidth(), primaryStage.getHeight());
         Rectangle2D screen = getWindowScreen(bounds, screenBounds.get(), primaryScreenBounds.get());
-        if (!screen.equals(currentScreenBounds)) {
+        if (fitAfterRestore || !screen.equals(currentScreenBounds)) {
             applyingWindowBounds = true;
             try {
                 currentScreenBounds = screen;

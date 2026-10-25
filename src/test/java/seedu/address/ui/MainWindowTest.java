@@ -222,11 +222,17 @@ public class MainWindowTest {
             new MainWindow(stage, logic, temporaryFolder.resolve("addressBook.json"), () ->
                     List.of(screen.get()), screen::get);
             try {
-                stage.show();
+                // Set logical window state before peer creation to avoid native minimize animations.
                 stage.setIconified(true);
                 screen.set(small);
                 assertEquals(600, stage.getMinHeight(), "Defer resizing while the window is minimized");
                 stage.setIconified(false);
+                stage.show();
+                // Reproduce a native restore reporting its saved size after deiconification.
+                stage.setHeight(600);
+                Object restore = new Object();
+                Platform.runLater(() -> Platform.exitNestedEventLoop(restore, null));
+                Platform.enterNestedEventLoop(restore);
                 assertEquals(430, stage.getMinHeight());
                 assertTrue(small.contains(stage.getX(), stage.getY(), stage.getWidth(), stage.getHeight()));
             } finally {
