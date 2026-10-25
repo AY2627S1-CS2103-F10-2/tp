@@ -29,8 +29,8 @@ public class ClassFilterIntegrationTest {
         model.addPerson(BENSON);
         model.addPerson(ALICE);
         execute("addclass m/CS2103 c/F10-2");
-        execute("assign sn/" + DANIEL.getStudentNumber() + " m/CS2103 c/F10-2");
-        execute("assign sn/" + BENSON.getStudentNumber() + " m/CS2103 c/F10-2");
+        execute("assign 1 1");
+        execute("assign 2 1");
         execute("listbyclass 1");
     }
 
@@ -45,7 +45,9 @@ public class ClassFilterIntegrationTest {
 
     @Test
     public void execute_assignToActiveClass_preservesAlphabeticalOrder() throws Exception {
-        execute("assign sn/" + ALICE.getStudentNumber() + " m/CS2103 c/F10-2");
+        execute("list");
+        execute("assign 3 1");
+        execute("listbyclass 1");
         assertEquals(List.of(ALICE, BENSON, DANIEL), model.getFilteredPersonList());
         assertEquals(List.of(DANIEL, BENSON, ALICE), model.getAddressBook().getPersonList());
     }
@@ -54,7 +56,7 @@ public class ClassFilterIntegrationTest {
     public void execute_membershipChangesAfterFind_preservesSearchAndInsertionOrder() throws Exception {
         execute("find Meier");
         execute("unassign 2 1");
-        execute("assign sn/" + ALICE.getStudentNumber() + " m/CS2103 c/F10-2");
+        execute("assign 2 1");
         assertEquals(List.of(DANIEL, BENSON), model.getFilteredPersonList());
     }
 
@@ -68,15 +70,14 @@ public class ClassFilterIntegrationTest {
     @Test
     public void execute_changeOtherClass_preservesActiveClassFilter() throws Exception {
         execute("addclass m/CS2103 c/F11-2");
-        execute("assign sn/" + BENSON.getStudentNumber() + " m/CS2103 c/F11-2");
+        execute("assign 1 2");
         execute("unassign 1 2");
         assertEquals(List.of(BENSON, DANIEL), model.getFilteredPersonList());
     }
 
     @Test
     public void execute_failedMembershipChanges_preservesActiveView() {
-        assertThrows(CommandException.class, () -> execute("assign sn/" + BENSON.getStudentNumber()
-                + " m/CS2103 c/F10-2"));
+        assertThrows(CommandException.class, () -> execute("assign 1 1"));
         assertThrows(CommandException.class, () -> execute("unassign 3 1"));
         assertEquals(List.of(BENSON, DANIEL), model.getFilteredPersonList());
     }
@@ -92,7 +93,7 @@ public class ClassFilterIntegrationTest {
     @Test
     public void execute_deleteOtherClass_preservesActiveClassFilter() throws Exception {
         execute("addclass m/CS2100 c/F10-2");
-        execute("assign sn/" + ALICE.getStudentNumber() + " m/CS2100 c/F10-2");
+        execute("assign 1 2");
         execute("deleteclass m/CS2100 c/F10-2");
         assertEquals(List.of(BENSON, DANIEL), model.getFilteredPersonList());
     }
@@ -102,7 +103,9 @@ public class ClassFilterIntegrationTest {
         var displayed = model.getFilteredPersonList();
         execute("deleteclass m/CS2103 c/F10-2");
         execute("addclass m/CS2103 c/F10-2");
-        execute("assign sn/" + ALICE.getStudentNumber() + " m/CS2103 c/F10-2");
+        execute("list");
+        execute("assign 3 1");
+        execute("listbyclass 1");
         assertEquals(List.of(ALICE), displayed);
         execute("unassign 1 1");
         assertEquals(List.of(), displayed);

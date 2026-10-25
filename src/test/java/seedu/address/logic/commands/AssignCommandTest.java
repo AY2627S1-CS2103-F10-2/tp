@@ -1,121 +1,135 @@
 package seedu.address.logic.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.BENSON;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import seedu.address.commons.core.index.Index;
+import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.ModelManager;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
-import seedu.address.model.person.NameContainsKeywordsPredicate;
-import seedu.address.model.person.StudentNumber;
 
 public class AssignCommandTest {
     private final ModelManager model = new ModelManager();
-    private final AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+    private AcademicClass target;
+    private AcademicClass other;
 
-    @Test
-    public void execute_sameClassNameAcrossModules_assignsOnlyTargetClass() throws Exception {
-        model.addPerson(ALICE);
+    @BeforeEach
+    public void setUp() {
         model.addPerson(BENSON);
-        AcademicClass otherModule = new AcademicClass(new ModuleCode("CS2101"), new ClassName("F10-2"));
-        model.addAcademicClass(otherModule);
-        model.addAcademicClass(academicClass);
-        model.assignStudentToClass(BENSON, academicClass);
-        new AssignCommand(ALICE.getStudentNumber(), new ModuleCode("CS2103T"), new ClassName("F10-2")).execute(model);
-        assertEquals(Set.of(ALICE, BENSON), academicClass.getStudents());
-        assertTrue(otherModule.getStudents().isEmpty());
-        new AssignCommand(ALICE.getStudentNumber(), new ModuleCode("CS2101"), new ClassName("F10-2")).execute(model);
-        assertEquals(Set.of(ALICE), otherModule.getStudents());
-        assertEquals(Set.of(ALICE, BENSON), academicClass.getStudents());
-    }
-
-    @Test
-    public void execute_existingStudentAndClass_assignsIdempotentlyWithoutChangingFilter() throws Exception {
         model.addPerson(ALICE);
-        model.addPerson(BENSON);
-        model.addAcademicClass(academicClass);
-        model.updateFilteredPersonList(new NameContainsKeywordsPredicate(List.of("Benson")));
-        AssignCommand command = new AssignCommand(new StudentNumber("a0123456x"),
-                new ModuleCode("cs2103t"), new ClassName("f10-2"));
-        String expected = String.format(AssignCommand.MESSAGE_SUCCESS, ALICE.getStudentNumber(), academicClass);
-        assertEquals(expected, command.execute(model).getFeedbackToUser());
-        assertThrows(CommandException.class,
-                String.format(AssignCommand.MESSAGE_ALREADY_ASSIGNED, ALICE.getStudentNumber(), academicClass), ()
-                -> command.execute(model));
-        assertEquals(Set.of(ALICE), academicClass.getStudents());
-        assertEquals(List.of(BENSON), model.getFilteredPersonList());
+        target = new AcademicClass(new ModuleCode("CS2103"), new ClassName("F10"));
+        other = new AcademicClass(new ModuleCode("CS2100"), new ClassName("L01"));
+        model.addAcademicClass(other);
+        model.addAcademicClass(target);
     }
 
     @Test
-    public void execute_missingStudent_reportsStudentFirstWithoutAssignment() {
-        model.addAcademicClass(academicClass);
-        for (String number : List.of("A9999999Z")) {
-            assertThrows(CommandException.class, String.format(AssignCommand.MESSAGE_STUDENT_NOT_FOUND, number), ()
-                    -> new AssignCommand(new StudentNumber(number),
-                            new ModuleCode("CS9999"), new ClassName("F99")).execute(model));
-        }
-        assertTrue(academicClass.getStudents().isEmpty());
+    public void execute_validIndices_assignsOnlySelectedStudentAndClass() throws Exception {
+        assertEquals(new CommandResult(String.format(AssignCommand.MESSAGE_SUCCESS,
+                ALICE.getStudentNumber(), target)), command(2, 2).execute(model));
+        assertEquals(Set.of(ALICE), target.getStudents());
+        assertTrue(other.getStudents().isEmpty());
+        assertEquals(List.of(BENSON, ALICE), model.getFilteredPersonList());
     }
 
     @Test
-    public void execute_missingClass_doesNotAssign() {
-        model.addPerson(ALICE);
-        model.addAcademicClass(academicClass);
-        for (String module : List.of("CS9999")) {
-            assertThrows(CommandException.class,
-                    String.format(AssignCommand.MESSAGE_CLASS_NOT_FOUND, module, "F10-2"), ()
-                    -> new AssignCommand(ALICE.getStudentNumber(),
-                            new ModuleCode(module), new ClassName("F10-2")).execute(model));
-        }
-        for (String name : List.of("W10")) {
-            assertThrows(CommandException.class,
-                    String.format(AssignCommand.MESSAGE_CLASS_NOT_FOUND, "CS2103T", name), ()
-                    -> new AssignCommand(ALICE.getStudentNumber(),
-                            new ModuleCode("CS2103T"), new ClassName(name)).execute(model));
-        }
-        assertTrue(academicClass.getStudents().isEmpty());
+    public void execute_filteredLists_usesBothDisplayedIndicesAndPreservesViews() throws Exception {
+        model.assignStudentToClass(BENSON, target);
+        model.updateFilteredPersonList(person -> person.equals(ALICE));
+        model.updateFilteredAcademicClassListByStudent(BENSON.getStudentNumber());
+        command(1, 1).execute(model);
+        assertEquals(Set.of(ALICE, BENSON), target.getStudents());
+        assertTrue(other.getStudents().isEmpty());
+        assertEquals(List.of(ALICE), model.getFilteredPersonList());
+        assertEquals(List.of(target), model.getFilteredAcademicClassList());
     }
 
     @Test
-    public void nullArguments_throwsNullPointerException() {
-        assertThrows(NullPointerException.class, () -> new AssignCommand(null,
-                new ModuleCode("CS2103T"), new ClassName("F10-2")));
-        assertThrows(NullPointerException.class, () -> new AssignCommand(new StudentNumber("A0123456X"), null,
-                new ClassName("F10-2")));
-        assertThrows(NullPointerException.class, () -> new AssignCommand(new StudentNumber("A0123456X"),
-                new ModuleCode("CS2103T"), null));
-        assertThrows(NullPointerException.class, ()
-                -> new AssignCommand(new StudentNumber("A0123456X"),
-                        new ModuleCode("CS2103T"), new ClassName("F10-2")).execute(null));
+    public void execute_sortedClassView_usesDisplayedStudentOrder() throws Exception {
+        model.assignStudentToClass(ALICE, other);
+        model.assignStudentToClass(BENSON, other);
+        model.filterPersonsByClass(other);
+        assertEquals(List.of(ALICE, BENSON), model.getFilteredPersonList());
+        command(1, 2).execute(model);
+        assertEquals(Set.of(ALICE), target.getStudents());
+        assertEquals(List.of(ALICE, BENSON), model.getFilteredPersonList());
     }
 
     @Test
-    public void equalsAndToString() {
-        AssignCommand command = new AssignCommand(new StudentNumber("A0123456X"),
-                new ModuleCode("CS2103T"), new ClassName("F10-2"));
-        assertTrue(command.equals(command));
-        assertEquals(command, new AssignCommand(new StudentNumber("A0123456X"),
-                new ModuleCode("CS2103T"), new ClassName("F10-2")));
-        assertFalse(command.equals(null));
-        assertFalse(command.equals("assign"));
-        assertFalse(command.equals(new AssignCommand(new StudentNumber("A9999999Z"),
-                new ModuleCode("CS2103T"), new ClassName("F10-2"))));
-        assertFalse(command.equals(new AssignCommand(new StudentNumber("A0123456X"),
-                new ModuleCode("CS2101"), new ClassName("F10-2"))));
-        assertFalse(command.equals(new AssignCommand(new StudentNumber("A0123456X"),
-                new ModuleCode("CS2103T"), new ClassName("W10"))));
-        assertEquals(AssignCommand.class.getCanonicalName()
-                + "{studentNumber=A0123456X, moduleCode=CS2103T, className=F10-2}", command.toString());
+    public void execute_invalidIndices_preservesMemberships() {
+        assertThrows(CommandException.class, Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX, ()
+                -> command(3, 1).execute(model));
+        assertThrows(CommandException.class, Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX, ()
+                -> command(1, 3).execute(model));
+        assertTrue(target.getStudents().isEmpty());
+        assertTrue(other.getStudents().isEmpty());
+    }
+
+    @Test
+    public void execute_hiddenRecords_cannotBeSelected() {
+        model.updateFilteredPersonList(person -> false);
+        assertThrows(CommandException.class, Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX, ()
+                -> command(1, 1).execute(model));
+        model.updateFilteredPersonList(person -> true);
+        model.updateFilteredAcademicClassList(academicClass -> false);
+        assertThrows(CommandException.class, Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX, ()
+                -> command(1, 1).execute(model));
+        assertTrue(target.getStudents().isEmpty());
+    }
+
+    @Test
+    public void execute_duplicateAssignment_rejectedWithoutChangingMembership() throws Exception {
+        command(2, 2).execute(model);
+        assertThrows(CommandException.class, String.format(AssignCommand.MESSAGE_ALREADY_ASSIGNED,
+                ALICE.getStudentNumber(), target), () -> command(2, 2).execute(model));
+        assertEquals(Set.of(ALICE), target.getStudents());
+    }
+
+    @Test
+    public void execute_reassignment_preservesAttendance() throws Exception {
+        model.assignStudentToClass(ALICE, target);
+        LocalDate date = LocalDate.of(2024, 2, 29);
+        model.addAttendance(ALICE, target, date);
+        model.unassignStudentFromClass(ALICE, target);
+        command(2, 2).execute(model);
+        assertEquals(Set.of(date), model.getAttendanceList().getFirst().getAttendedDates());
+    }
+
+    @Test
+    public void constructorOrExecute_nullArguments_rejected() {
+        assertThrows(NullPointerException.class, () -> new AssignCommand(null, Index.fromOneBased(1)));
+        assertThrows(NullPointerException.class, () -> new AssignCommand(Index.fromOneBased(1), null));
+        assertThrows(NullPointerException.class, () -> command(1, 1).execute(null));
+    }
+
+    @Test
+    public void equalsAndToString_useBothIndices() {
+        AssignCommand command = command(1, 2);
+        assertEquals(command, command);
+        assertEquals(command(1, 2), command);
+        assertNotEquals(command(2, 2), command);
+        assertNotEquals(command(1, 1), command);
+        assertNotEquals(null, command);
+        assertNotEquals("assign", command);
+        assertTrue(command.toString().contains("studentIndex=" + Index.fromOneBased(1)));
+        assertTrue(command.toString().contains("classIndex=" + Index.fromOneBased(2)));
+    }
+
+    private AssignCommand command(int studentIndex, int classIndex) {
+        return new AssignCommand(Index.fromOneBased(studentIndex), Index.fromOneBased(classIndex));
     }
 }

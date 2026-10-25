@@ -2,7 +2,6 @@ package seedu.address.logic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.BENSON;
@@ -41,20 +40,20 @@ public class AssignIntegrationTest {
         LogicManager logic = createLogic(model, storage);
         logic.execute("add sn/A1111111H n/Alice Tan e/alice@example.com");
         logic.execute("addclass m/CS2103 c/F-10");
-        logic.execute("find Nobody");
+        logic.execute("find Alice");
         String expected = "Student (A1111111H) has been assigned to CS2103-F-10.";
-        assertEquals(expected, logic.execute("assign c/  f-10 m/  cs2103 sn/  a1111111h ").getFeedbackToUser());
+        assertEquals(expected, logic.execute("assign  1  1 ").getFeedbackToUser());
         String duplicate = "Student (A1111111H) is already assigned to class CS2103-F-10.";
         assertThrows(CommandException.class, duplicate, ()
-                -> logic.execute("assign sn/A1111111H m/CS2103 c/F-10"));
-        assertTrue(model.getFilteredPersonList().isEmpty());
+                -> logic.execute("assign 1 1"));
+        assertEquals(1, model.getFilteredPersonList().size());
 
         ModelManager restarted = new ModelManager(storage.readAddressBook().orElseThrow(), new UserPrefs());
         AcademicClass restoredClass = restarted.getAcademicClassList().get(0);
         assertEquals(1, restoredClass.getStudents().size());
         assertSame(restarted.getAddressBook().getPersonList().get(0), restoredClass.getStudents().iterator().next());
         assertThrows(CommandException.class, duplicate, ()
-                -> createLogic(restarted, storage).execute("assign sn/A1111111H m/CS2103 c/F-10"));
+                -> createLogic(restarted, storage).execute("assign 1 1"));
         assertEquals(1, restoredClass.getStudents().size());
     }
 
@@ -64,22 +63,16 @@ public class AssignIntegrationTest {
         ModelManager model = new ModelManager();
         AcademicClass academicClass = populateModel(model);
         LogicManager logic = createLogic(model, storage);
-        logic.execute("assign sn/" + ALICE.getStudentNumber() + " m/CS2103T c/F10-2");
+        logic.execute("assign 1 1");
         String saved = Files.readString(storage.getAddressBookFilePath());
 
-        for (String input : List.of("assign sn/A9999999Z m/CS2103T c/F10-2",
-                "assign sn/" + BENSON.getStudentNumber() + " m/CS9999 c/F10-2",
-                "assign sn/" + BENSON.getStudentNumber() + " m/CS2103T c/F10")) {
+        for (String input : List.of("assign 3 1", "assign 2 2", "assign 999 999")) {
             assertThrows(CommandException.class, () -> logic.execute(input));
             assertEquals(Set.of(ALICE), academicClass.getStudents());
             assertEquals(saved, Files.readString(storage.getAddressBookFilePath()));
         }
-        for (String input : List.of("assign sn/ m/CS2103T c/F10-2",
-                "assign sn/random-numbers m/CS2103T c/F10-2",
-                "assign sn/A0123456X m/fake-module c/F10-2",
-                "assign sn/A0123456X m/CS2103T c/---",
-                "assign sn/A0123456X m/CS2103T c/F10-2 x/extra",
-                "assign sn/A0123456X sn/A0234567Y m/CS2103T c/F10-2")) {
+        for (String input : List.of("assign", "assign 1", "assign 0 1", "assign 1 -1",
+                "assign 1 1 extra", "assign sn/A0123456X m/CS2103T c/F10-2")) {
             assertThrows(ParseException.class, () -> logic.execute(input));
             assertEquals(Set.of(ALICE), academicClass.getStudents());
             assertEquals(saved, Files.readString(storage.getAddressBookFilePath()));
@@ -102,7 +95,7 @@ public class AssignIntegrationTest {
             String message = String.format(failure instanceof AccessDeniedException
                     ? LogicManager.FILE_OPS_PERMISSION_ERROR_FORMAT : LogicManager.FILE_OPS_ERROR_FORMAT,
                     failure.getMessage());
-            String command = "assign sn/" + ALICE.getStudentNumber() + " m/CS2103T c/F10-2";
+            String command = "assign 1 1";
             assertThrows(CommandException.class, message, () -> logic.execute(command));
             // LogicManager retains the in-memory change when saving fails.
             assertEquals(Set.of(ALICE), academicClass.getStudents());

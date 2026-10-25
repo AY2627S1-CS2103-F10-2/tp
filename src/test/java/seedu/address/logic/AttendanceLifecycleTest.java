@@ -24,7 +24,6 @@ import seedu.address.storage.StorageManager;
 
 /** Exercises attendance lifecycle operations through commands and real JSON storage. */
 public class AttendanceLifecycleTest {
-    private static final String TARGET = " sn/A0123456X m/CS2103 c/F10-2";
     private static final String ATTENDANCE_TARGET = " 1 1";
     private static final LocalDate DATE = LocalDate.of(2024, 2, 29);
     @TempDir
@@ -43,7 +42,7 @@ public class AttendanceLifecycleTest {
         logic = new LogicManager(model, storage);
         logic.execute("add sn/A0123456X n/Alice e/alice@example.com");
         logic.execute("addclass m/CS2103 c/F10-2");
-        logic.execute("assign" + TARGET);
+        logic.execute("assign" + ATTENDANCE_TARGET);
         logic.execute("addattendance" + ATTENDANCE_TARGET + " d/2024-02-29");
     }
 
@@ -57,7 +56,7 @@ public class AttendanceLifecycleTest {
         reload();
         assertDates(Set.of(LocalDate.of(2024, 2, 28)));
         assertEquals(Set.of(), model.getAcademicClassList().getFirst().getStudents());
-        logic.execute("assign" + TARGET);
+        logic.execute("assign" + ATTENDANCE_TARGET);
         logic.execute("addattendance" + ATTENDANCE_TARGET + " d/2024-02-29");
         reload();
         assertDates(Set.of(LocalDate.of(2024, 2, 28), DATE));
@@ -81,7 +80,7 @@ public class AttendanceLifecycleTest {
     @Test
     public void execute_deleteStudent_removesOnlyTheirHistory() throws Exception {
         logic.execute("add sn/A9999999Z n/Bob e/bob@example.com");
-        logic.execute("assign sn/A9999999Z m/CS2103 c/F10-2");
+        logic.execute("assign 2 1");
         logic.execute("addattendance 2 1 d/2024-02-29");
         logic.execute("delete 1");
         reload();
@@ -93,14 +92,14 @@ public class AttendanceLifecycleTest {
     @Test
     public void execute_deleteAndRecreateClass_doesNotRestoreOldHistory() throws Exception {
         logic.execute("addclass m/CS2101 c/F10-2");
-        logic.execute("assign sn/A0123456X m/CS2101 c/F10-2");
+        logic.execute("assign 1 2");
         logic.execute("addattendance 1 2 d/2024-02-29");
         logic.execute("deleteclass m/CS2103 c/F10-2");
         reload();
         assertDates(Set.of(DATE));
         assertEquals("CS2101", model.getAttendanceList().getFirst().getAcademicClass().getModuleCode().toString());
         logic.execute("addclass m/CS2103 c/F10-2");
-        logic.execute("assign" + TARGET);
+        logic.execute("assign 1 2");
         assertThrows(CommandException.class, () ->
                 logic.execute("deleteattendance 1 2 d/2024-02-29"));
         logic.execute("addattendance 1 2 d/2024-02-29");
