@@ -30,11 +30,11 @@ find NAME [MORE_NAMES]...
 list
 addclass m/MODULE_CODE c/CLASS_NAME
 editclass CLASS_INDEX [m/MODULE_CODE] [c/CLASS_NAME]
-deleteclass m/MODULE_CODE c/CLASS_NAME
+deleteclass CLASS_INDEX
 listclass
 listbyclass CLASS_INDEX [t/THRESHOLD]
 listbystudent STUDENT_INDEX
-assign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME
+assign STUDENT_INDEX CLASS_INDEX
 unassign STUDENT_INDEX CLASS_INDEX
 addattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD
 deleteattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD
@@ -42,7 +42,13 @@ help
 clear
 exit
 
+deleteclass uses the current displayed class index. assign uses the student
+index first, then the class index from their respective displayed lists.
+Student deletion remains delete STUDENT_INDEX.
+
 PARTIAL AND UNKNOWN WORDS
+Type del: Matching commands: delete  |  deleteclass  |  deleteattendance
+Names should be brighter and monospace, with a quieter reminder below.
 Type li: suggest list, listclass, listbyclass and listbystudent.
 Type add: show its syntax rather than longer-command suggestions.
 Type LIST or unknown: point to help without an error or error styling.
@@ -56,6 +62,8 @@ listbyclass 1
 listbyclass 1 t/2
 listbystudent 1
 edit 1
+deleteclass 1
+assign 1 1
 unassign 1 1
 addattendance 1 1 d/2020-01-03
 deleteattendance 1 1 d/2020-01-03

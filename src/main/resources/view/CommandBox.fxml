@@ -9,8 +9,12 @@
   <TextField fx:id="commandTextField" onAction="#handleCommandEntered" promptText="Enter command here..."/>
   <HBox spacing="10" alignment="TOP_LEFT" minWidth="0" styleClass="command-hint-surface">
     <Label text="HINT" minWidth="-Infinity" styleClass="command-hint-caption" />
-    <Label fx:id="commandHint" minWidth="0" minHeight="-Infinity" maxWidth="Infinity" wrapText="true"
-           HBox.hgrow="ALWAYS" styleClass="command-hint-text" />
+    <VBox spacing="3" minWidth="0" HBox.hgrow="ALWAYS">
+      <Label fx:id="commandHint" minWidth="0" minHeight="-Infinity" maxWidth="Infinity" wrapText="true"
+             styleClass="command-hint-text" />
+      <Label fx:id="commandHintDetails" minWidth="0" minHeight="-Infinity" maxWidth="Infinity" wrapText="true"
+             visible="false" managed="false" styleClass="command-hint-details" />
+    </VBox>
   </HBox>
 </VBox>
 

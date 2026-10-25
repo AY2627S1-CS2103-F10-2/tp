@@ -161,6 +161,9 @@ public class WorkspaceTest {
                 settle(stage);
                 assertTrue(students.getBoundsInLocal().getWidth() >= 220);
                 capture(stage, "layout-minimum");
+                input.setText("del");
+                settle(stage);
+                capture(stage, "command-hints-matches");
                 input.setText("edit 1");
                 settle(stage);
                 capture(stage, "command-hints-narrow");
@@ -331,10 +334,13 @@ public class WorkspaceTest {
                 List<?> originalClasses = List.copyOf(classes.getItems());
                 String originalOutput = output.getText();
                 Label hint = (Label) stage.getScene().lookup("#commandHint");
+                Label hintDetails = (Label) stage.getScene().lookup("#commandHintDetails");
                 for (String draft : List.of("find Alice", "listbyclass 1", "listbystudent 1",
-                        "addattendance 1 1 d/2020-01-03", "listbyclass 9999", "clear", "")) {
+                        "deleteclass 1", "assign 1 1", "addattendance 1 1 d/2020-01-03",
+                        "listbyclass 9999", "clear", "")) {
                     input.setText(draft);
-                    assertEquals(CommandHints.forInput(draft), hint.getText());
+                    assertEquals(CommandHints.forInput(draft), hint.getText()
+                            + (hintDetails.isManaged() ? "\n" + hintDetails.getText() : ""));
                     assertEquals(originalStudents, students.getItems());
                     assertEquals(originalClasses, classes.getItems());
                     assertEquals(originalOutput, output.getText());

@@ -50,11 +50,11 @@ java -jar (Join-Path $hintsTestDir "TAssist.jar")
 | `list` | `list` |
 | `addclass` | `addclass m/MODULE_CODE c/CLASS_NAME` |
 | `editclass` | `editclass CLASS_INDEX [m/MODULE_CODE] [c/CLASS_NAME]` |
-| `deleteclass` | `deleteclass m/MODULE_CODE c/CLASS_NAME` |
+| `deleteclass` | `deleteclass CLASS_INDEX` |
 | `listclass` | `listclass` |
 | `listbyclass` | `listbyclass CLASS_INDEX [t/THRESHOLD]` |
 | `listbystudent` | `listbystudent STUDENT_INDEX` |
-| `assign` | `assign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME` |
+| `assign` | `assign STUDENT_INDEX CLASS_INDEX` |
 | `unassign` | `unassign STUDENT_INDEX CLASS_INDEX` |
 | `addattendance` | `addattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD` |
 | `deleteattendance` | `deleteattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD` |
@@ -65,8 +65,14 @@ java -jar (Join-Path $hintsTestDir "TAssist.jar")
 3. Check that `edit` and `editclass` explain that at least one field must
    be provided. Commands with no required arguments say none are needed.
 4. Check that contextual hints include `Press Enter to run.`
-5. Type `li`: matching command names should appear. Type `add`: its exact
-   syntax should appear rather than suggestions for longer command words.
+   For `deleteclass`, the index refers to the current displayed class list.
+   For `assign`, the student index comes first, followed by the class index
+   from their respective displayed lists. Student deletion remains `delete STUDENT_INDEX`.
+5. Type `del`: check for `Matching commands: delete  |  deleteclass  |  deleteattendance`.
+   Command names should use brighter monospace text, with the reminder on
+   a separate, quieter line. Type `li` to check the matching list commands.
+   Type `add`: its exact syntax should appear rather than suggestions for
+   longer command words.
 6. Type `LIST` or `unknown`: guidance should point to `help`, without an
    error message or new error styling. Clear the input or enter spaces:
    the default reminder should return and the strip should remain visible.
@@ -82,6 +88,8 @@ java -jar (Join-Path $hintsTestDir "TAssist.jar")
    listbyclass 1 t/2
    listbystudent 1
    edit 1
+   deleteclass 1
+   assign 1 1
    unassign 1 1
    addattendance 1 1 d/2020-01-03
    deleteattendance 1 1 d/2020-01-03

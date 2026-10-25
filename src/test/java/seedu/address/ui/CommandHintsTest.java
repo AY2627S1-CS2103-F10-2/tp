@@ -31,11 +31,11 @@ public class CommandHintsTest {
             {"list", "list"},
             {"addclass m/MODULE_CODE c/CLASS_NAME", "addclass m/CS2103 c/F10"},
             {"editclass CLASS_INDEX [m/MODULE_CODE] [c/CLASS_NAME]", "editclass 1 m/CS2103 c/F10"},
-            {"deleteclass m/MODULE_CODE c/CLASS_NAME", "deleteclass m/CS2103 c/F10"},
+            {"deleteclass CLASS_INDEX", "deleteclass 1"},
             {"listclass", "listclass"},
             {"listbyclass CLASS_INDEX [t/THRESHOLD]", "listbyclass 1 t/2"},
             {"listbystudent STUDENT_INDEX", "listbystudent 1"},
-            {"assign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME", "assign sn/A0123456X m/CS2103 c/F10"},
+            {"assign STUDENT_INDEX CLASS_INDEX", "assign 1 2"},
             {"unassign STUDENT_INDEX CLASS_INDEX", "unassign 1 2"},
             {"addattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD", "addattendance 1 2 d/2020-01-03"},
             {"deleteattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD", "deleteattendance 1 2 d/2020-01-03"},
@@ -64,8 +64,10 @@ public class CommandHintsTest {
 
     @Test
     public void partialAndUnknownWords_offerGuidanceWithoutValidation() {
-        assertEquals("Commands: list · listclass · listbyclass · listbystudent. "
+        assertEquals("Matching commands: list  |  listclass  |  listbyclass  |  listbystudent\n"
                 + "Complete a command, then press Enter to run it.", CommandHints.forInput("li"));
+        assertEquals("Matching commands: delete  |  deleteclass  |  deleteattendance\n"
+                + "Complete a command, then press Enter to run it.", CommandHints.forInput("del"));
         assertTrue(CommandHints.forInput("add").startsWith("add sn/"), "Exact words take precedence");
         for (String unknown : List.of("LIST", "unknown", "listbyclassx")) {
             assertEquals("Type help, then press Enter for the command list.", CommandHints.forInput(unknown));

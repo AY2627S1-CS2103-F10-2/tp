@@ -14,9 +14,9 @@ final class CommandHints {
             "delete STUDENT_INDEX", "find NAME [MORE_NAMES]...", "list",
             "addclass m/MODULE_CODE c/CLASS_NAME",
             "editclass CLASS_INDEX [m/MODULE_CODE] [c/CLASS_NAME]",
-            "deleteclass m/MODULE_CODE c/CLASS_NAME", "listclass",
+            "deleteclass CLASS_INDEX", "listclass",
             "listbyclass CLASS_INDEX [t/THRESHOLD]", "listbystudent STUDENT_INDEX",
-            "assign sn/STUDENT_NUMBER m/MODULE_CODE c/CLASS_NAME",
+            "assign STUDENT_INDEX CLASS_INDEX",
             "unassign STUDENT_INDEX CLASS_INDEX",
             "addattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD",
             "deleteattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD",
@@ -33,7 +33,7 @@ final class CommandHints {
         }
         for (String syntax : SYNTAX) {
             if (syntax.equals(command)) {
-                return syntax + " · No arguments needed. Press Enter to run.";
+                return syntax + "\nNo arguments needed. Press Enter to run.";
             }
             if (syntax.startsWith(command + " ")) {
                 String legend = syntax.contains("[")
@@ -45,8 +45,8 @@ final class CommandHints {
             }
         }
         String matches = SYNTAX.stream().map(syntax -> syntax.split(" ", 2)[0])
-                .filter(word -> word.startsWith(command)).collect(Collectors.joining(" · "));
+                .filter(word -> word.startsWith(command)).collect(Collectors.joining("  |  "));
         return matches.isEmpty() ? "Type help, then press Enter for the command list."
-                : "Commands: " + matches + ". Complete a command, then press Enter to run it.";
+                : "Matching commands: " + matches + "\nComplete a command, then press Enter to run it.";
     }
 }
