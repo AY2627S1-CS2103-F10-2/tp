@@ -52,7 +52,7 @@ public class ReadOnlyListView<T> extends ListView<T> {
                 case PAGE_UP -> flow.scrollPixels(-flow.getHeight());
                 case PAGE_DOWN -> flow.scrollPixels(flow.getHeight());
                 case HOME -> flow.scrollToTop(0);
-                case END -> flow.scrollTo(getItemCount() - 1);
+                case END -> flow.setPosition(1);
                 default -> {
                     return;
                 }

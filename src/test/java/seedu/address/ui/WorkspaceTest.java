@@ -26,6 +26,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
+import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
 import javafx.geometry.Orientation;
 import javafx.geometry.Rectangle2D;
@@ -33,6 +34,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollBar;
 import javafx.scene.control.ScrollToEvent;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextArea;
@@ -44,6 +46,8 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import seedu.address.commons.core.GuiSettings;
@@ -58,6 +62,7 @@ import seedu.address.model.academicclass.ModuleCode;
 import seedu.address.storage.JsonAddressBookStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
 import seedu.address.storage.StorageManager;
+import seedu.address.testutil.PersonBuilder;
 
 /** Checks the assembled layout and existing executed-command behaviour with isolated storage. */
 public class WorkspaceTest {
@@ -180,7 +185,10 @@ public class WorkspaceTest {
                     settle(stage);
                     VirtualFlow<?> studentFlow = (VirtualFlow<?>) students.lookup(".virtual-flow");
                     assertEquals(students.getItems().size() - 1, studentFlow.getLastVisibleCell().getIndex());
+                    assertTrue(studentFlow.getLastVisibleCell().getBoundsInParent().getMaxY()
+                            <= studentFlow.getHeight() + 1, "End must reveal the whole last student card");
                     assertEquals(3, students.getItems().size());
+                    assertNull(students.getSelectionModel());
                     press(students, KeyCode.TAB);
                     assertSame(classes, stage.getScene().getFocusOwner());
                     press(classes, KeyCode.END);
@@ -197,9 +205,9 @@ public class WorkspaceTest {
     }
 
     @Test
-    public void workspace_keyboardScrollsClasses_withoutSelectionOrDataChanges() throws Exception {
+    public void workspace_keyboardAndMouseScrollBothLists_withoutSelectionOrDataChanges() throws Exception {
         runOnFxThreadAndWait(() -> {
-            Logic logic = createLogic(30);
+            Logic logic = createLogic(30, 30);
             Stage stage = new Stage();
             try {
                 openWindow(stage, logic);
@@ -210,8 +218,6 @@ public class WorkspaceTest {
                 List<?> originalStudents = List.copyOf(students.getItems());
                 List<?> originalClasses = List.copyOf(classes.getItems());
                 String originalOutput = output.getText();
-                VirtualFlow<?> flow = (VirtualFlow<?>) classes.lookup(".virtual-flow");
-                int initialFirstIndex = flow.getFirstVisibleCell().getIndex();
 
                 input.requestFocus();
                 press(input, KeyCode.TAB);
@@ -221,41 +227,9 @@ public class WorkspaceTest {
                 press(students, KeyCode.TAB);
                 assertSame(classes, stage.getScene().getFocusOwner());
 
-                assertEquals(initialFirstIndex, flow.getFirstVisibleCell().getIndex());
-                press(classes, KeyCode.HOME);
-                settle(stage);
-                assertEquals(0, flow.getFirstVisibleCell().getIndex());
-                double beforeDownPosition = flow.getPosition();
-                press(classes, KeyCode.DOWN);
-                layout(stage);
-                int afterDown = flow.getFirstVisibleCell().getIndex();
-                assertTrue(flow.getPosition() > beforeDownPosition);
-                press(classes, KeyCode.PAGE_DOWN);
-                layout(stage);
-                int afterPageDown = flow.getFirstVisibleCell().getIndex();
-                assertTrue(afterPageDown > afterDown + 1);
-                press(classes, KeyCode.PAGE_UP);
-                layout(stage);
-                assertTrue(flow.getFirstVisibleCell().getIndex() < afterPageDown);
-                press(classes, KeyCode.END);
-                layout(stage);
-                assertEquals(classes.getItems().size() - 1, flow.getLastVisibleCell().getIndex());
-                press(classes, KeyCode.PAGE_DOWN);
-                layout(stage);
-                assertEquals(classes.getItems().size() - 1, flow.getLastVisibleCell().getIndex());
-                int beforeUp = flow.getFirstVisibleCell().getIndex();
-                press(classes, KeyCode.UP);
-                layout(stage);
-                assertTrue(flow.getFirstVisibleCell().getIndex() < beforeUp);
-                press(classes, KeyCode.HOME);
-                layout(stage);
-                assertEquals(0, flow.getFirstVisibleCell().getIndex());
-                press(classes, KeyCode.UP);
-                assertEquals(0, flow.getFirstVisibleCell().getIndex());
-                assertSame(classes, stage.getScene().getFocusOwner());
-                assertNull(classes.getSelectionModel());
-                assertFalse(classes.lookupAll(".list-cell").stream()
-                        .map(ListCell.class::cast).anyMatch(ListCell::isSelected));
+                for (ListView<?> list : List.of(students, classes)) {
+                    assertListScrollsWithoutSelection(stage, list);
+                }
                 assertEquals(originalStudents, students.getItems());
                 assertEquals(originalClasses, classes.getItems());
                 assertEquals(originalOutput, output.getText());
@@ -273,12 +247,15 @@ public class WorkspaceTest {
 
                 execute(input, "clear");
                 layout(stage);
-                classes.requestFocus();
-                for (KeyCode code : List.of(KeyCode.UP, KeyCode.DOWN, KeyCode.PAGE_UP,
-                        KeyCode.PAGE_DOWN, KeyCode.HOME, KeyCode.END)) {
-                    press(classes, code);
+                for (ListView<?> list : List.of(students, classes)) {
+                    list.requestFocus();
+                    for (KeyCode code : List.of(KeyCode.UP, KeyCode.DOWN, KeyCode.PAGE_UP,
+                            KeyCode.PAGE_DOWN, KeyCode.HOME, KeyCode.END)) {
+                        press(list, code);
+                    }
+                    assertTrue(list.getItems().isEmpty());
+                    assertNull(list.getSelectionModel());
                 }
-                assertTrue(classes.getItems().isEmpty());
                 press(classes, KeyCode.TAB);
                 assertSame(input, stage.getScene().getFocusOwner());
             } finally {
@@ -288,7 +265,7 @@ public class WorkspaceTest {
     }
 
     @Test
-    public void workspace_draftsAndClassClicks_leaveDataUntilCommandExecutes() throws Exception {
+    public void workspace_draftsAndCardClicks_leaveDataUntilCommandExecutes() throws Exception {
         runOnFxThreadAndWait(() -> {
             Logic logic = createLogic();
             Stage stage = new Stage();
@@ -314,14 +291,15 @@ public class WorkspaceTest {
                     assertEquals(originalOutput, output.getText());
                     assertTrue(logic.getAttendanceDisplayClass().isEmpty());
                 }
-                Node row = classes.lookup("#cardPane");
-                row.fireEvent(new MouseEvent(MouseEvent.MOUSE_CLICKED, 5, 5, 5, 5, MouseButton.PRIMARY,
-                        1, false, false, false, false, true, false, false, true, false, true, null));
+                for (ListView<?> list : List.of(students, classes)) {
+                    assertNull(list.getSelectionModel());
+                    assertTrue(list.isFocusTraversable());
+                    click(list.lookup("#cardPane"));
+                    assertFalse(list.lookupAll(".list-cell").stream()
+                            .map(ListCell.class::cast).anyMatch(ListCell::isSelected));
+                }
                 assertEquals(originalStudents, students.getItems());
                 assertEquals(originalOutput, output.getText());
-                assertFalse(classes.lookupAll(".list-cell").stream()
-                        .anyMatch(cell -> cell.getPseudoClassStates().stream()
-                                .anyMatch(state -> state.getPseudoClassName().equals("selected"))));
 
                 execute(input, "find Alice");
                 assertEquals(List.of(ALICE), students.getItems());
@@ -513,6 +491,63 @@ public class WorkspaceTest {
         });
     }
 
+    private static void assertListScrollsWithoutSelection(Stage stage, ListView<?> list) {
+        list.requestFocus();
+        press(list, KeyCode.HOME);
+        settle(stage);
+        // Check focus styling even when the window manager has not granted this stage native focus.
+        PseudoClass focused = PseudoClass.getPseudoClass("focused");
+        list.pseudoClassStateChanged(focused, true);
+        list.applyCss();
+        assertEquals(Color.web("#91b4d3"), list.getBorder().getStrokes().get(0).getTopStroke());
+        list.pseudoClassStateChanged(focused, list.isFocused());
+        VirtualFlow<?> flow = (VirtualFlow<?>) list.lookup(".virtual-flow");
+        assertEquals(0, flow.getFirstVisibleCell().getIndex());
+        double beforeDownPosition = flow.getPosition();
+        press(list, KeyCode.DOWN);
+        layout(stage);
+        int afterDown = flow.getFirstVisibleCell().getIndex();
+        assertTrue(flow.getPosition() > beforeDownPosition);
+        press(list, KeyCode.PAGE_DOWN);
+        layout(stage);
+        int afterPageDown = flow.getFirstVisibleCell().getIndex();
+        assertTrue(afterPageDown > afterDown + 1);
+        press(list, KeyCode.PAGE_UP);
+        layout(stage);
+        assertTrue(flow.getFirstVisibleCell().getIndex() < afterPageDown);
+        press(list, KeyCode.END);
+        layout(stage);
+        assertEquals(list.getItems().size() - 1, flow.getLastVisibleCell().getIndex());
+        assertTrue(flow.getLastVisibleCell().getBoundsInParent().getMaxY() <= flow.getHeight() + 1);
+        press(list, KeyCode.PAGE_DOWN);
+        layout(stage);
+        assertEquals(list.getItems().size() - 1, flow.getLastVisibleCell().getIndex());
+        int beforeUp = flow.getFirstVisibleCell().getIndex();
+        press(list, KeyCode.UP);
+        layout(stage);
+        assertTrue(flow.getFirstVisibleCell().getIndex() < beforeUp);
+        press(list, KeyCode.HOME);
+        layout(stage);
+        assertEquals(0, flow.getFirstVisibleCell().getIndex());
+        press(list, KeyCode.UP);
+        assertEquals(0, flow.getFirstVisibleCell().getIndex());
+        flow.fireEvent(new ScrollEvent(ScrollEvent.SCROLL, 5, 5, 5, 5,
+                false, false, false, false, false, false, 0, -120, 0, -120,
+                ScrollEvent.HorizontalTextScrollUnits.NONE, 0, ScrollEvent.VerticalTextScrollUnits.NONE, 0, 0, null));
+        layout(stage);
+        assertTrue(flow.getPosition() > 0, "Mouse-wheel scrolling must remain available");
+        ScrollBar bar = list.lookupAll(".scroll-bar").stream().map(ScrollBar.class::cast)
+                .filter(scrollBar -> scrollBar.getOrientation() == Orientation.VERTICAL).findFirst().orElseThrow();
+        assertTrue(bar.isVisible());
+        bar.setValue(bar.getMax());
+        layout(stage);
+        assertEquals(list.getItems().size() - 1, flow.getLastVisibleCell().getIndex());
+        click(flow.getFirstVisibleCell());
+        assertSame(list, stage.getScene().getFocusOwner());
+        assertNull(list.getSelectionModel());
+        assertFalse(list.lookupAll(".list-cell").stream().map(ListCell.class::cast).anyMatch(ListCell::isSelected));
+    }
+
     private static void assertHeaders(Stage stage, int shownClasses, int totalClasses, int shownStudents) {
         Label classHeader = (Label) stage.getScene().lookup("#classHeader");
         Label studentHeader = (Label) stage.getScene().lookup("#studentHeader");
@@ -535,9 +570,17 @@ public class WorkspaceTest {
     }
 
     private Logic createLogic(int extraClassCount) {
+        return createLogic(extraClassCount, 0);
+    }
+
+    private Logic createLogic(int extraClassCount, int extraStudentCount) {
         AddressBook book = new AddressBook();
         for (var student : List.of(ALICE, BENSON, DANIEL)) {
             book.addPerson(student);
+        }
+        for (int index = 0; index < extraStudentCount; index++) {
+            book.addPerson(new PersonBuilder().withStudentNumber("SCROLL" + index)
+                    .withName("Student " + index).withEmail("student" + index + "@example.com").build());
         }
         AcademicClass first = new AcademicClass(new ModuleCode("CS2103"), new ClassName("F10"));
         AcademicClass second = new AcademicClass(new ModuleCode("CS2101"),
@@ -568,6 +611,14 @@ public class WorkspaceTest {
 
     private static void press(Node target, KeyCode code, boolean shiftDown) {
         target.fireEvent(new KeyEvent(KeyEvent.KEY_PRESSED, "", "", code, shiftDown, false, false, false));
+    }
+
+    private static void click(Node target) {
+        for (var eventType : List.of(MouseEvent.MOUSE_PRESSED, MouseEvent.MOUSE_RELEASED, MouseEvent.MOUSE_CLICKED)) {
+            target.fireEvent(new MouseEvent(eventType, 5, 5, 5, 5, MouseButton.PRIMARY,
+                    1, false, false, false, false, eventType == MouseEvent.MOUSE_PRESSED,
+                    false, false, true, false, true, null));
+        }
     }
 
     private static void assertLabelExists(Node root, String text) {

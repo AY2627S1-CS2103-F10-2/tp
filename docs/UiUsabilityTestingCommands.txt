@@ -36,8 +36,8 @@ assign sn/DEMO0001 m/CS2101 c/TUTORIAL-GROUP-WITH-A-LONG-NAME
 
 Expect Classes — 3 shown / 3 total and Students — 3 shown. Card membership
 counts remain 2, 1 and 1. Keep the input/output at the top, compact students, slate
-theme and passive class rows from branch A. The revised split places Students on
-the left and Classes on the right to match STUDENT_INDEX CLASS_INDEX commands.
+theme from branch A. Both student and class rows are now passive. The split places
+Students on the left and Classes on the right to match STUDENT_INDEX CLASS_INDEX commands.
 Classes receive more default width, while Students remain readable and resizable.
 There is no extra sentence repeating the displayed student count.
 Class and student indices should have matching font, weight, colour and spacing.
@@ -143,7 +143,9 @@ because Alice is unassigned. Expect an error with no class scrolling or data/cou
 changes. listbyclass 9999 should also fail without scrolling.
 
 Type listbyclass 15 without Enter. It must not scroll or change counts or data.
-Erase the draft. Clicking class rows must still leave displayed students unchanged.
+Erase the draft. Clicking student or class cards must not select a row, execute a
+command, change either list or alter counts. Clicking may focus the list; only the
+active list should have the focus border, without a highlight on an individual row.
 
 6. Minimum size and saved dimensions
 
@@ -202,24 +204,32 @@ Automated tests use equivalent logical bounds of approximately 853 by 480 and
 853 by 430, including reserved desktop space. These tests do not replace the
 physical operating-system scaling and multi-monitor checks above.
 
-7. Empty data and keyboard regression
+7. Passive lists, scrolling and empty data
+
+Before clearing data, Tab from input through output, Students and Classes. Check
+that the visible focus border moves between the lists without selecting any row.
+For each list with more cards than fit, verify Up, Down, Home, End, Page Up and
+Page Down, mouse-wheel scrolling and scrollbar dragging. Every card must remain
+reachable without changing data, filters or counts. Click cards in both lists and
+confirm that no selection highlight or command action appears. F1 must still open
+Help from either focused list.
 
 Execute clear only in the isolated app. Expect:
 - Classes — 0 shown / 0 total with No classes shown.
 - Students — 0 shown with No students shown.
 
-Tab into Classes and press End, Home, arrow and page keys. Expect no exceptions;
-Tab and Shift+Tab still traverse the controls, and F1 still opens Help. No class
-rows become selected. Close Help, execute exit, relaunch the isolated app and
-confirm the same zero counts and empty messages persist.
+Tab into each empty list and press End, Home, arrow and page keys. Expect no
+exceptions; Tab and Shift+Tab still traverse the controls, and F1 still opens Help.
+No student or class rows become selected. Close Help, execute exit, relaunch the
+isolated app and confirm the same zero counts and empty messages persist.
 
 Automated checks and optional captures
 
 ./gradlew check coverage runs the full suite and Checkstyle. Regression coverage
 includes live counts during filters and membership/data changes, zero-result lists,
 screen-aware restored and minimum sizes, monitor transitions, small-screen keyboard
-access and scrolling, successful class-index scrolling, failed commands and targets
-that disappear under the active class filter.
+access, mouse/keyboard scrolling without selection, successful class-index
+scrolling, failed commands and targets that disappear under the active class filter.
 
 Optional JavaFX captures on a desktop:
 

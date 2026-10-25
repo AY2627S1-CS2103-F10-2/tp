@@ -123,8 +123,8 @@
 
 .app-shell .corner { -fx-background-color: #1d232b; }
 
-/* Keep class rows passive and show keyboard focus on the list as a whole. */
-.workspace-bottom #academicClassListView .list-cell:filled:selected #cardPane {
+/* Keep both lists passive and show keyboard focus on the list as a whole. */
+.workspace-bottom .list-cell:filled:selected #cardPane {
     -fx-border-color: transparent;
 }
 .workspace-bottom #academicClassListView, .workspace-bottom #personListView {
@@ -133,9 +133,6 @@
     -fx-border-radius: 5;
 }
 .workspace-bottom #academicClassListView:focused, .workspace-bottom #personListView:focused {
-    -fx-border-color: #91b4d3;
-}
-.workspace-bottom #personListView:focused .list-cell:filled:focused #cardPane {
     -fx-border-color: #91b4d3;
 }
 .app-shell #resultDisplay:focused { -fx-border-color: #91b4d3; }
