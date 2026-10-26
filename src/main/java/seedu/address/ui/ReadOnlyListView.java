@@ -54,8 +54,8 @@ public class ReadOnlyListView<T> extends ListView<T> {
                 return;
             }
             switch (event.getCode()) {
-                case UP, KP_UP -> flow.scrollPixels(-first.getHeight());
-                case DOWN, KP_DOWN -> flow.scrollPixels(first.getHeight());
+                case UP, KP_UP -> scrollToAdjacentRow(flow, first.getIndex() - 1);
+                case DOWN, KP_DOWN -> scrollToAdjacentRow(flow, first.getIndex() + 1);
                 case PAGE_UP -> flow.scrollPixels(-flow.getHeight());
                 case PAGE_DOWN -> flow.scrollPixels(flow.getHeight());
                 case HOME -> flow.scrollToTop(0);
@@ -65,6 +65,15 @@ public class ReadOnlyListView<T> extends ListView<T> {
                 }
             }
             event.consume();
+        }
+
+        private void scrollToAdjacentRow(VirtualFlow<ListCell<T>> flow, int targetIndex) {
+            int lastIndex = ReadOnlyListView.this.getItems().size() - 1;
+            if (lastIndex < 0) {
+                return;
+            }
+            int boundedIndex = Math.max(0, Math.min(targetIndex, lastIndex));
+            flow.scrollToTop(boundedIndex);
         }
 
         private void scrollToEnd() {

@@ -121,9 +121,10 @@ public class WorkspaceTest {
                 assertEquals(studentName.getFont(), className.getFont());
                 assertEquals(studentName.getFont(), moduleCode.getFont());
                 assertEquals(14, studentName.getFont().getSize());
-                for (String detail : List.of("id", "studentNumber", "email", "telegram", "attendance")) {
+                for (String detail : List.of("id", "studentNumber", "email", "telegram")) {
                     assertNormalCardFont((Label) students.lookup("#" + detail));
                 }
+                assertAttendanceFont((Label) students.lookup("#attendance"));
                 for (Node tag : students.lookup("#tags").lookupAll(".label")) {
                     assertNormalCardFont((Label) tag);
                 }
@@ -608,6 +609,11 @@ public class WorkspaceTest {
     private static void assertNormalCardFont(Label label) {
         assertEquals(12, label.getFont().getSize(), label.getId());
         assertEquals(Font.font(label.getFont().getFamily(), FontWeight.NORMAL, 12), label.getFont(), label.getId());
+    }
+
+    private static void assertAttendanceFont(Label label) {
+        assertEquals(13, label.getFont().getSize(), label.getId());
+        assertEquals(Font.font(label.getFont().getFamily(), FontWeight.BOLD, 13), label.getFont(), label.getId());
     }
 
     private static void assertHeaders(Stage stage, int shownClasses, int totalClasses,
