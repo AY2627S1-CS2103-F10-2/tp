@@ -13,7 +13,7 @@
     <Label fx:id="name" styleClass="cell_big_label" minWidth="0" maxWidth="Infinity" wrapText="true" />
     <FlowPane fx:id="details" hgap="12" vgap="3" minWidth="0" prefWrapLength="280"
               styleClass="student-details">
-      <Label fx:id="studentNumber" styleClass="cell_small_label student-identifier" minWidth="0" wrapText="true" />
+      <Label fx:id="studentNumber" styleClass="cell_small_label, student-identifier" minWidth="0" wrapText="true" />
       <Label fx:id="email" styleClass="cell_small_label" minWidth="0" maxWidth="Infinity" wrapText="true" />
       <Label fx:id="telegram" styleClass="cell_small_label" minWidth="0" maxWidth="Infinity" wrapText="true" />
     </FlowPane>
@@ -24,7 +24,7 @@
     </FlowPane>
     <VBox fx:id="attendanceSection" spacing="5" minWidth="0" visible="false" managed="false"
           styleClass="attendance-section">
-      <Label fx:id="attendance" styleClass="attendance-summary cell_small_label"
+      <Label fx:id="attendance" styleClass="attendance-summary, cell_small_label"
              wrapText="true" />
       <VBox fx:id="attendanceMonths" spacing="4" minWidth="0" />
     </VBox>

@@ -88,7 +88,6 @@ public class PersonCard extends UiPart<Region> {
         email.setText(person.getEmail().value);
         email.setWrapText(true);
         email.setMaxWidth(Double.MAX_VALUE);
-        attendance.getStyleClass().add("cell_small_label");
         if (person.getTelegram().isPresent()) {
             telegram.setText("@" + person.getTelegram().get().value);
             telegram.setMaxWidth(Double.MAX_VALUE);
