@@ -612,8 +612,8 @@ public class WorkspaceTest {
     }
 
     private static void assertAttendanceFont(Label label) {
-        assertEquals(13, label.getFont().getSize(), label.getId());
-        assertEquals(Font.font(label.getFont().getFamily(), FontWeight.BOLD, 13), label.getFont(), label.getId());
+        assertEquals(12, label.getFont().getSize(), label.getId());
+        assertEquals(Font.font(label.getFont().getFamily(), FontWeight.BOLD, 12), label.getFont(), label.getId());
     }
 
     private static void assertHeaders(Stage stage, int shownClasses, int totalClasses,
