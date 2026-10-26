@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.ListView?>
 <?import javafx.scene.layout.VBox?>
+<?import seedu.address.ui.ReadOnlyListView?>
 
 <VBox minWidth="0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
-  <ListView fx:id="personListView" minWidth="0" VBox.vgrow="ALWAYS" />
+  <ReadOnlyListView fx:id="personListView" minWidth="0" VBox.vgrow="ALWAYS" />
 </VBox>

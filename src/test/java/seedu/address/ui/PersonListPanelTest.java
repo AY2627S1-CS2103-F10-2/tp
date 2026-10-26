@@ -59,6 +59,8 @@ public class PersonListPanelTest {
 
             ListView<?> listView = (ListView<?>) panel.getRoot().lookup(".list-view");
             assertNotNull(listView);
+            assertNull(listView.getSelectionModel());
+            assertTrue(listView.isFocusTraversable());
             assertEquals(List.of(ALICE), listView.getItems());
             assertNotNull(listView.getCellFactory().call(null));
         });

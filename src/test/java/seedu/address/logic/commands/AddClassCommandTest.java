@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
+import seedu.address.commons.core.index.Index;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
@@ -92,6 +93,17 @@ public class AddClassCommandTest {
      * A default model stub that has all of the methods failing.
      */
     private class ModelStub implements Model {
+
+        @Override
+        public java.util.List<String> getCommandHistory() {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public void setCommandHistory(java.util.List<String> commands) {
+            throw new AssertionError("This method should not be called.");
+        }
+
         @Override
         public List<Attendance> getAttendanceList() {
             throw new AssertionError("This method should not be called.");
@@ -240,6 +252,16 @@ public class AddClassCommandTest {
 
         @Override
         public ObservableList<AcademicClass> getFilteredAcademicClassList() {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public Optional<Person> findDisplayedPerson(Index index) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public Optional<AcademicClass> findDisplayedAcademicClass(Index index) {
             throw new AssertionError("This method should not be called.");
         }
 

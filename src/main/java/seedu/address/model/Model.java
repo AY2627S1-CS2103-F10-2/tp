@@ -7,6 +7,7 @@ import java.util.function.Predicate;
 
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
+import seedu.address.commons.core.index.Index;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
@@ -66,6 +67,12 @@ public interface Model {
 
     /** Returns the AddressBook */
     ReadOnlyAddressBook getAddressBook();
+
+    /** Returns saved successful commands, oldest first, as an unmodifiable list. */
+    List<String> getCommandHistory();
+
+    /** Replaces saved command history. */
+    void setCommandHistory(List<String> commands);
 
     /**
      * Returns true if a person with the same identity as {@code person} exists in the address book.
@@ -182,6 +189,12 @@ public interface Model {
 
     /** Returns an unmodifiable observable view of persons in their displayed order. */
     ObservableList<Person> getFilteredPersonList();
+
+    /** Resolves a displayed student index, or returns empty if it is outside the current view. */
+    Optional<Person> findDisplayedPerson(Index index);
+
+    /** Resolves a displayed class index, or returns empty if it is outside the current view. */
+    Optional<AcademicClass> findDisplayedAcademicClass(Index index);
 
     /**
      * Updates the person filter and restores the matching persons' insertion order.

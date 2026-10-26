@@ -16,6 +16,7 @@ import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
+import seedu.address.commons.core.index.Index;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
@@ -120,6 +121,16 @@ public class ModelManager implements Model {
         updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
         updateFilteredAcademicClassList(PREDICATE_SHOW_ALL_ACADEMIC_CLASSES);
         logger.fine("Replaced address book and reset student and class filters");
+    }
+
+    @Override
+    public List<String> getCommandHistory() {
+        return addressBook.getCommandHistory();
+    }
+
+    @Override
+    public void setCommandHistory(List<String> commands) {
+        addressBook.setCommandHistory(commands);
     }
 
     @Override
@@ -313,6 +324,21 @@ public class ModelManager implements Model {
     @Override
     public ObservableList<Person> getFilteredPersonList() {
         return displayedPersons;
+    }
+
+    @Override
+    public Optional<Person> findDisplayedPerson(Index index) {
+        requireNonNull(index);
+        int position = index.getZeroBased();
+        return position < displayedPersons.size() ? Optional.of(displayedPersons.get(position)) : Optional.empty();
+    }
+
+    @Override
+    public Optional<AcademicClass> findDisplayedAcademicClass(Index index) {
+        requireNonNull(index);
+        int position = index.getZeroBased();
+        return position < displayedAcademicClasses.size()
+                ? Optional.of(displayedAcademicClasses.get(position)) : Optional.empty();
     }
 
 

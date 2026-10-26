@@ -16,6 +16,9 @@ import seedu.address.model.person.StudentNumber;
  */
 public interface ReadOnlyAddressBook {
 
+    /** Returns saved successful commands, oldest first. */
+    List<String> getCommandHistory();
+
     /** Returns an unmodifiable list of date-history snapshots with shared student/class references. */
     List<Attendance> getAttendanceList();
 

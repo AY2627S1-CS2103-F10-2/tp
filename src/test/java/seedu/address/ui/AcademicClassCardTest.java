@@ -17,6 +17,8 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
@@ -42,7 +44,8 @@ public class AcademicClassCardTest {
 
             assertNotNull(academicClassCard.getRoot());
             assertLabelTextExists(academicClassCard.getRoot(), "1. ");
-            assertLabelTextExists(academicClassCard.getRoot(), "CS2103T F10-2");
+            assertEquals("CS2103T ", ((Text) academicClassCard.getRoot().lookup("#moduleCode")).getText());
+            assertEquals("F10-2", ((Text) academicClassCard.getRoot().lookup("#className")).getText());
             assertLabelTextExists(academicClassCard.getRoot(), "Students: 0");
         });
     }
@@ -54,18 +57,109 @@ public class AcademicClassCardTest {
                     new ClassName("TUTORIAL-GROUP-WITH-A-VERY-LONG-NAME"));
             AcademicClassCard card = new AcademicClassCard(academicClass, 123);
             StackPane container = new StackPane(card.getRoot());
+            container.getStyleClass().addAll("app-shell", "workspace-bottom");
             Scene scene = new Scene(container, 180, 400);
-            scene.getStylesheets().add(getClass().getResource("/view/DarkTheme.css").toExternalForm());
+            scene.getStylesheets().add(getClass().getResource("/view/Workspace.css").toExternalForm());
             container.applyCss();
             container.layout();
+            container.layout();
 
-            Label name = (Label) card.getRoot().lookup("#className");
-            assertTrue(name.isWrapText());
-            assertTrue(name.getHeight() > name.getFont().getSize() * 2);
-            assertTrue(name.localToScene(name.getBoundsInLocal()).getMaxX() <= container.getWidth());
+            TextFlow heading = (TextFlow) card.getRoot().lookup("#classHeading");
+            Text name = (Text) card.getRoot().lookup("#className");
+            Text moduleCode = (Text) card.getRoot().lookup("#moduleCode");
+            assertTrue(heading.getHeight() > name.getFont().getSize() * 2);
+            assertTrue(heading.localToScene(heading.getBoundsInLocal()).getMaxX() <= container.getWidth());
+            assertEquals("CS2103T ", moduleCode.getText());
+            assertEquals(academicClass.getClassName().value, name.getText());
+            Label membership = (Label) card.getRoot().lookup("#studentCount");
+            assertTrue(membership.localToScene(0, 0).getY()
+                    >= heading.localToScene(heading.getBoundsInLocal()).getMaxY());
             assertLabelTextExists(card.getRoot(), "123. ");
             assertLabelTextExists(card.getRoot(), "Students: 0");
         });
+    }
+
+    @Test
+    public void heading_longClassName_wrapsAsCompactlyAsSingleLabel() {
+        runOnFxThreadAndWait(() -> {
+            AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103"),
+                    new ClassName("TUTORIAL-GROUP-WITH-A-LONG-NAME"));
+            AcademicClassCard card = new AcademicClassCard(academicClass, 1);
+            StackPane container = createContainer(card);
+            layoutCard(container, 230);
+
+            TextFlow heading = (TextFlow) card.getRoot().lookup("#classHeading");
+            Text name = (Text) card.getRoot().lookup("#className");
+            Label reference = new Label("CS2103 " + academicClass.getClassName().value);
+            reference.setFont(name.getFont());
+            reference.setWrapText(true);
+            reference.setMinWidth(0);
+            StackPane measurement = new StackPane(reference);
+            new Scene(measurement, heading.getWidth(), 600);
+            measurement.applyCss();
+            measurement.layout();
+            assertTrue(heading.getHeight() <= reference.prefHeight(heading.getWidth()) + 1,
+                    "Colouring the module separately must not add heading rows");
+            assertTrue(heading.getHeight() > name.getFont().getSize() * 1.5);
+            assertHeadingVisible(card);
+        });
+    }
+
+    @Test
+    public void heading_resizeWithLongModuleCodes_wrapsAndRecoversCompactHeight() {
+        runOnFxThreadAndWait(() -> {
+            for (String code : new String[] {"CS2103", "W".repeat(32)}) {
+                AcademicClass academicClass = new AcademicClass(new ModuleCode(code),
+                        new ClassName("TUTORIAL-GROUP-WITH-A-VERY-LONG-NAME"));
+                AcademicClassCard card = new AcademicClassCard(academicClass, 123);
+                StackPane container = createContainer(card);
+                layoutCard(container, 700);
+                double wideHeight = card.getRoot().prefHeight(card.getRoot().getWidth());
+                for (double width : new double[] {230, 180, 700, 180, 700}) {
+                    layoutCard(container, width);
+                    Text moduleCode = (Text) card.getRoot().lookup("#moduleCode");
+                    Text name = (Text) card.getRoot().lookup("#className");
+                    assertEquals(code + " ", moduleCode.getText());
+                    assertEquals(academicClass.getClassName().value, name.getText());
+                    assertHeadingVisible(card);
+                    double height = card.getRoot().prefHeight(card.getRoot().getWidth());
+                    if (width == 700) {
+                        assertEquals(wideHeight, height, 1, "Widening must recover the compact card height");
+                    } else {
+                        assertTrue(height > wideHeight, "Narrow cards must grow to fit wrapped headings");
+                    }
+                    assertLabelTextExists(card.getRoot(), "123. ");
+                    assertLabelTextExists(card.getRoot(), "Students: 0");
+                }
+            }
+        });
+    }
+
+    private StackPane createContainer(AcademicClassCard card) {
+        StackPane container = new StackPane(card.getRoot());
+        container.getStyleClass().addAll("app-shell", "workspace-bottom");
+        Scene scene = new Scene(container, 700, 600);
+        scene.getStylesheets().add(getClass().getResource("/view/Workspace.css").toExternalForm());
+        return container;
+    }
+
+    private static void layoutCard(StackPane container, double width) {
+        container.resize(width, 600);
+        container.applyCss();
+        container.layout();
+        container.layout();
+    }
+
+    private static void assertHeadingVisible(AcademicClassCard card) {
+        TextFlow heading = (TextFlow) card.getRoot().lookup("#classHeading");
+        for (Node part : heading.getChildren()) {
+            var bounds = part.getBoundsInParent();
+            assertTrue(bounds.getMinX() >= -1 && bounds.getMaxX() <= heading.getWidth() + 1);
+            assertTrue(bounds.getMinY() >= -1 && bounds.getMaxY() <= heading.getHeight() + 1);
+        }
+        Label membership = (Label) card.getRoot().lookup("#studentCount");
+        assertTrue(membership.localToScene(0, 0).getY()
+                >= heading.localToScene(heading.getBoundsInLocal()).getMaxY());
     }
 
     @Test

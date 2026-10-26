@@ -84,8 +84,8 @@ public class AddressBookParserTest {
     @Test
     public void parseCommand_deleteClass() throws Exception {
         DeleteClassCommand command = (DeleteClassCommand) parser.parseCommand(
-                "deleteclass c/f10-2 m/cs2103");
-        assertEquals(new DeleteClassCommand(new ModuleCode("CS2103"), new ClassName("F10-2")), command);
+                "deleteclass 1");
+        assertEquals(new DeleteClassCommand(Index.fromOneBased(1)), command);
     }
 
     @Test

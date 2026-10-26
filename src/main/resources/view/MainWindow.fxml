@@ -9,11 +9,13 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.image.Image?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
 <fx:root type="javafx.stage.Stage" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
-         title="TAssist App" minWidth="450" minHeight="600" onCloseRequest="#handleExit">
+         title="TAssist App" minWidth="720" minHeight="600" onCloseRequest="#handleExit">
   <icons>
     <Image url="@/images/tassist-icon-32.png" />
   </icons>
@@ -50,13 +52,23 @@
 
         <SplitPane fx:id="workspaceSplitPane" dividerPositions="0.45" VBox.vgrow="ALWAYS"
                    styleClass="workspace-bottom">
-          <VBox minWidth="170" spacing="12" styleClass="class-sidebar">
-            <Label text="Classes" styleClass="section-title" />
-            <StackPane fx:id="academicClassListPanelPlaceholder" minWidth="0" VBox.vgrow="ALWAYS" />
-          </VBox>
           <VBox minWidth="220" spacing="12" styleClass="student-workspace">
-            <Label text="Students" styleClass="section-title" />
+            <HBox alignment="CENTER_LEFT" spacing="8">
+              <Label fx:id="studentHeader" text="Students" styleClass="section-title" minWidth="-Infinity" />
+              <Region HBox.hgrow="ALWAYS" />
+              <Label fx:id="studentCount" styleClass="count-pill" wrapText="true" minWidth="0"
+                     textAlignment="CENTER" />
+            </HBox>
             <StackPane fx:id="personListPanelPlaceholder" minWidth="0" VBox.vgrow="ALWAYS" />
+          </VBox>
+          <VBox minWidth="170" spacing="12" styleClass="class-sidebar">
+            <HBox alignment="CENTER_LEFT" spacing="8">
+              <Label fx:id="classHeader" text="Classes" styleClass="section-title" minWidth="-Infinity" />
+              <Region HBox.hgrow="ALWAYS" />
+              <Label fx:id="classCount" styleClass="count-pill" wrapText="true" minWidth="0"
+                     textAlignment="CENTER" />
+            </HBox>
+            <StackPane fx:id="academicClassListPanelPlaceholder" minWidth="0" VBox.vgrow="ALWAYS" />
           </VBox>
         </SplitPane>
 

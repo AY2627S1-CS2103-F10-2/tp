@@ -2,6 +2,7 @@ package seedu.address.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.model.Model.PREDICATE_SHOW_ALL_ACADEMIC_CLASSES;
 import static seedu.address.model.Model.PREDICATE_SHOW_ALL_PERSONS;
@@ -17,6 +18,7 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 import seedu.address.commons.core.GuiSettings;
+import seedu.address.commons.core.index.Index;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
@@ -27,6 +29,90 @@ import seedu.address.testutil.AddressBookBuilder;
 public class ModelManagerTest {
 
     private ModelManager modelManager = new ModelManager();
+
+    @Test
+    public void findDisplayedPerson_unfiltered_returnsStoredStudentsInDisplayedOrder() {
+        modelManager.addPerson(BENSON);
+        modelManager.addPerson(ALICE);
+        assertSame(BENSON, modelManager.findDisplayedPerson(Index.fromOneBased(1)).orElseThrow());
+        assertSame(ALICE, modelManager.findDisplayedPerson(Index.fromOneBased(2)).orElseThrow());
+        assertEquals(Optional.empty(), modelManager.findDisplayedPerson(Index.fromOneBased(3)));
+    }
+
+    @Test
+    public void findDisplayedPerson_filtered_usesCurrentViewWithoutChangingIt() {
+        modelManager.addPerson(BENSON);
+        modelManager.addPerson(ALICE);
+        modelManager.updateFilteredPersonList(person -> person.equals(ALICE));
+        assertSame(ALICE, modelManager.findDisplayedPerson(Index.fromOneBased(1)).orElseThrow());
+        assertEquals(Optional.empty(), modelManager.findDisplayedPerson(Index.fromOneBased(2)));
+        assertEquals(List.of(ALICE), modelManager.getFilteredPersonList());
+        assertEquals(List.of(BENSON, ALICE), modelManager.getAddressBook().getPersonList());
+    }
+
+    @Test
+    public void findDisplayedPerson_classView_usesAlphabeticalOrder() {
+        modelManager.addPerson(BENSON);
+        modelManager.addPerson(ALICE);
+        AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103"), new ClassName("T01"));
+        modelManager.addAcademicClass(academicClass);
+        modelManager.assignStudentToClass(BENSON, academicClass);
+        modelManager.assignStudentToClass(ALICE, academicClass);
+        modelManager.filterPersonsByClass(academicClass);
+        assertSame(ALICE, modelManager.findDisplayedPerson(Index.fromOneBased(1)).orElseThrow());
+        assertSame(BENSON, modelManager.findDisplayedPerson(Index.fromOneBased(2)).orElseThrow());
+    }
+
+    @Test
+    public void findDisplayedPerson_emptyOrHidden_returnsEmpty() {
+        assertEquals(Optional.empty(), modelManager.findDisplayedPerson(Index.fromOneBased(1)));
+        modelManager.addPerson(ALICE);
+        modelManager.updateFilteredPersonList(person -> false);
+        assertEquals(Optional.empty(), modelManager.findDisplayedPerson(Index.fromOneBased(1)));
+    }
+
+    @Test
+    public void findDisplayedAcademicClass_unfiltered_returnsStoredClassesInDisplayedOrder() {
+        AcademicClass first = new AcademicClass(new ModuleCode("CS2103"), new ClassName("T01"));
+        AcademicClass second = new AcademicClass(new ModuleCode("CS2100"), new ClassName("L01"));
+        modelManager.addAcademicClass(first);
+        modelManager.addAcademicClass(second);
+        assertSame(first, modelManager.findDisplayedAcademicClass(Index.fromOneBased(1)).orElseThrow());
+        assertSame(second, modelManager.findDisplayedAcademicClass(Index.fromOneBased(2)).orElseThrow());
+        assertEquals(Optional.empty(), modelManager.findDisplayedAcademicClass(Index.fromOneBased(3)));
+    }
+
+    @Test
+    public void findDisplayedAcademicClass_studentFilter_tracksMembershipChanges() {
+        AcademicClass first = new AcademicClass(new ModuleCode("CS2103"), new ClassName("T01"));
+        AcademicClass second = new AcademicClass(new ModuleCode("CS2100"), new ClassName("L01"));
+        modelManager.addPerson(ALICE);
+        modelManager.addAcademicClass(first);
+        modelManager.addAcademicClass(second);
+        modelManager.assignStudentToClass(ALICE, second);
+        modelManager.updateFilteredAcademicClassListByStudent(ALICE.getStudentNumber());
+        assertSame(second, modelManager.findDisplayedAcademicClass(Index.fromOneBased(1)).orElseThrow());
+        assertEquals(Optional.empty(), modelManager.findDisplayedAcademicClass(Index.fromOneBased(2)));
+        assertEquals(List.of(second), modelManager.getFilteredAcademicClassList());
+        modelManager.assignStudentToClass(ALICE, first);
+        assertSame(first, modelManager.findDisplayedAcademicClass(Index.fromOneBased(1)).orElseThrow());
+        assertSame(second, modelManager.findDisplayedAcademicClass(Index.fromOneBased(2)).orElseThrow());
+        assertEquals(List.of(first, second), modelManager.getAcademicClassList());
+    }
+
+    @Test
+    public void findDisplayedAcademicClass_emptyOrHidden_returnsEmpty() {
+        assertEquals(Optional.empty(), modelManager.findDisplayedAcademicClass(Index.fromOneBased(1)));
+        modelManager.addAcademicClass(new AcademicClass(new ModuleCode("CS2103"), new ClassName("T01")));
+        modelManager.updateFilteredAcademicClassList(academicClass -> false);
+        assertEquals(Optional.empty(), modelManager.findDisplayedAcademicClass(Index.fromOneBased(1)));
+    }
+
+    @Test
+    public void findDisplayedRecords_nullIndex_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> modelManager.findDisplayedPerson(null));
+        assertThrows(NullPointerException.class, () -> modelManager.findDisplayedAcademicClass(null));
+    }
 
     @Test
     public void assignStudentToClass_addsMembershipWithoutChangingFilterOrOtherClasses() {

@@ -47,15 +47,16 @@ public class ListByStudentIntegrationTest {
         assertEquals(List.of("CS2113-RENAMED-T01", "CS2100-DEMO-L01"), displayedClasses(model));
         assertEquals(original.getStudents(), edited.getStudents());
 
-        assertThrows(CommandException.class, () -> logic.execute("assign sn/A0999803Z m/CS2103 c/DEMO-T01"));
-        logic.execute("assign sn/A0999803Z m/CS2113 c/RENAMED-T01");
+        logic.execute("assign 3 1");
         assertEquals(3, edited.getStudents().size());
         assertEquals(2, original.getStudents().size());
         assertSame(edited, displayed.get(0));
 
         logic.execute("unassign 1 1");
         assertEquals(List.of("CS2100-DEMO-L01"), displayedClasses(model));
-        logic.execute("assign sn/A0999801X m/CS2113 c/RENAMED-T01");
+        logic.execute("listclass");
+        logic.execute("assign 1 1");
+        logic.execute("listbystudent 1");
         assertEquals(List.of("CS2113-RENAMED-T01", "CS2100-DEMO-L01"), displayedClasses(model));
         assertSame(edited, displayed.get(0));
     }
@@ -85,18 +86,21 @@ public class ListByStudentIntegrationTest {
         ModelManager model = new ModelManager();
         LogicManager logic = createLogic(model, storage);
         populate(logic);
-        String savedData = Files.readString(file);
+        var savedData = storage.readAddressBook().orElseThrow();
 
         logic.execute("find AlphaDemoAlice");
         assertEquals("Listed 2 classes for AlphaDemoAlice (A0999801X).",
                 logic.execute("listbystudent 1").getFeedbackToUser());
         assertEquals(List.of("CS2103-DEMO-T01", "CS2100-DEMO-L01"), displayedClasses(model));
         assertEquals(1, model.getFilteredPersonList().size());
-        assertEquals(savedData, Files.readString(file));
+        var afterLookup = storage.readAddressBook().orElseThrow();
+        assertEquals(savedData.getPersonList(), afterLookup.getPersonList());
+        assertEquals(savedData.getAcademicClassList(), afterLookup.getAcademicClassList());
+        String savedContents = Files.readString(file);
 
         assertThrows(ParseException.class, () -> logic.execute("listbystudent 0"));
         assertThrows(CommandException.class, () -> logic.execute("listbystudent 2"));
-        assertEquals(savedData, Files.readString(file));
+        assertEquals(savedContents, Files.readString(file));
         assertEquals(List.of("CS2103-DEMO-T01", "CS2100-DEMO-L01"), displayedClasses(model));
 
         ModelManager reloaded = new ModelManager(storage.readAddressBook().orElseThrow(), new UserPrefs());
@@ -108,7 +112,9 @@ public class ListByStudentIntegrationTest {
 
         restarted.execute("unassign 1 1");
         assertEquals(List.of("CS2100-DEMO-L01"), displayedClasses(reloaded));
-        restarted.execute("assign sn/A0999801X m/CS2103 c/DEMO-T01");
+        restarted.execute("listclass");
+        restarted.execute("assign 1 1");
+        restarted.execute("listbystudent 1");
         restarted.execute("edit 1 sn/A0999809Z");
         assertEquals(List.of("CS2103-DEMO-T01", "CS2100-DEMO-L01"), displayedClasses(reloaded));
 
@@ -139,9 +145,9 @@ public class ListByStudentIntegrationTest {
                 "addclass m/CS2103 c/DEMO-T01",
                 "addclass m/CS2100 c/DEMO-L01",
                 "addclass m/CS2103 c/DEMO-T02",
-                "assign sn/A0999801X m/CS2103 c/DEMO-T01",
-                "assign sn/A0999801X m/CS2100 c/DEMO-L01",
-                "assign sn/A0999802Y m/CS2103 c/DEMO-T01")) {
+                "assign 1 1",
+                "assign 1 2",
+                "assign 2 1")) {
             logic.execute(command);
         }
     }

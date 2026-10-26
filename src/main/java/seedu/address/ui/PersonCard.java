@@ -57,7 +57,7 @@ public class PersonCard extends UiPart<Region> {
     @FXML
     private Label attendance;
     @FXML
-    private VBox details;
+    private FlowPane details;
     @FXML
     private VBox attendanceSection;
     @FXML
@@ -95,6 +95,9 @@ public class PersonCard extends UiPart<Region> {
         } else {
             telegram.setVisible(false);
             telegram.setManaged(false);
+        }
+        for (Label detail : List.of(studentNumber, email, telegram)) {
+            constrainWrapping(detail, details);
         }
         if (attendanceClass == null) {
             attendanceSection.setVisible(false);

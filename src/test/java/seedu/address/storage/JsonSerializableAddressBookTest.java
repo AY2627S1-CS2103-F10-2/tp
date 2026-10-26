@@ -9,6 +9,8 @@ import static seedu.address.testutil.TypicalPersons.BENSON;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -34,6 +36,65 @@ public class JsonSerializableAddressBookTest {
 
     @TempDir
     public Path temporaryFolder;
+
+    @Test
+    public void saveAndRead_historyWithSpecialCharacters_preservesStringsAndData() throws Exception {
+        AddressBook source = new AddressBook();
+        source.addPerson(ALICE);
+        List<String> commands = List.of("find \"Alice\"", "find C:\\temp\\file",
+                "find \"],\"persons\":[],\"injected\":\"", "find line\nnext\r\t\b\f"
+                        + (char) 0 + (char) 27, "find ?? ??");
+        source.setCommandHistory(commands);
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("escaped-history.json"));
+        storage.saveAddressBook(source);
+
+        var restored = storage.readAddressBook().orElseThrow();
+        assertEquals(commands, restored.getCommandHistory());
+        assertEquals(List.of(ALICE), restored.getPersonList());
+    }
+
+    @Test
+    public void toModelType_legacyFile_hasEmptyHistory() throws Exception {
+        JsonSerializableAddressBook data = JsonUtil.readJsonFile(TYPICAL_PERSONS_FILE,
+                JsonSerializableAddressBook.class).orElseThrow();
+        assertEquals(List.of(), data.toModelType().getCommandHistory());
+    }
+
+    @Test
+    public void toModelType_invalidHistory_skipsInvalidEntriesAndPreservesData() throws Exception {
+        JsonAdaptedAcademicClass academicClass = new JsonAdaptedAcademicClass("CS2103", "T01",
+                List.of(ALICE.getStudentNumber().value));
+        JsonSerializableAddressBook data = new JsonSerializableAddressBook(List.of(new JsonAdaptedPerson(ALICE)),
+                List.of(academicClass), List.of(), Arrays.asList(null, "list", "", " \t\n", "find Alice", null));
+        AddressBook restored = data.toModelType();
+        assertEquals(List.of("list", "find Alice"), restored.getCommandHistory());
+        assertEquals(List.of(ALICE), restored.getPersonList());
+        assertEquals(1, restored.getAcademicClassList().size());
+        assertEquals(Set.of(ALICE), restored.getAcademicClassList().getFirst().getStudents());
+    }
+
+    @Test
+    public void toModelType_allHistoryEntriesInvalid_loadsEmptyHistory() throws Exception {
+        JsonSerializableAddressBook data = new JsonSerializableAddressBook(List.of(new JsonAdaptedPerson(ALICE)),
+                List.of(), List.of(), Arrays.asList(null, "", " \t"));
+        AddressBook restored = data.toModelType();
+        assertEquals(List.of(), restored.getCommandHistory());
+        assertEquals(List.of(ALICE), restored.getPersonList());
+    }
+
+    @Test
+    public void toModelType_invalidHistoryEntries_doNotCountTowardsHistoryLimit() throws Exception {
+        List<String> commands = new ArrayList<>();
+        for (int i = 0; i < 25; i++) {
+            commands.add("find Student" + i);
+            commands.add(null);
+            commands.add(" ");
+        }
+        AddressBook restored = new JsonSerializableAddressBook(List.of(), List.of(), List.of(), commands).toModelType();
+        assertEquals(20, restored.getCommandHistory().size());
+        assertEquals("find Student5", restored.getCommandHistory().getFirst());
+        assertEquals("find Student24", restored.getCommandHistory().getLast());
+    }
 
     @Test
     public void saveAndRead_memberships_preservesStoredStudentReferences() throws Exception {

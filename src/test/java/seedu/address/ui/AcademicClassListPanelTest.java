@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -16,7 +17,9 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Orientation;
+import javafx.scene.Scene;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollToEvent;
 import seedu.address.model.ModelManager;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
@@ -48,6 +51,31 @@ public class AcademicClassListPanelTest {
             assertEquals(Orientation.VERTICAL, academicClassListView.getOrientation());
             assertNull(academicClassListView.getSelectionModel());
             assertTrue(academicClassListView.isFocusTraversable());
+        });
+    }
+
+    @Test
+    public void scrollToClass_onlyDisplayedIndices_issueScrollRequests() {
+        runOnFxThreadAndWait(() -> {
+            ObservableList<AcademicClass> classes = FXCollections.observableArrayList(CS2103T_F10);
+            AcademicClassListPanel panel = new AcademicClassListPanel(classes);
+            Scene scene = new Scene(panel.getRoot(), 300, 200);
+            assertNotNull(scene);
+            panel.getRoot().applyCss();
+            panel.getRoot().layout();
+            ListView<?> listView = (ListView<?>) panel.getRoot().lookup(".list-view");
+            AtomicInteger scrollRequests = new AtomicInteger();
+            listView.addEventHandler(ScrollToEvent.scrollToTopIndex(), event -> scrollRequests.incrementAndGet());
+
+            panel.scrollToClass(-1);
+            panel.scrollToClass(classes.size());
+            assertEquals(0, scrollRequests.get());
+            panel.scrollToClass(0);
+            assertEquals(1, scrollRequests.get());
+            classes.clear();
+            panel.scrollToClass(0);
+            assertEquals(1, scrollRequests.get());
+            assertNull(listView.getSelectionModel());
         });
     }
 

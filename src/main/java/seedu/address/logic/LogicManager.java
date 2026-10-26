@@ -2,6 +2,7 @@ package seedu.address.logic;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -36,7 +37,8 @@ public class LogicManager implements Logic {
     private final AddressBookParser addressBookParser;
 
     /**
-     * Constructs a {@code LogicManager} with the given {@code Model} and {@code Storage}.
+     * Constructs a {@code LogicManager} with the given {@code Model} and
+     * {@code Storage}.
      */
     public LogicManager(Model model, Storage storage) {
         this.model = model;
@@ -50,17 +52,35 @@ public class LogicManager implements Logic {
 
         CommandResult commandResult;
         Command command = addressBookParser.parseCommand(commandText);
+        List<String> previousHistory = model.getCommandHistory();
         commandResult = command.execute(model);
 
+        List<String> updatedHistory = new ArrayList<>(previousHistory);
+        if (!commandText.isBlank()) {
+            updatedHistory.add(commandText);
+        }
+        model.setCommandHistory(updatedHistory);
         try {
             storage.saveAddressBook(model.getAddressBook());
         } catch (AccessDeniedException e) {
+            model.setCommandHistory(previousHistory);
             throw new CommandException(String.format(FILE_OPS_PERMISSION_ERROR_FORMAT, e.getMessage()), e);
         } catch (IOException ioe) {
+            model.setCommandHistory(previousHistory);
             throw new CommandException(String.format(FILE_OPS_ERROR_FORMAT, ioe.getMessage()), ioe);
         }
 
         return commandResult;
+    }
+
+    @Override
+    public List<String> getCommandHistory() {
+        return model.getCommandHistory();
+    }
+
+    @Override
+    public ObservableList<Person> getPersonList() {
+        return model.getAddressBook().getPersonList();
     }
 
     @Override
