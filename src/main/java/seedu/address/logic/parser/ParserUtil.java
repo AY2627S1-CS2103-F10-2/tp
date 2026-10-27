@@ -27,6 +27,12 @@ public class ParserUtil {
 
     public static final String MESSAGE_INVALID_INDEX = "Index must be a positive integer.";
     public static final String MESSAGE_INVALID_POSITIVE_INTEGER = "Value must be a positive integer.";
+    public static final String MESSAGE_NAME_CONSTRAINTS =
+            "Names must contain at least one letter (A-Z, a-z) or digit (0-9). Spaces are allowed.\n"
+            + "Allowed punctuation: hyphen (-), straight apostrophe ('), period (.), comma (,), "
+            + "parentheses ( ), and backslash (\\).\n"
+            + "Enter \\ instead of /; it is stored and displayed as /. "
+            + "Non-ASCII characters and other punctuation are not allowed.";
     public static final String MESSAGE_INVALID_ATTENDANCE_DATE =
             "Attendance date must be a valid date in YYYY-MM-DD format with a year from 0001 to 9999.";
 
@@ -94,14 +100,18 @@ public class ParserUtil {
     /**
      * Parses a {@code String name} into a {@code Name}.
      * Leading and trailing whitespaces will be trimmed.
+     * Backslashes in the extracted field represent forward slashes in the stored name.
      *
      * @throws ParseException if the given {@code name} is invalid.
      */
     public static Name parseName(String name) throws ParseException {
         requireNonNull(name);
-        String trimmedName = name.trim();
+        if (name.contains("/")) {
+            throw new ParseException(MESSAGE_NAME_CONSTRAINTS);
+        }
+        String trimmedName = name.trim().replace('\\', '/');
         if (!Name.isValidName(trimmedName)) {
-            throw new ParseException(Name.MESSAGE_CONSTRAINTS);
+            throw new ParseException(MESSAGE_NAME_CONSTRAINTS);
         }
         return new Name(trimmedName);
     }

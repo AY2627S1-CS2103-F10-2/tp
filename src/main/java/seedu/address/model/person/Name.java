@@ -10,20 +10,24 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
 public class Name {
 
     public static final String MESSAGE_CONSTRAINTS =
-            "Names should only contain alphanumeric characters and spaces, and should not be blank";
+            "Names must contain at least one letter (A-Z, a-z) or digit (0-9). Spaces are allowed.\n"
+            + "Allowed punctuation: hyphen (-), straight apostrophe ('), period (.), comma (,), "
+            + "parentheses ( ), and forward slash (/).\n"
+            + "Stored names must use / rather than \\. "
+            + "Non-ASCII characters and other punctuation are not allowed.";
 
     /*
-     * The first character of the name must not be a whitespace,
-     * otherwise " " (a blank string) becomes a valid input.
+     * Stored names use forward slashes. The command parsers convert backslashes only after extracting the name.
+     * Require an ASCII letter or digit somewhere, and disallow leading spaces as before.
      */
-    public static final String VALIDATION_REGEX = "[\\p{Alnum}][\\p{Alnum} ]*";
+    public static final String VALIDATION_REGEX = "(?=.*[A-Za-z0-9])[A-Za-z0-9'.,()/-][A-Za-z0-9'.,()/ -]*";
 
     public final String fullName;
 
     /**
      * Constructs a {@code Name}.
      *
-     * @param name A valid name.
+     * @param name A valid name, with forward slashes rather than command-input backslashes.
      */
     public Name(String name) {
         requireNonNull(name);

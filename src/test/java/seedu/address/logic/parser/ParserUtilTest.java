@@ -88,6 +88,18 @@ public class ParserUtilTest {
     }
 
     @Test
+    public void parseName_backslashes_returnsNameWithForwardSlashes() throws Exception {
+        assertEquals(new Name("Ravi S/O Kumar"), ParserUtil.parseName("  Ravi S\\O Kumar  "));
+        assertEquals(new Name("Alex n/Alias e/Other"), ParserUtil.parseName("Alex n\\Alias e\\Other"));
+    }
+
+    @Test
+    public void parseName_literalForwardSlash_throwsParseException() {
+        assertThrows(ParseException.class, ParserUtil.MESSAGE_NAME_CONSTRAINTS, ()
+                -> ParserUtil.parseName("Ravi S/O Kumar"));
+    }
+
+    @Test
     public void parseStudentNumber_null_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> ParserUtil.parseStudentNumber((String) null));
     }
