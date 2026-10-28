@@ -34,11 +34,9 @@ import seedu.address.model.UserPrefs;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
-import seedu.address.model.person.Person;
 import seedu.address.storage.JsonAddressBookStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
 import seedu.address.storage.StorageManager;
-import seedu.address.testutil.PersonBuilder;
 
 public class LogicManagerTest {
     private static final IOException DUMMY_IO_EXCEPTION = new IOException("dummy IO exception");
@@ -289,10 +287,27 @@ public class LogicManagerTest {
         // Triggers the saveAddressBook method by executing an add command
         String addCommand = AddCommand.COMMAND_WORD + STUDENT_NUMBER_DESC_AMY + NAME_DESC_AMY
                 + EMAIL_DESC_AMY + TELEGRAM_DESC_AMY;
-        Person expectedPerson = new PersonBuilder(AMY).withTags().build();
-        ModelManager expectedModel = new ModelManager();
-        expectedModel.addPerson(expectedPerson);
-        assertCommandFailure(addCommand, CommandException.class, expectedMessage, expectedModel);
+        // The failed command must be rolled back, leaving the model unchanged.
+        assertCommandFailure(addCommand, CommandException.class, expectedMessage, new ModelManager());
         assertEquals(List.of(), logic.getCommandHistory());
+    }
+
+    @Test
+    public void execute_storageFailsAfterAssign_rollsBackClassMembership() throws Exception {
+        logic.execute("add sn/A0123456X n/Alice e/alice@example.com");
+        logic.execute("addclass m/CS2103 c/F10-2");
+        ReadOnlyAddressBook before = model.deepCopyAddressBook();
+
+        logic = new LogicManager(model, new StorageManager(new JsonAddressBookStorage(
+                temporaryFolder.resolve("failing.json")) {
+            @Override
+            public void saveAddressBook(ReadOnlyAddressBook addressBook) throws IOException {
+                throw DUMMY_IO_EXCEPTION;
+            }
+        }, new JsonUserPrefsStorage(temporaryFolder.resolve("failingPrefs.json"))));
+
+        assertThrows(CommandException.class, () -> logic.execute("assign 1 1"));
+        assertEquals(before, model.getAddressBook());
+        assertEquals(Set.of(), model.getAddressBook().getAcademicClassList().getFirst().getStudents());
     }
 }

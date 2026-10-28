@@ -83,7 +83,7 @@ public class AssignIntegrationTest {
     public void execute_saveFailures_reportErrorAndAllowRetry() throws Exception {
         for (IOException failure : List.of(new IOException("save failed"), new AccessDeniedException("denied"))) {
             ModelManager model = new ModelManager();
-            AcademicClass academicClass = populateModel(model);
+            populateModel(model);
             Path file = temporaryFolder.resolve("failure.json");
             JsonAddressBookStorage failingStorage = new JsonAddressBookStorage(file) {
                 @Override
@@ -97,10 +97,11 @@ public class AssignIntegrationTest {
                     failure.getMessage());
             String command = "assign 1 1";
             assertThrows(CommandException.class, message, () -> logic.execute(command));
-            // LogicManager retains the in-memory change when saving fails.
-            assertEquals(Set.of(ALICE), academicClass.getStudents());
+            // LogicManager rolls back the in-memory change when saving fails.
+            assertEquals(Set.of(), model.getAddressBook().getAcademicClassList().get(0).getStudents());
             JsonAddressBookStorage workingStorage = new JsonAddressBookStorage(file);
-            createLogic(model, workingStorage).execute("list");
+            createLogic(model, workingStorage).execute(command);
+            assertEquals(Set.of(ALICE), model.getAddressBook().getAcademicClassList().get(0).getStudents());
             assertEquals(Set.of(ALICE), workingStorage.readAddressBook().orElseThrow()
                     .getAcademicClassList().get(0).getStudents());
         }
