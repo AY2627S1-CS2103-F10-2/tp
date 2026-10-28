@@ -687,6 +687,7 @@ If any of these command words are entered, TAssist displays `Unknown command.`
 
 1. **When using multiple screens**, if you move the application to a secondary screen, and later switch to using only the primary screen, the GUI will open off-screen. The remedy is to delete the `preferences.json` file created by the application before running the application again.
 2. **If you minimize the Help Window** and then run the `help` command (or use the `Help` menu, or the keyboard shortcut `F1`) again, the original Help Window will remain minimized, and no new Help Window will appear. The remedy is to manually restore the minimized Help Window.
+3. **If saving fails (e.g., insufficient file write permission) after a command changes data**, the changes remain in the running application despite the save error. For example, after an `addclass` save failure, the class may still be shown and repeating the command reports that it already exists. Resolve the reported save error (for example, restore write permission to the data file or folder), check the current lists before repeating any commands, and run `list` to save the current data. Unsaved changes may be lost if you close the application before a successful save.
 
 --------------------------------------------------------------------------------------------------------------------
 
