@@ -831,6 +831,7 @@ testers are expected to do more *exploratory* testing.
 
 Use a disposable application folder. Repeat this setup before each subsection below;
 `clear` removes all students and classes in that test copy.
+Enter each command separately in TAssist's command box, not in the terminal or as a single pasted block.
 
 ```text
 clear
