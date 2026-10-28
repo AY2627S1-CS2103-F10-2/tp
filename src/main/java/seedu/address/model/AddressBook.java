@@ -304,7 +304,10 @@ public class AddressBook implements ReadOnlyAddressBook {
     }
 
     /**
-     * Unassigns the stored student from the stored academic class with the given identities.
+     * Unassigns the given student from the given academic class.
+     * Both arguments must be the actual objects stored in this address book, not detached copies.
+     * Callers are responsible for resolving the stored objects before calling this method;
+     * this method does not look them up or validate that they exist in the address book.
      *
      * @return true if membership was removed, or false if the student was not assigned
      * @throws NullPointerException if either argument is null

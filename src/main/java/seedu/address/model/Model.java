@@ -229,12 +229,14 @@ public interface Model {
     void updateFilteredAcademicClassListByStudent(StudentNumber studentNumber);
 
     /**
-     * Unassigns the stored student from the stored academic class with the given identities.
-     * Does not change the current person filter or displayed order.
+     * Unassigns the given student from the given academic class.
+     * Both arguments must be the actual objects stored in this model, not detached copies.
+     * Callers are responsible for resolving the stored objects before calling this method;
+     * this method does not look them up or validate that they exist in the model.
+     * Refreshes membership-dependent views without resetting their filters or ordering.
      *
      * @return true if membership was removed, or false if the student was not assigned
      * @throws NullPointerException if either argument is null
-     * @throws IllegalArgumentException if the student or academic class does not exist
      */
     boolean unassignStudentFromClass(Person person, AcademicClass academicClass);
 }
