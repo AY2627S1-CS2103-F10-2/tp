@@ -200,6 +200,89 @@ a `CommandException` before the student filter or attendance display changes. A 
 the student view becomes empty and the result reports zero students. If saving fails after filtering,
 `LogicManager` reports a `CommandException`; the already-updated view is not rolled back.
 
+### Recording and removing attendance
+
+The `addattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD` and
+`deleteattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD` commands update one attended date for a student-class pair.
+Both indices refer to the current displayed lists, which may be filtered independently. They are resolved when
+the command executes, rather than against the full stored lists during parsing.
+
+`Attendance` represents the association between a `Person` and an `AcademicClass`. It stores unique attended dates
+in a `TreeSet<LocalDate>` and derives the attendance count from the set size. `AddressBook` owns the records and
+resolves their endpoints to stored students and classes. Membership eligibility is command policy: additions
+require the student to be assigned to the class, but removals can correct retained history after unassignment.
+
+#### Recording a date
+
+The following success path uses `addattendance 1 2 d/2024-02-29`. The selected student is assigned to the selected
+class, the date is not in the future, and it has not already been recorded for that pair.
+
+<puml src="diagrams/AddAttendanceSequenceDiagram.puml" alt="Successful addattendance execution from parsing and displayed index selection through membership validation, recording a date and refreshing the student view" />
+
+[Open the recording diagram at full size](diagrams/AddAttendanceSequenceDiagram.png).
+
+1. `LogicManager` calls `AddressBookParser#parseCommand(commandText)`, which delegates to
+   `AddAttendanceCommandParser#parse(args)`. `AttendanceParserUtil#parseArguments` rejects unknown or duplicate
+   prefixes and requires `d/`. `ParserUtil#parseIndices` parses exactly two positive indices;
+   `ParserUtil#parseAttendanceDate` validates the calendar date. The parser creates an `AddAttendanceCommand`.
+2. The command obtains `Model#getFilteredPersonList()`, validates the student index and selects the student.
+   It then obtains `Model#getFilteredAcademicClassList()`, validates the class index and selects the class.
+   It checks membership before attempting to record attendance.
+3. The command calls `Model#addAttendance(person, academicClass, date)`. `ModelManager` delegates to
+   `AddressBook`, which reuses the pair's record or creates one if none exists. `Attendance#addDate` rejects
+   future dates using the computer's local calendar date and returns whether the date was newly added.
+4. On success, `ModelManager#refreshFilteredPersonList()` re-evaluates the existing predicate and recomputes
+   attendance counts when a class threshold is active. Filters and ordering are retained, but students who
+   reach the threshold disappear and displayed indices may shift. The UI observes the list and refreshes its cards.
+5. The command returns a success `CommandResult`. `LogicManager` updates command history and saves the address
+   book through `Storage` before returning the result.
+
+#### Removing a date
+
+The following success path uses `deleteattendance 1 2 d/2024-02-29`. The date is already recorded for the selected
+student-class pair. The student and class still exist, but current membership is not required.
+
+<puml src="diagrams/DeleteAttendanceSequenceDiagram.puml" alt="Successful deleteattendance execution from parsing and displayed index selection through removal of a recorded date and student view refresh" />
+
+[Open the removal diagram at full size](diagrams/DeleteAttendanceSequenceDiagram.png).
+
+1. `DeleteAttendanceCommandParser` uses the same argument, index and date parsing helpers, then creates a
+   `DeleteAttendanceCommand`. The command validates and resolves the displayed student and class indices in that order.
+2. The command calls `Model#removeAttendance(person, academicClass, date)` without a membership check.
+   `ModelManager` delegates to `AddressBook`, which resolves stored endpoints and locates their attendance record.
+   `Attendance#removeDate` removes only the specified date and returns whether it existed.
+3. A successful removal triggers the same student-view refresh as an addition. Other histories and memberships
+   are unchanged. Removing the last date leaves a zero count; it does not delete the student or class.
+4. The command returns a success `CommandResult`, and `LogicManager` updates command history and saves the address book.
+
+Both diagrams follow the existing Logic/Model colours and start at `LogicManager`, omitting the UI caller.
+The constructor arguments denote the parsed student index, class index and date. Parser helpers, list indexing,
+membership inspection, private command helpers, model internals, logging, history and storage calls are summarised
+in notes rather than shown as additional lifelines. `ModelManager` is accessed through the `Model` interface.
+
+#### Validation, persistence and lifecycle
+
+* Invalid argument structure, non-positive or overflowing indices, and malformed or impossible dates cause a
+  `ParseException` before command creation. Date syntax uses years `0001` to `9999`; future-date eligibility is
+  checked by the model during execution, not by the parser.
+* An index beyond its displayed list, including an empty list, causes a `CommandException` before mutation.
+  Adding attendance for an unassigned student also fails before mutation.
+* A duplicate addition or an absent date on removal returns `false` from the model; the command converts it
+  into a `CommandException`. Model `IllegalArgumentException`s, including future-date errors, are also converted
+  into command failures. Rejected operations do not change attendance.
+* Previously recorded dates remain removable after a clock rollback or timezone change, even if they now appear
+  to be in the future. An unrecorded future date is rejected. Storage restores history through
+  `Attendance#fromRecordedDates` without applying today's date as a new-entry restriction.
+* `JsonAdaptedAttendance` and `JsonSerializableAddressBook` persist the association and dates. Student and class
+  edits preserve history by rebinding the association; unassignment retains it, while deletion of either endpoint
+  removes the associated records. Reassignment can reuse retained history.
+* If saving fails after a successful command mutation, `LogicManager` reports a `CommandException` and restores
+  the previous command history. The attendance mutation and refreshed view are not rolled back in memory.
+
+The parser and command tests cover invalid input and duplicate/missing dates. `AttendanceIndexTest` covers
+independently filtered panels and displayed bounds, while `AttendanceLifecycleTest` covers edits, deletion,
+unassignment/reassignment, clock-related history handling and save/reload.
+
 ### Listing all classes
 
 The `listclass` command restores the complete academic-class list by applying
