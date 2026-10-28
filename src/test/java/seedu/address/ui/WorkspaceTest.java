@@ -315,6 +315,45 @@ public class WorkspaceTest {
     }
 
     @Test
+    public void workspace_clickingPanelSurfaces_focusesListAndEnablesArrowScrolling() throws Exception {
+        runOnFxThreadAndWait(() -> {
+            Stage stage = new Stage();
+            try {
+                openWindow(stage, createLogic(30, 30));
+                TextField input = (TextField) stage.getScene().lookup("#commandTextField");
+                for (String prefix : List.of("student", "class")) {
+                    String listId = prefix.equals("student") ? "personListView" : "academicClassListView";
+                    ListView<?> list = (ListView<?>) stage.getScene().lookup("#" + listId);
+                    Node header = stage.getScene().lookup("#" + prefix + "Header");
+                    VirtualFlow<?> flow = (VirtualFlow<?>) list.lookup(".virtual-flow");
+                    Node panel = stage.getScene().lookup(prefix.equals("student")
+                            ? ".student-workspace" : ".class-sidebar");
+                    for (Node target : List.of(list, flow, flow.getFirstVisibleCell(),
+                            header, header.getParent(), panel)) {
+                        press(list, KeyCode.HOME);
+                        layout(stage);
+                        input.requestFocus();
+                        click(target);
+                        assertSame(list, stage.getScene().getFocusOwner(),
+                                prefix + " click target: " + target);
+                        double beforeDown = flow.getPosition();
+                        press(stage.getScene().getFocusOwner(), KeyCode.DOWN);
+                        layout(stage);
+                        assertTrue(flow.getPosition() > beforeDown, prefix + " Down must scroll");
+                        double beforeUp = flow.getPosition();
+                        press(stage.getScene().getFocusOwner(), KeyCode.UP);
+                        layout(stage);
+                        assertTrue(flow.getPosition() < beforeUp, prefix + " Up must scroll");
+                        assertNull(list.getSelectionModel());
+                    }
+                }
+            } finally {
+                stage.hide();
+            }
+        });
+    }
+
+    @Test
     public void workspace_draftsAndCardClicks_leaveDataUntilCommandExecutes() throws Exception {
         runOnFxThreadAndWait(() -> {
             Logic logic = createLogic();

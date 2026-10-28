@@ -19,6 +19,8 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -196,6 +198,21 @@ public class MainWindow extends UiPart<Stage> {
 
         CommandBox commandBox = new CommandBox(this::executeCommand, logic.getCommandHistory());
         commandBoxPlaceholder.getChildren().add(commandBox.getRoot());
+    }
+
+    /** Includes the heading and surrounding panel space in the list's mouse focus target. */
+    @FXML
+    private void handleStudentPanelMousePressed(MouseEvent event) {
+        if (event.getButton() == MouseButton.PRIMARY) {
+            personListPanel.requestFocus();
+        }
+    }
+
+    @FXML
+    private void handleClassPanelMousePressed(MouseEvent event) {
+        if (event.getButton() == MouseButton.PRIMARY) {
+            academicClassListPanel.requestFocus();
+        }
     }
 
     /**
