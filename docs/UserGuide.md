@@ -121,7 +121,7 @@ Examples:
 * `add e/chloe@u.nus.edu sn/A0345678Z tg/@chloe_ng n/Chloe Ng`
 
 Expected output:
-* `New person added: Alice Tan; Student Number: A0123456X; Email: alice@u.nus.edu; Telegram: @alice_tan`
+* `New student added: Alice Tan; Student Number: A0123456X; Email: alice@u.nus.edu; Telegram: @alice_tan`
 
 Common errors:
 * Duplicate student number: `A student with this student number already exists.`
@@ -137,7 +137,7 @@ Shows a list of all students in TAssist.
 
 Format: `list`
 
-Expected output: `Listed all persons.`
+Expected output: `Listed all students.`
 
 The student list displays each student's name, student number, email, optional Telegram username, and tags.
 This command leaves the current class filter unchanged. Use `listclass` to restore all classes as well.
@@ -273,7 +273,7 @@ To restore the assignment, run `listclass`, check the index of `CS2106 DEMO-BOB`
 | --- | --- |
 | `listbystudent`, `listbystudent 0`, `listbystudent -1`, or `listbystudent abc` | Invalid command format, followed by the usage and an example. Supply one positive integer. |
 | `listbystudent 1 extra` | Invalid command format. Extra arguments are rejected. |
-| `listbystudent 2` when only one student is displayed | `The person index provided is invalid.` Use an index visible in the Students panel. |
+| `listbystudent 2` when only one student is displayed | `The student index provided is invalid.` Use an index visible in the Students panel. |
 
 Rejected commands preserve both displayed lists. Selecting a valid student with no classes is a successful operation.
 
@@ -349,7 +349,7 @@ Expected output (if the selected student is `A1111111H` and the class is `CS2103
 
 Common errors:
 * Missing, extra, zero, negative, non-integer, or prefixed arguments: `Invalid command format!` followed by the command usage.
-* Student index outside the displayed list: `The person index provided is invalid.`
+* Student index outside the displayed list: `The student index provided is invalid.`
 * Class index outside the displayed list: `The class index provided is invalid.`
 * Student already assigned: `Student (A1234567H) is already assigned to class CS2101-L1.`
 
@@ -535,7 +535,7 @@ Examples:
 * `find Betsy` followed by `delete 1` deletes the 1st student in the results of the `find` command.
 
 Expected output:
-* `Deleted person: Alice Tan; Student Number: A0123456X; Email: alice@u.nus.edu; Telegram: @alice_tan`
+* `Deleted student: Alice Tan; Student Number: A0123456X; Email: alice@u.nus.edu; Telegram: @alice_tan`
 
 <box type="warning" seamless>
 
@@ -596,7 +596,7 @@ Student (A1111111H) has been unassigned from CS2103-F10.
 Common errors:
 
 * Missing, extra, or invalid indices (including zero, negative numbers, decimals, and the old prefixes): `Invalid command format!` followed by the command usage.
-* Student index outside the displayed list: `The person index provided is invalid.`
+* Student index outside the displayed list: `The student index provided is invalid.`
 * Class index outside the displayed list: `The class index provided is invalid.`
 * Student not assigned to the selected class: `Student (A1234567H) is not assigned to class CS2101-L1.` Repeating an unassignment produces this error only if the indices still identify the same student and class.
 
