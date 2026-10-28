@@ -66,6 +66,11 @@ Edits of past commands are kept while browsing and cleared when you submit a com
 * Words in `UPPER_CASE` are the parameters to be supplied by the user.<br>
   For example, in `add sn/STUDENT_NUMBER n/NAME`, replace `STUDENT_NUMBER` with a value such as `A0123456X` and `NAME` with a value such as `John Doe`.
 
+* `INDEX` is a positive integer from the relevant displayed list: Students for `edit`, `delete`, and
+  `listbystudent`; Classes for `editclass`, `deleteclass`, and `listbyclass`.
+  Commands taking both indices use `STUDENT_INDEX CLASS_INDEX`, in that order.
+  `KEYWORD` in `find` is a full word to match in a student's name.
+
 * Items in square brackets are optional.<br>
   For example, `n/NAME [t/TAG]` can be used as `n/John Doe t/friend` or as `n/John Doe`.
 
@@ -86,6 +91,31 @@ Edits of past commands are kept while browsing and cleared when you submit a com
 
 * If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
 </box>
+
+### Understanding error messages
+
+Errors identify the field or displayed list that needs correcting. Rejected input does not change
+student records, classes, attendance, command history, or the current filters.
+
+* Student indices use the currently displayed **Students** list, including search and class filters.
+  For example, `Student index 5 is invalid for the current Students list. Choose an index from 1 to 2, or use list to show all students.`
+* Class indices use the currently displayed **Classes** list, including `listbystudent` results.
+  For example, `Class index 5 is invalid for the current Classes list. Choose an index from 1 to 2, or use listclass to show all classes.`
+  The supplied index and valid range in these messages depend on the current view.
+* Empty views have separate messages: `No students are displayed. Use list to show all students, or add a student.`
+  and `No classes are displayed. Use listclass to show all classes, or add a class with addclass.`
+* Indices and attendance thresholds must be whole numbers from `1` to `2147483647`.
+  Out-of-range displayed indices and invalid numeric syntax are different errors.
+* Missing required fields name the prefix to supply, such as `Missing required parameter: e/EMAIL`
+  or `Missing required parameter: d/YYYY-MM-DD`.
+* Unsupported space-prefixed fields identify the prefix and the supported ones. For example,
+  `Unknown parameter: x/. Supported parameters: m/, c/.` for `editclass 1 c/F01 x/extra`.
+  A misspelled prefix is not treated as part of the preceding field's value.
+* Command names are case-sensitive. For example, `LIST` produces
+  `Unknown command 'LIST'. Command names are case-sensitive. Type help for usage instructions.`
+
+These input-validation errors differ from a save error: a save error means TAssist could not write
+the successful command's changes to disk. Resolve the reported file-access problem before relying on persistence.
 
 ### Viewing help: `help`
 
@@ -110,7 +140,14 @@ Format: `add sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM] [t/TAG]... `
 * `STUDENT_NUMBER` must contain 5 to 20 letters or digits, with no spaces or special characters. It is stored and displayed in uppercase, and must be unique.
 * `NAME` must contain only letters, digits, and spaces, and must start with a letter or digit. Leading and trailing spaces are removed.
 * `EMAIL` must be in the format `local-part@domain`, with no spaces. Email comparisons are case-insensitive for duplicate checks.
+  The local part accepts ASCII letters, digits, and `+`, `_`, `.`, or `-` between alphanumeric groups.
+  It cannot start or end with punctuation or contain consecutive special characters, such as `..` or `+_`.
+  Domain labels are separated by periods, start and end with letters or digits, and allow only single internal hyphens.
+  The final domain label must contain at least two consecutive letters or digits. For example,
+  `alice.tan@u.nus.edu` is valid, while `a..b@example.com` and `a@example.b-c` are rejected.
 * `TELEGRAM`, if provided, may start with `@`. After removing `@`, it must contain 5 to 32 letters, digits, or underscores. It must be unique, ignoring case.
+* Each `TAG` must contain one or more ASCII letters or digits, without spaces or punctuation; for example, `t/CS2103`.
+  Empty tags are rejected by `add`. In `edit`, a single empty `t/` removes all tags.
 * Parameters can be supplied in any order.
 * Adding a student keeps the current student filter and display order. The new student appears only if they match the filter.
   New students are not assigned to any class, so they will not appear in an active `listbyclass` view until assigned to that class (and must also meet any attendance threshold). Use `list` to show all students.
@@ -124,12 +161,15 @@ Expected output:
 * `New person added: Alice Tan; Student Number: A0123456X; Email: alice@u.nus.edu; Telegram: @alice_tan`
 
 Common errors:
+* Missing required field: the error names `sn/STUDENT_NUMBER`, `n/NAME`, or `e/EMAIL`.
+* Unknown parameter: the error lists the supported prefixes `sn/`, `n/`, `e/`, `tg/`, and `t/`.
 * Duplicate student number: `A student with this student number already exists.`
 * Duplicate email: `A student with this email already exists.`
 * Duplicate Telegram username: `A student with this Telegram username already exists.`
 * Invalid student number: `Invalid student number. Student numbers must contain 5–20 letters or digits with no spaces.`
 * Invalid name: `Names should only contain alphanumeric characters and spaces, and should not be blank`
 * Invalid Telegram username: `Invalid Telegram username. Usernames must contain 5–32 letters, digits, or underscores.`
+* Invalid tag: `Tag names must contain one or more letters (A-Z, a-z) or digits (0-9), with no spaces or punctuation. Example: CS2103.`
 
 ### Listing all students: `list`
 
@@ -152,7 +192,9 @@ Optionally, specify `t/THRESHOLD` to filter for class members with fewer than `T
 Format: `listbyclass INDEX [t/THRESHOLD]`
 
 * `INDEX` must be a positive integer referring to a class in the displayed class list.
-* `THRESHOLD` (optional) must be a positive integer.
+* `THRESHOLD` (optional) must be a whole number from `1` to `2147483647`.
+  Invalid input, including an empty `t/`, produces
+  `Attendance threshold t/ must be a whole number from 1 to 2147483647. Example: t/5.`
   * When `t/THRESHOLD` is provided, only students assigned to the selected class with **fewer than `THRESHOLD` recorded attendance dates** for that class are displayed.
   * Students with no recorded attendance for that class count as having `0` attendance dates (for example, `t/1` displays only students with `0` recorded dates, and `t/5` displays students with `0` to `4` recorded dates while excluding students with `5` or more dates).
   * Attendance recorded for other classes does not affect the count for the selected class.
@@ -273,7 +315,7 @@ To restore the assignment, run `listclass`, check the index of `CS2106 DEMO-BOB`
 | --- | --- |
 | `listbystudent`, `listbystudent 0`, `listbystudent -1`, or `listbystudent abc` | Invalid command format, followed by the usage and an example. Supply one positive integer. |
 | `listbystudent 1 extra` | Invalid command format. Extra arguments are rejected. |
-| `listbystudent 2` when only one student is displayed | `The person index provided is invalid.` Use an index visible in the Students panel. |
+| `listbystudent 2` when only one student is displayed | [Displayed student-index guidance](#understanding-error-messages). Use an index visible in the Students panel. |
 
 Rejected commands preserve both displayed lists. Selecting a valid student with no classes is a successful operation.
 
@@ -306,13 +348,16 @@ Format: `addclass m/MODULE_CODE c/CLASS_NAME`
 * The `m/` and `c/` parameters can be supplied in any order.
 * Each class is uniquely identified by its module code and class name pair.
 * Duplicate classes with the same module code and class name are not allowed.
-* Module codes and class names are normalized before being saved.
+* Leading and trailing whitespace is removed from module codes and class names, and letters are stored in uppercase.
 * `MODULE_CODE` must begin with a letter and contain only letters or digits.
 * `CLASS_NAME` must contain at least one letter or digit, and may contain only letters, digits, or hyphens.
+  Names such as `F01`, `F10-2`, and `T24` are accepted; numeric class names such as `01` are also valid.
+  These examples illustrate the accepted format rather than impose a fixed module-code length or class prefix.
 
 Examples:
 * `addclass m/CS2103T c/F10-2`
 * `addclass c/T24 m/ST2334`
+* `addclass m/CS2103T c/F01`
 
 Expected output:
 * `New class added: CS2103T-F10-2`
@@ -322,10 +367,16 @@ Common errors:
 * Missing class name: `Missing required parameter: c/CLASS_NAME`
 * Repeated module code: `Parameter m/ was specified more than once.`
 * Repeated class name: `Parameter c/ was specified more than once.`
-* Unknown parameter: `Unknown parameter: PREFIX`
+* Unknown parameter: `Unknown parameter: PREFIX. Supported parameters: m/, c/.`
 * Duplicate class: `A class with this name for this module already exists`
-* Invalid module code: `Module code must contain letters or digits`
-* Invalid class name: `Class names can only contain letters, digits, or '-'`
+* Empty module code: `Module code cannot be empty. Examples: CS2103T, ST2334.`
+* Invalid module code: `Module code must start with a letter (A-Z, a-z) and contain only letters and digits, with no spaces. Examples: CS2103T, ST2334.`
+* Empty class name: `Class name cannot be empty. Examples: F01, F10-2, T24.`
+* Invalid class name: `Class name must contain at least one letter (A-Z, a-z) or digit (0-9), and may contain only letters, digits, and hyphens (-), with no spaces. Examples: F01, F10-2, T24.`
+
+For example, `addclass m/123 c/F01` is rejected because the module code starts with a digit;
+use a code such as `CS2103T`. `addclass m/CS2103 c/---` is rejected because the class name
+contains no letter or digit; use a name such as `F01` or `F10-2`. Rejected commands do not add a class.
 
 ### Assigning a student to a class: `assign`
 
@@ -349,8 +400,8 @@ Expected output (if the selected student is `A1111111H` and the class is `CS2103
 
 Common errors:
 * Missing, extra, zero, negative, non-integer, or prefixed arguments: `Invalid command format!` followed by the command usage.
-* Student index outside the displayed list: `The person index provided is invalid.`
-* Class index outside the displayed list: `The class index provided is invalid.`
+* Student index outside the displayed list: [Displayed student-index guidance](#understanding-error-messages).
+* Class index outside the displayed list: [Displayed class-index guidance](#understanding-error-messages).
 * Student already assigned: `Student (A1234567H) is already assigned to class CS2101-L1.`
 
 Rejected commands leave memberships and student counts unchanged.
@@ -360,6 +411,10 @@ Rejected commands leave memberships and student counts unchanged.
 Records one attended date for a student in a particular module and class.
 
 Format: `addattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD`
+
+A missing `d/` produces `Missing required parameter: d/YYYY-MM-DD`. Unsupported prefixes produce
+`Unknown parameter: PREFIX. Supported parameters: d/.` For invalid displayed indices, see
+[Understanding error messages](#understanding-error-messages).
 
 * The student and class must exist, and the student must currently be assigned to that class.
 * `STUDENT_INDEX` selects a student in the current displayed student list, including `find` and `listbyclass` results.
@@ -394,6 +449,10 @@ to student cards.
 Removes one previously recorded date for a student in a particular module and class.
 
 Format: `deleteattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD`
+
+A missing `d/` produces `Missing required parameter: d/YYYY-MM-DD`. Unsupported prefixes produce
+`Unknown parameter: PREFIX. Supported parameters: d/.` For invalid displayed indices, see
+[Understanding error messages](#understanding-error-messages).
 
 * The student and class must still exist, and the specified date must already be recorded for that pair.
 * The student does not need to be currently assigned to the class. You can correct retained history after unassignment.
@@ -437,6 +496,8 @@ Format: `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]
 * To remove all of a student's tags, enter `t/` without a tag after it.
 * To remove a student's Telegram username, enter `tg/` without a username after it. Omitting `tg/` keeps the existing username.
 * Student number, email, and Telegram username must remain unique after editing.
+* If no fields are supplied, the error lists the supported prefixes and an example: `Provide at least one field to edit: sn/STUDENT_NUMBER, n/NAME, e/EMAIL, tg/TELEGRAM, or t/TAG. Example: edit 1 n/Alice Tan.`
+* Unknown parameter errors list the supported prefixes `sn/`, `n/`, `e/`, `tg/`, and `t/`.
 * Editing keeps the current student filter, sorting, and attendance display. A student who no longer matches a `find` search disappears from its results; changing a name in a `listbyclass` view may change their alphabetical position.
 * Editing a student number preserves their class memberships and attendance history. Any active attendance threshold still applies.
 * Check the displayed indexes again before your next command, as an edit may change which students are shown and their indexes. Use `list` to show all students.
@@ -492,12 +553,12 @@ This changes the class to `CS2101-F12` while keeping its assigned students. Edit
 Common errors:
 
 * Missing or invalid index, or unexpected text before the parameters: `Invalid command format!` followed by the command usage.
-* Index outside the displayed class list: `The class index provided is invalid.`
-* No fields supplied: `At least one field to edit must be provided.`
+* Index outside the displayed class list: [Displayed class-index guidance](#understanding-error-messages).
+* No fields supplied: `Provide at least one field to edit: m/MODULE_CODE or c/CLASS_NAME. Example: editclass 1 c/F01.`
 * Another class already has the resulting details: `A class with these details already exists!`
 * Repeated parameter: `Multiple values specified for the following single-valued field(s):` followed by the repeated prefixes.
 * Empty or invalid module code or class name: the corresponding validation error from `addclass`.
-* Unknown parameter: rejected as invalid command format or an invalid field value, depending on its position. Only `m/` and `c/` are supported.
+* Unknown parameter: `Unknown parameter: PREFIX. Supported parameters: m/, c/.` Only `m/` and `c/` are supported.
 
 Rejected commands leave class details, memberships, and student counts unchanged.
 
@@ -505,7 +566,7 @@ Rejected commands leave class details, memberships, and student counts unchanged
 
 Finds students whose names contain any of the given keywords.
 
-Format: `find KEYWORD [MORE_KEYWORDS]`
+Format: `find KEYWORD [MORE_KEYWORDS]...`
 
 * The search is case-insensitive; for example, `hans` matches `Hans`.
 * Keyword order does not matter; for example, `Hans Bo` matches `Bo Hans`.
@@ -566,7 +627,7 @@ The success message starts with `Deleted class:` and identifies the removed clas
 Common errors:
 
 * Missing index, non-positive or non-integer input, or extra arguments: `Invalid command format!`, followed by the command usage.
-* An index beyond the displayed list, including any index when the list is empty: `The class index provided is invalid.`
+* An index beyond the displayed list, including any index when the list is empty: [Displayed class-index guidance](#understanding-error-messages).
 
 ### Unassigning a student from an academic class: `unassign`
 
@@ -596,8 +657,8 @@ Student (A1111111H) has been unassigned from CS2103-F10.
 Common errors:
 
 * Missing, extra, or invalid indices (including zero, negative numbers, decimals, and the old prefixes): `Invalid command format!` followed by the command usage.
-* Student index outside the displayed list: `The person index provided is invalid.`
-* Class index outside the displayed list: `The class index provided is invalid.`
+* Student index outside the displayed list: [Displayed student-index guidance](#understanding-error-messages).
+* Class index outside the displayed list: [Displayed class-index guidance](#understanding-error-messages).
 * Student not assigned to the selected class: `Student (A1234567H) is not assigned to class CS2101-L1.` Repeating an unassignment produces this error only if the indices still identify the same student and class.
 
 Rejected commands leave memberships and student counts unchanged.
@@ -672,7 +733,7 @@ The following MVP commands are planned or specified, but are not currently accep
 * `deletestudent sn/STUDENT_NUMBER`: use `delete INDEX` instead.
 * `liststudent`: use `list` instead.
 
-If any of these command words are entered, TAssist displays `Unknown command.`
+If any of these command words are entered, TAssist identifies the unknown command and explains that command names are case-sensitive. Type `help` for usage instructions.
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -704,7 +765,7 @@ Action     | Format, Examples
 **Delete Class** | `deleteclass INDEX`<br> e.g., `deleteclass 1`
 **Edit**   | `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
 **Edit Class** | `editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]`<br> e.g., `editclass 1 m/CS2103 c/F11`
-**Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
+**Find**   | `find KEYWORD [MORE_KEYWORDS]...`<br> e.g., `find James Jake`
 **List**   | `list`
 **List students by class** | `listbyclass INDEX [t/THRESHOLD]`<br> e.g., `listbyclass 1`, `listbyclass 1 t/5`
 **List classes by student** | `listbystudent INDEX`<br> e.g., `listbystudent 1`

@@ -36,7 +36,9 @@ deactivate Parser
 AddressBookParser -> Parser : parse(args)
 activate Parser
 note right of Parser
-ParserUtil.parseIndex(args) produces index.
+Reject unsupported prefixes; only t/ is accepted.
+Tokenize args; validate the index and optional threshold.
+ParserUtil.parseIndex(preamble) produces index.
 end note
 create Command
 Parser -> Command : ListByClassCommand(index)

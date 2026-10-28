@@ -1,0 +1,52 @@
+@startuml
+title Validation for commands with prefixed fields and/or displayed indices
+start
+:Identify command;
+if (Known command?) then (yes)
+else (no)
+  :Report command word, case sensitivity,
+  and help instruction;
+  stop
+endif
+if (Command supports prefixed fields?) then (yes)
+  :Check space-prefixed fields;
+  if (All prefixes supported?) then (yes)
+  else (no)
+    :Identify unsupported prefix
+    and list supported prefixes;
+    stop
+  endif
+  :Tokenize arguments and check required fields;
+  if (Required fields present?) then (yes)
+  else (no)
+    :Name the missing prefix and placeholder;
+    stop
+  endif
+endif
+:Validate argument structure and field values;
+if (Valid input?) then (yes)
+else (no)
+  :Report usage or field constraints with examples;
+  stop
+endif
+:Create command;
+if (Command uses displayed indices?) then (yes)
+  :Resolve indices against current filtered lists;
+  if (Indices select displayed records?) then (yes)
+  else (no)
+    :Report valid displayed range or empty list
+    and give list/listclass recovery guidance;
+    stop
+  endif
+endif
+:Check business rules;
+if (Allowed operation?) then (yes)
+else (no)
+  :Report membership, duplicate-record,
+  or attendance-date error;
+  stop
+endif
+:Apply command, update successful history,
+and save data;
+stop
+@enduml

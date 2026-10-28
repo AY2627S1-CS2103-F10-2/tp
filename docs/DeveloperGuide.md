@@ -161,6 +161,41 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 
 This section describes some noteworthy details on how certain features are implemented.
 
+### Command validation and actionable feedback
+
+Prefixed-field parsers use `ParserUtil.rejectUnknownPrefixes()` before tokenization so an unsupported
+space-prefixed field cannot be mistaken for part of a valid name, email, class name, or threshold.
+`add` and `edit` support `sn/`, `n/`, `e/`, `tg/`, and `t/`; class creation/editing support `m/` and `c/`;
+`listbyclass` supports `t/`; attendance commands support `d/`. `find` treats its arguments as keywords,
+and commands taking no arguments retain their existing behavior.
+
+`ParserUtil.requirePrefix()` reports a missing required field by its prefix and placeholder. `add`
+requires `sn/STUDENT_NUMBER`, `n/NAME`, and `e/EMAIL`; attendance commands require `d/YYYY-MM-DD`.
+Empty values still use the corresponding field validator. `edit` and `editclass` list the available
+fields and an example when no changes are supplied. A single empty `t/` in `edit` still clears tags.
+
+Indices and attendance thresholds accept whole numbers from `1` to `Integer.MAX_VALUE`. Numeric syntax
+is validated during parsing; displayed bounds are checked during execution. All indexed commands use
+`Messages.getInvalidStudentIndexMessage()` or `Messages.getInvalidClassIndexMessage()` with the
+supplied `Index` and the size of the current filtered list. Nonempty lists report the valid range;
+empty lists give separate recovery instructions. Commands with two indices validate the student first.
+
+Unknown commands include the command word, case-sensitivity guidance, and a suggestion to use `help`.
+Class/module, tag, and email messages describe the enforced constraints and give examples. Email rules
+are unchanged: local-part special characters cannot be consecutive, domain hyphens must be single,
+and the final domain label needs two consecutive alphanumeric characters.
+
+The activity diagram summarizes validation for commands with prefixed fields and/or displayed indices.
+Membership, duplicate-record, and attendance-date checks are represented as business rules. Saving
+failures are outside this diagram; it assumes storage succeeds after a successful command.
+
+<puml src="diagrams/CommandValidationActivityDiagram.puml" alt="Command validation phases, actionable errors and successful execution without saving rejected input" />
+
+`CommandGuidanceIntegrationTest` checks the messages against missing and unsupported fields, filtered
+and empty views, threshold boundaries, and unknown commands. Rejections preserve records, memberships,
+attendance, history, filters, and the saved JSON file. Existing parser, command, storage, and model tests
+continue to cover accepted values and business-rule errors.
+
 ### Listing students by class
 
 The `listbyclass` command displays students assigned to the class at a one-based index in the currently displayed
@@ -494,11 +529,12 @@ _{Explain here how the data archiving feature will be implemented}_
 
 --------------------------------------------------------------------------------------------------------------------
 
-## **Documentation, logging, testing, dev-ops**
+## **Documentation, logging, testing, configuration, dev-ops**
 
 * [Documentation guide](Documentation.md)
 * [Testing guide](Testing.md)
 * [Logging guide](Logging.md)
+* [Configuration guide](Configuration.md)
 * [DevOps guide](DevOps.md)
 
 --------------------------------------------------------------------------------------------------------------------
@@ -809,6 +845,27 @@ testers are expected to do more *exploratory* testing.
        Expected: The most recent window size and location are retained.
 
 1. _{ more test cases … }_
+
+### Class validation feedback
+
+Use a disposable copy of the JAR in an empty folder. Enter commands in the app, starting with
+`clear` to remove sample data in this disposable instance.
+
+1. Run `addclass m/CS2103T c/F01`, then `addclass m/ST2334 c/T24`.<br>
+   Expected: both classes are added, giving two displayed classes.
+1. Run `addclass m/123 c/F01`.<br>
+   Expected: the error explains that module codes must start with a letter, lists the allowed
+   characters, and gives `CS2103T` and `ST2334` as examples. No class is added.
+1. Run `addclass m/CS2103 c/---`.<br>
+   Expected: the error explains that class names need at least one letter or digit, lists the allowed
+   characters, and gives `F01`, `F10-2`, and `T24` as examples. No class is added.
+1. Run `addclass m/ c/F01` and `addclass m/CS2103 c/`.<br>
+   Expected: each error identifies the empty field and gives examples of valid values.
+1. Run `editclass 1 m/123` and `editclass 1 c/---`.<br>
+   Expected: the same module/class constraint messages appear, and both existing classes are unchanged.
+1. Run `addclass m/cs2103 c/01`, then close and reopen the app.<br>
+   Expected: the numeric class name is accepted, its module is displayed as `CS2103`, and all three
+   successfully added classes remain after restart. Invalid commands are absent from command history.
 
 ### Deleting a person
 
