@@ -2,13 +2,16 @@ package seedu.address.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.model.Model.PREDICATE_SHOW_ALL_PERSONS;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.BENSON;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -97,6 +100,104 @@ public class ModelManagerClassFilterTest {
         model.addAcademicClass(recreated);
         model.assignStudentToClass(BENSON, recreated);
         assertEquals(List.of(BENSON), model.getFilteredPersonList());
+    }
+
+    @Test
+    public void setAcademicClass_renamedToDeletedViewedClass_refreshesStudents() {
+        model.assignStudentToClass(BENSON, second);
+        model.filterPersonsByClassAndDisplayAttendance(first, Optional.empty());
+        assertEquals(List.of(ALICE), model.getFilteredPersonList());
+
+        model.deleteAcademicClass(first);
+        assertTrue(model.getFilteredPersonList().isEmpty());
+
+        AcademicClass renamed = new AcademicClass(first.getModuleCode(), first.getClassName(), second);
+        model.setAcademicClass(second, renamed);
+
+        assertTrue(model.hasAcademicClass(renamed));
+        assertTrue(renamed.getStudents().contains(BENSON));
+        assertEquals(List.of(BENSON), model.getFilteredPersonList());
+        assertSame(renamed, model.getAttendanceDisplayClass().orElseThrow());
+    }
+
+    @Test
+    public void setAcademicClass_renamedToDeletedViewedClass_preservesThresholdAndOrder() {
+        model.assignStudentToClass(BENSON, second);
+        model.assignStudentToClass(ALICE, second);
+        LocalDate firstDate = LocalDate.of(2024, 1, 1);
+        LocalDate secondDate = LocalDate.of(2024, 1, 2);
+        model.addAttendance(ALICE, second, firstDate);
+        model.addAttendance(BENSON, second, firstDate);
+        model.addAttendance(BENSON, second, secondDate);
+        model.filterPersonsByClassAndDisplayAttendance(first, Optional.of(2));
+        model.deleteAcademicClass(first);
+
+        AcademicClass renamed = new AcademicClass(first.getModuleCode(), first.getClassName(), second);
+        model.setAcademicClass(second, renamed);
+
+        assertEquals(List.of(ALICE), model.getFilteredPersonList());
+        assertSame(renamed, model.getAttendanceDisplayClass().orElseThrow());
+        model.removeAttendance(BENSON, renamed, secondDate);
+        assertEquals(List.of(ALICE, BENSON), model.getFilteredPersonList());
+        assertEquals(List.of(BENSON, ALICE), model.getAddressBook().getPersonList());
+    }
+
+    @Test
+    public void setAcademicClass_attendanceDisplayCleared_keepsDisplayCleared() {
+        model.assignStudentToClass(BENSON, second);
+        model.filterPersonsByClassAndDisplayAttendance(first, Optional.empty());
+        model.deleteAcademicClass(first);
+        model.clearAttendanceDisplayClass();
+
+        AcademicClass renamed = new AcademicClass(first.getModuleCode(), first.getClassName(), second);
+        model.setAcademicClass(second, renamed);
+
+        assertEquals(List.of(BENSON), model.getFilteredPersonList());
+        assertTrue(model.getAttendanceDisplayClass().isEmpty());
+        AcademicClass renamedAgain = new AcademicClass(first.getModuleCode(), new ClassName("F03"), renamed);
+        model.setAcademicClass(renamed, renamedAgain);
+        assertEquals(List.of(BENSON), model.getFilteredPersonList());
+        assertTrue(model.getAttendanceDisplayClass().isEmpty());
+    }
+
+    @Test
+    public void setAcademicClass_otherClass_preservesActiveView() {
+        model.assignStudentToClass(BENSON, second);
+        model.filterPersonsByClassAndDisplayAttendance(first, Optional.empty());
+        AcademicClass renamed = new AcademicClass(second.getModuleCode(), new ClassName("F03"), second);
+
+        model.setAcademicClass(second, renamed);
+
+        assertEquals(List.of(ALICE), model.getFilteredPersonList());
+        assertSame(first, model.getAttendanceDisplayClass().orElseThrow());
+    }
+
+    @Test
+    public void setAcademicClass_afterFind_preservesSearch() {
+        model.assignStudentToClass(BENSON, second);
+        model.filterPersonsByClassAndDisplayAttendance(first, Optional.empty());
+        model.deleteAcademicClass(first);
+        model.updateFilteredPersonList(new NameContainsKeywordsPredicate(List.of("Alice")));
+        AcademicClass renamed = new AcademicClass(first.getModuleCode(), first.getClassName(), second);
+
+        model.setAcademicClass(second, renamed);
+
+        assertEquals(List.of(ALICE), model.getFilteredPersonList());
+        assertTrue(model.getAttendanceDisplayClass().isEmpty());
+    }
+
+    @Test
+    public void setAcademicClass_afterList_preservesAllStudentsInInsertionOrder() {
+        model.assignStudentToClass(BENSON, second);
+        model.filterPersonsByClassAndDisplayAttendance(first, Optional.empty());
+        model.deleteAcademicClass(first);
+        model.updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
+        AcademicClass renamed = new AcademicClass(first.getModuleCode(), first.getClassName(), second);
+
+        model.setAcademicClass(second, renamed);
+
+        assertEquals(List.of(BENSON, ALICE), model.getFilteredPersonList());
+        assertTrue(model.getAttendanceDisplayClass().isEmpty());
     }
 
     @Test
