@@ -2,6 +2,7 @@ package seedu.address.ui;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
@@ -26,6 +27,7 @@ import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.util.StringUtil;
 import seedu.address.logic.Logic;
 import seedu.address.logic.commands.AddAttendanceCommand;
+import seedu.address.logic.commands.AssignCommand;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.DeleteAttendanceCommand;
 import seedu.address.logic.commands.EditClassCommand;
@@ -33,6 +35,7 @@ import seedu.address.logic.commands.ListByClassCommand;
 import seedu.address.logic.commands.UnassignCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.person.Person;
 
 /**
  * The Main Window. Provides the basic application layout containing
@@ -332,11 +335,13 @@ public class MainWindow extends UiPart<Stage> {
     private CommandResult executeCommand(String commandText) throws CommandException, ParseException {
         try {
             OptionalInt classPosition = getCommandClassPosition(commandText);
+            Optional<Person> student = getCommandStudent(commandText);
             CommandResult commandResult = logic.execute(commandText);
             logger.info("Result: " + commandResult.getFeedbackToUser());
             resultDisplay.setFeedbackToUser(commandResult.getFeedbackToUser());
             classPosition.ifPresent(position -> academicClassListPanel.scrollToClass(
                     logic.getFilteredAcademicClassList().indexOf(logic.getAcademicClassList().get(position))));
+            student.ifPresent(person -> personListPanel.scrollToStudent(logic.getFilteredPersonList().indexOf(person)));
 
             if (commandResult.isShowHelp()) {
                 handleHelp();
@@ -359,7 +364,7 @@ public class MainWindow extends UiPart<Stage> {
         String[] tokens = commandText.strip().split("\\s+");
         int indexToken = switch (tokens[0]) {
             case ListByClassCommand.COMMAND_WORD, EditClassCommand.COMMAND_WORD -> 1;
-            case AddAttendanceCommand.COMMAND_WORD, DeleteAttendanceCommand.COMMAND_WORD,
+            case AssignCommand.COMMAND_WORD, AddAttendanceCommand.COMMAND_WORD, DeleteAttendanceCommand.COMMAND_WORD,
                     UnassignCommand.COMMAND_WORD -> 2;
             default -> -1;
         };
@@ -374,5 +379,19 @@ public class MainWindow extends UiPart<Stage> {
         // Index-based class commands preserve the class collection's order, including edits.
         return OptionalInt.of(logic.getAcademicClassList().indexOf(
                 logic.getFilteredAcademicClassList().get(displayedIndex)));
+    }
+
+    /** Captures the affected student before assignment changes can remove it from the displayed list. */
+    private Optional<Person> getCommandStudent(String commandText) {
+        String[] tokens = commandText.strip().split("\\s+");
+        if ((!tokens[0].equals(AssignCommand.COMMAND_WORD) && !tokens[0].equals(UnassignCommand.COMMAND_WORD))
+                || tokens.length < 2 || !StringUtil.isNonZeroUnsignedInteger(tokens[1])) {
+            return Optional.empty();
+        }
+        int displayedIndex = Integer.parseInt(tokens[1]) - 1;
+        if (displayedIndex >= logic.getFilteredPersonList().size()) {
+            return Optional.empty();
+        }
+        return Optional.of(logic.getFilteredPersonList().get(displayedIndex));
     }
 }

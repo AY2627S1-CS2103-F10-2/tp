@@ -47,6 +47,13 @@ public class PersonListPanel extends UiPart<Region> {
         personListView.setCellFactory(listView -> new PersonListViewCell());
     }
 
+    /** Reveals a displayed student without changing selection or keyboard focus. */
+    public void scrollToStudent(int displayedIndex) {
+        if (displayedIndex >= 0 && displayedIndex < personListView.getItems().size()) {
+            personListView.scrollTo(displayedIndex);
+        }
+    }
+
     /**
      * Custom {@code ListCell} that displays the graphics of a {@code Person} using a {@code PersonCard}.
      */
