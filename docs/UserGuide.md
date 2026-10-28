@@ -21,8 +21,12 @@ TAssist is a **desktop application for NUS Teaching Assistants who need to manag
 1. Download the latest `.jar` file from [here](https://github.com/AY2627S1-CS2103-F10-2/tp/releases).
 
 1. Copy the file to a folder you can write to. This is the _home folder_ for TAssist and its saved files.
+   TAssist needs write access to this folder to launch and save data; see [Known issues](#known-issues).
 
 1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar TAssist.jar`.<br>
+   Double-clicking the JAR also works on systems configured to open `.jar` files with a compatible Java installation.
+   If double-clicking does not launch TAssist, use the terminal command above so you can see any error messages.
+   Run `java -version` to check that the terminal uses Java `25` or later.<br>
    A GUI similar to the one below should appear in a few seconds. The app shows students and classes in separate sections.<br>
    ![Ui](images/Ui.png)
 
@@ -633,6 +637,8 @@ For example, running `java -jar "C:\TAssist\TAssist.jar"` from another folder st
 | `tassist.lock` | Prevents simultaneous launches from the same application folder |
 
 Keep the JAR in a writable folder. If a save fails, TAssist does not redirect your data to another folder.
+Changes may still appear on screen even though they were not saved. Stop entering commands and follow the
+recovery instructions in [Known issues](#known-issues) before retrying.
 Separate JAR folders use separate data and preferences; copying only the JAR does not copy your records.
 When running from an IDE or with Gradle, files remain relative to the working directory.
 
@@ -684,6 +690,29 @@ If any of these command words are entered, TAssist displays `Unknown command.`
 --------------------------------------------------------------------------------------------------------------------
 
 ## Known issues
+
+* **Write-protected application folder or data file:** TAssist may fail to launch if it cannot create or access
+  `tassist.lock` beside the JAR. If the data file cannot be written, commands may report a save-permission error.
+  Close TAssist and move it to a folder you can write to, such as a dedicated folder in your user directory.
+  To retain your records, follow [Moving existing data to the JAR folder](#moving-existing-data-to-the-jar-folder)
+  and ensure the copied data file is writable too. If a command has already reported a save error, follow the
+  recovery steps below first.
+
+* **A failed save can leave changes on screen:** A command can change the running application's data before
+  saving fails. For example, `delete 1` may report a save error but still remove the first student from the
+  displayed list. Retrying `delete 1` can then target a different student. A later successful command can save
+  the earlier changes too, even though they originally produced an error.
+
+  After a save error:
+  1. Stop entering commands, including `list` or `exit`, because commands can attempt another save.
+  1. Close TAssist using the main window's close button. This discards changes held only in memory; it does not
+     save student or class data.
+  1. Back up the existing `data/addressbook.json` before changing permissions or moving files. For a permission
+     failure like the one above, the previous saved file remains unchanged. Other storage failures may require
+     recovery from an earlier backup.
+  1. Resolve the storage problem, reopen TAssist, and check the loaded records and displayed indices before
+     re-entering any intended changes. If records are missing or the data cannot be loaded, close the app without
+     entering commands and restore a known-good backup first.
 
 1. **When using multiple screens**, if you move the application to a secondary screen, and later switch to using only the primary screen, the GUI will open off-screen. The remedy is to delete the `preferences.json` file created by the application before running the application again.
 2. **If you minimize the Help Window** and then run the `help` command (or use the `Help` menu, or the keyboard shortcut `F1`) again, the original Help Window will remain minimized, and no new Help Window will appear. The remedy is to manually restore the minimized Help Window.
