@@ -165,7 +165,9 @@ This section describes some noteworthy details on how certain features are imple
 
 The `listbyclass` command displays students assigned to the class at a one-based index in the currently displayed
 class list, not necessarily the full stored class list.
-It changes the student view, not the stored student records, class memberships, or the current class view.
+It changes the student view, not the stored student records, class memberships, or the current class view. An optional
+`t/THRESHOLD` argument restricts the result to students with fewer than the specified number of attendance dates for
+the selected class.
 
 The following sequence diagram traces `listbyclass 1`, assuming CS2103 (F10-2) is the first displayed class
 and saving succeeds.
@@ -175,30 +177,62 @@ It starts at `LogicManager`, omitting the UI caller. The input strings are defin
 <puml src="diagrams/ListByClassSequenceDiagram.puml" alt="Successful ListByClass execution from index parsing through displayed class selection, student filtering, attendance display setup and result creation" />
 
 1. `LogicManager` passes `commandText` to `AddressBookParser`, which creates a `ListByClassCommandParser`
-   and calls `parse(args)`. The command parser uses `ParserUtil#parseIndex(args)` to validate the positive integer
-   and creates a `ListByClassCommand` with the resulting `Index`.
+   and calls `parse(args)`. The command parser tokenizes the optional `t/` prefix, uses
+   `ParserUtil#parseIndex(args)` to validate the positive class index, and parses `THRESHOLD` as a positive integer
+   when it is present. It then creates a `ListByClassCommand` containing the index and an optional threshold.
 2. `LogicManager` calls `execute(model)` on the command. The command obtains the currently displayed classes through
    `Model#getFilteredAcademicClassList()`, checks the index against the list size, and selects the class using
    `lastShownList.get(index.getZeroBased())`.
-3. The command calls `Model#filterPersonsByClass(academicClass)`. `ModelManager` installs a membership predicate
-   and uses `PersonNameComparator` to display matching students alphabetically. Name comparison ignores case,
-   with original spelling as a tie-breaker. The underlying student storage order is unchanged.
-4. The command calls `Model#setAttendanceDisplayClass(academicClass)` to select the class used for attendance display.
-   `ModelManager` refreshes the student view so the displayed attendance corresponds to that class.
-5. The command obtains the displayed student list and uses its size and the class identity to construct the success message:
-   `Listed N students taking CS2103 (F10-2).` It returns a `CommandResult` to `LogicManager`.
+3. The command calls `Model#filterPersonsByClassAndDisplayAttendance(academicClass, threshold)`. In
+   `ModelManager`, `applyClassFilter` stores the selected class and threshold, obtains attendance counts for the
+   selected class when needed, and installs a predicate that requires both class membership and
+   `attendanceCount < threshold`. Students without recorded attendance count as zero. The filtered list is sorted
+   with `PersonNameComparator`, which ignores case and uses original spelling as a tie-breaker. The underlying
+   student storage order is unchanged.
+4. The same model operation sets the selected class as `attendanceDisplayClass` and refreshes the student view so
+   each displayed student shows attendance for the selected class. Omitting `t/THRESHOLD` clears any active
+   threshold restriction while retaining the selected class for attendance display.
+5. The command obtains the displayed student list and uses its size and the class identity to construct the success
+   message. When a threshold is present, the message also reports that only students with fewer than that number of
+   recorded attendance dates are shown. It returns a `CommandResult` to `LogicManager`.
 6. `LogicManager` saves the address book before returning the result, even though this command only changes the view.
-   The view filter itself is not persisted.
+   The view filter and selected attendance display class are not persisted.
 
 The diagram summarises index parsing and class selection in notes. It omits model-internal filtering and refresh calls,
 logging (including its extra student-list access), list-size and class-field access, message formatting, and storage calls
 to keep the successful path readable.
 
 **Other outcomes:** Missing, non-integer, zero, negative, or overflowing indices cause a `ParseException` before
-command creation. A positive index beyond the displayed class list (including when that list is empty) causes
-a `CommandException` before the student filter or attendance display changes. A valid class with no students succeeds:
-the student view becomes empty and the result reports zero students. If saving fails after filtering,
-`LogicManager` reports a `CommandException`; the already-updated view is not rolled back.
+command creation. Missing, non-integer, zero, negative, or overflowing thresholds, duplicate `t/` prefixes, and
+malformed arguments are also rejected before command execution. A positive index beyond the displayed class list
+(including when that list is empty) causes a `CommandException` before the student filter or attendance display
+changes. A valid class with no students succeeds: the student view becomes empty and the result reports zero
+students. If saving fails after filtering, `LogicManager` reports a `CommandException`; the already-updated view is
+not rolled back.
+
+### Finding students by name
+
+The `find` command applies a name predicate to the current student list. It is a view-only operation: it does not
+modify student records, class memberships, attendance, or the class list.
+
+1. `LogicManager` passes `commandText` to `AddressBookParser`, which creates a `FindCommandParser` and calls
+   `parse(args)`. The parser trims the arguments, rejects an empty argument string, splits the remaining text on
+   whitespace, and creates a `NameContainsKeywordsPredicate` containing the resulting keywords.
+2. `LogicManager` calls `execute(model)` on the resulting `FindCommand`. The command passes the predicate to
+   `Model#updateFilteredPersonList(predicate)`.
+3. `ModelManager` installs the predicate on its `FilteredList<Person>`. The predicate tests only `Person#getName()`
+   and returns true when **any** keyword matches a complete name word, ignoring case. This gives the command
+   `OR` semantics: a student is shown when at least one keyword matches. `StringUtil#containsWordIgnoreCase` splits
+   the name into whitespace-delimited words, so a partial word such as `Ali` does not match `Alice`.
+4. Updating the person filter clears any class-specific attendance display, threshold, and class-membership filter.
+   The student comparator is also cleared, so `find` results retain the stored insertion order. The command counts
+   the filtered students and returns a message such as `1 person(s) listed!`.
+5. `LogicManager` saves the address book and command history before returning the result. The name predicate and
+   filtered view are not persisted, so the next launch starts with the default student view.
+
+**Other outcomes:** `find` with no keyword is rejected by `FindCommandParser` before command creation. Multiple
+spaces between keywords are ignored. A valid search with no matches succeeds and displays an empty student list.
+Names, rather than email addresses, student numbers, Telegram handles, or tags, are searched.
 
 ### Listing all classes
 
@@ -874,6 +908,79 @@ testers are expected to do more *exploratory* testing.
    Expected: zero matching classes and an empty Classes panel.
 7. Run `listclass` to restore all classes, and `list` to restore all students.
    Restart the app and repeat Alice's lookup to verify that memberships persist while display filters reset.
+
+### Finding students by name
+
+1. Successful case-insensitive and multi-keyword search
+
+   1. Prerequisites: In a fresh data folder, add three students with distinct names, for example with
+      `add sn/A0999801X n/Alice Tan e/alice.tan@example.com`,
+      `add sn/A0999802Y n/Bob Tan e/bob.tan@example.com`, and
+      `add sn/A0999803Z n/Charlie Lim e/charlie.lim@example.com`. Run `list` so all students are displayed.
+   2. Test case: `find alice`<br>
+      Expected: Only Alice Tan is displayed, and the result count is 1. The match is case-insensitive.
+   3. Test case: `find Alice Bob`<br>
+      Expected: Alice Tan and Bob Tan are displayed. A student matching either keyword is included, and the results
+      remain in their original insertion order.
+   4. Test case: `find tan`<br>
+      Expected: Alice Tan and Bob Tan are displayed; Charlie Lim is not.
+
+1. Full-word matching and invalid input
+
+   1. Test case: `find ali`<br>
+      Expected: No student is displayed because `ali` is not a complete word in `Alice`.
+   2. Test case: `find alice@example.com` (or another value that appears only in a student's email)<br>
+      Expected: No student is displayed unless that value is also a word in a student's name; only names are
+      searched.
+   3. Test case: `find`<br>
+      Expected: Invalid-command feedback is shown and the current student list remains unchanged.
+   4. Test case: `find   Alice    Bob`<br>
+      Expected: The command behaves like `find Alice Bob`; extra whitespace does not add keywords.
+
+1. Reset and persistence
+
+   1. Test case: `list`<br>
+      Expected: All students are displayed again in insertion order. The class list is unchanged.
+   2. Close and reopen the app.<br>
+      Expected: Student records remain saved, but the previous `find` filter is not restored; the default student
+      view is shown.
+
+### Listing students by class
+
+1. Successful class selection
+
+   1. Prerequisites: In a fresh data folder, add Alice Tan, Bob Tan, and Charlie Lim, then add
+      `addclass m/CS2103 c/TEST-103` and `addclass m/CS2100 c/TEST-100`. Run `list` and `listclass` to confirm the
+      displayed indices.
+   2. Assign Alice and Bob to the first displayed class, and Charlie to the second displayed class using
+      `assign STUDENT_INDEX CLASS_INDEX`.
+   3. Test case: `listbyclass 1`<br>
+      Expected: Alice Tan and Bob Tan are displayed alphabetically. The result identifies `CS2103 (TEST-103)` and
+      reports two students. The class list and stored memberships are unchanged.
+   4. Test case: `listbyclass 2`<br>
+      Expected: Only Charlie Lim is displayed, with the result identifying `CS2100 (TEST-100)`.
+
+1. Attendance threshold
+
+   1. Prerequisites: With all students and classes displayed, record one attendance date for Alice in the first
+      class using `addattendance ALICE_INDEX FIRST_CLASS_INDEX d/2026-01-01`.
+   2. Test case: `listbyclass 1 t/1`<br>
+      Expected: Only Bob Tan is displayed because the command includes students with fewer than one recorded
+      attendance date. Students with zero attendance count as zero.
+   3. Test case: `listbyclass 1`<br>
+      Expected: Both Alice Tan and Bob Tan are displayed again; omitting `t/` clears the active threshold.
+   4. Record attendance for a student in a different class, then repeat the threshold test.<br>
+      Expected: Attendance in another class does not change the threshold result for the selected class.
+
+1. Invalid input and persistence
+
+   1. Test cases: `listbyclass`, `listbyclass 0`, `listbyclass 999`, `listbyclass 1 t/0`,
+      `listbyclass 1 t/-1`, and `listbyclass 1 t/1 t/2`.<br>
+      Expected: Invalid-command or invalid-index feedback is shown. The current student and class views remain
+      unchanged after each rejected command.
+   2. Test case: `listbyclass 1` followed by closing and reopening the app, then `listclass` and `listbyclass 1`.<br>
+      Expected: Class memberships and attendance dates are retained, and the class can be listed again. The filtered
+      student view itself is not restored automatically; use `list` to show all students.
 
 ### Saving data
 
