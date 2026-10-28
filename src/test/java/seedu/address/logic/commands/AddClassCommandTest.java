@@ -175,6 +175,16 @@ public class AddClassCommandTest {
         }
 
         @Override
+        public ViewState captureViewState() {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
+        public void restoreAddressBook(ReadOnlyAddressBook addressBook, ViewState viewState) {
+            throw new AssertionError("This method should not be called.");
+        }
+
+        @Override
         public boolean hasPerson(Person person) {
             throw new AssertionError("This method should not be called.");
         }

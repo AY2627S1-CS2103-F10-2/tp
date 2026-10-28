@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -141,6 +142,44 @@ public class ModelManager implements Model {
     @Override
     public ReadOnlyAddressBook deepCopyAddressBook() {
         return addressBook.deepCopy();
+    }
+
+    private record DisplayState(Predicate<Person> personFilter, AcademicClass personFilterClass,
+            Optional<Integer> personFilterThreshold, Comparator<? super Person> comparator,
+            AcademicClass attendanceDisplayClass, Predicate<AcademicClass> academicClassFilter,
+            StudentNumber classFilterStudentNumber) implements ViewState {}
+
+    @Override
+    public ViewState captureViewState() {
+        return new DisplayState(personFilter, personFilterClass, personFilterThreshold,
+                sortedPersons.getComparator(), attendanceDisplayClass, academicClassFilter,
+                classFilterStudentNumber);
+    }
+
+    @Override
+    public void restoreAddressBook(ReadOnlyAddressBook addressBook, ViewState viewState) {
+        requireAllNonNull(addressBook, viewState);
+        DisplayState state = (DisplayState) viewState;
+        this.addressBook.resetData(addressBook);
+        // resetData replaces class objects, so look the saved classes up again by identity.
+        personFilterClass = findStoredClass(state.personFilterClass());
+        attendanceDisplayClass = findStoredClass(state.attendanceDisplayClass());
+        personFilter = state.personFilter();
+        personFilterThreshold = state.personFilterThreshold();
+        academicClassFilter = state.academicClassFilter();
+        classFilterStudentNumber = state.classFilterStudentNumber();
+        sortedPersons.setComparator(state.comparator());
+        refreshFilteredPersonList();
+        refreshFilteredAcademicClassList();
+        logger.fine("Restored address book and previous student and class display");
+    }
+
+    private AcademicClass findStoredClass(AcademicClass academicClass) {
+        if (academicClass == null) {
+            return null;
+        }
+        return addressBook.findAcademicClass(academicClass.getModuleCode(), academicClass.getClassName())
+                .orElse(academicClass);
     }
 
     @Override

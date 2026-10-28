@@ -58,6 +58,7 @@ public class LogicManager implements Logic {
         List<String> previousHistory = model.getCommandHistory();
         // Snapshot so a failed save can undo the command's changes, keeping memory consistent with the saved file.
         ReadOnlyAddressBook previousData = model.deepCopyAddressBook();
+        Model.ViewState previousView = model.captureViewState();
         commandResult = command.execute(model);
 
         List<String> updatedHistory = new ArrayList<>(previousHistory);
@@ -68,10 +69,10 @@ public class LogicManager implements Logic {
         try {
             storage.saveAddressBook(model.getAddressBook());
         } catch (AccessDeniedException e) {
-            model.setAddressBook(previousData);
+            model.restoreAddressBook(previousData, previousView);
             throw new CommandException(String.format(FILE_OPS_PERMISSION_ERROR_FORMAT, e.getMessage()), e);
         } catch (IOException ioe) {
-            model.setAddressBook(previousData);
+            model.restoreAddressBook(previousData, previousView);
             throw new CommandException(String.format(FILE_OPS_ERROR_FORMAT, ioe.getMessage()), ioe);
         }
 

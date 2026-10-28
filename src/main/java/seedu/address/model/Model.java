@@ -74,6 +74,21 @@ public interface Model {
      */
     ReadOnlyAddressBook deepCopyAddressBook();
 
+    /**
+     * Opaque snapshot of what the student and class lists currently display (filters, sorting and the
+     * attendance display), as opposed to the underlying address book data.
+     */
+    interface ViewState {}
+
+    /** Returns a snapshot of the current student and class list display. */
+    ViewState captureViewState();
+
+    /**
+     * Replaces address book data with {@code addressBook} and restores the display captured in {@code viewState},
+     * so index-based commands keep resolving against the same lists. Used to roll back a failed command.
+     */
+    void restoreAddressBook(ReadOnlyAddressBook addressBook, ViewState viewState);
+
     /** Returns saved successful commands, oldest first, as an unmodifiable list. */
     List<String> getCommandHistory();
 

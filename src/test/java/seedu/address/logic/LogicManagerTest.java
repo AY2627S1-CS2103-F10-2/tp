@@ -34,6 +34,7 @@ import seedu.address.model.UserPrefs;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
 import seedu.address.model.academicclass.ModuleCode;
+import seedu.address.model.person.Person;
 import seedu.address.storage.JsonAddressBookStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
 import seedu.address.storage.StorageManager;
@@ -309,5 +310,25 @@ public class LogicManagerTest {
         assertThrows(CommandException.class, () -> logic.execute("assign 1 1"));
         assertEquals(before, model.getAddressBook());
         assertEquals(Set.of(), model.getAddressBook().getAcademicClassList().getFirst().getStudents());
+    }
+
+    @Test
+    public void execute_storageFails_rollbackKeepsStudentFilter() throws Exception {
+        logic.execute("add sn/A0123456X n/Alice e/alice@example.com");
+        logic.execute("add sn/A0234567X n/Bob e/bob@example.com");
+        logic.execute("find Bob");
+        List<Person> filteredBefore = List.copyOf(model.getFilteredPersonList());
+        assertEquals(1, filteredBefore.size());
+
+        logic = new LogicManager(model, new StorageManager(new JsonAddressBookStorage(
+                temporaryFolder.resolve("failing.json")) {
+            @Override
+            public void saveAddressBook(ReadOnlyAddressBook addressBook) throws IOException {
+                throw DUMMY_IO_EXCEPTION;
+            }
+        }, new JsonUserPrefsStorage(temporaryFolder.resolve("failingPrefs.json"))));
+
+        assertThrows(CommandException.class, () -> logic.execute("addclass m/CS2103 c/F10-2"));
+        assertEquals(filteredBefore, model.getFilteredPersonList());
     }
 }
