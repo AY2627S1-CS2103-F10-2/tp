@@ -185,12 +185,6 @@ Class/module, tag, and email messages describe the enforced constraints and give
 are unchanged: local-part special characters cannot be consecutive, domain hyphens must be single,
 and the final domain label needs two consecutive alphanumeric characters.
 
-The activity diagram summarizes validation for commands with prefixed fields and/or displayed indices.
-Membership, duplicate-record, and attendance-date checks are represented as business rules. Saving
-failures are outside this diagram; it assumes storage succeeds after a successful command.
-
-<puml src="diagrams/CommandValidationActivityDiagram.puml" alt="Command validation phases, actionable errors and successful execution without saving rejected input" />
-
 `CommandGuidanceIntegrationTest` checks the messages against missing and unsupported fields, filtered
 and empty views, threshold boundaries, and unknown commands. Rejections preserve records, memberships,
 attendance, history, filters, and the saved JSON file. Existing parser, command, storage, and model tests
