@@ -827,6 +827,78 @@ testers are expected to do more *exploratory* testing.
 
 1. _{ more test cases … }_
 
+### Deleting and editing academic classes
+
+Use a disposable application folder. Repeat this setup before each subsection below;
+`clear` removes all students and classes in that test copy.
+
+```text
+clear
+add sn/A0999701X n/Alice Manual e/alice.manual@example.com
+add sn/A0999702Y n/Bob Manual e/bob.manual@example.com
+addclass m/CS2103T c/F01
+addclass m/ST2334 c/T24
+assign 1 1
+assign 1 2
+assign 2 2
+addattendance 1 1 d/2020-01-01
+addattendance 2 2 d/2020-01-02
+```
+
+#### Deleting a class: `deleteclass`
+
+1. Try `deleteclass`, `deleteclass 0`, `deleteclass abc`, `deleteclass 1 extra`, and `deleteclass 999`.
+   Expected: format or invalid-index errors; both classes, memberships and attendance remain unchanged.
+2. Run `listbystudent 2`, then `deleteclass 1`.
+   Expected: the displayed ST2334-T24 class is deleted, even though it was class 2 in the full list.
+   The filtered Classes panel becomes empty.
+3. Run `list` and `listclass`. Expected: both student records remain; CS2103T-F01 is now class 1.
+   Run `listbyclass 1`: Alice remains assigned with attendance `2020-01-01`.
+   In `data/addressbook.json`, the `classes` and `attendance` arrays must contain no ST2334-T24 records.
+4. Run `list`, `listbystudent 2`, then `deleteclass 1`.
+   Expected: an invalid-index error for the empty class list. Run `listclass`, close the window and
+   reopen the same JAR. The deleted class stays absent; both students and the surviving class remain.
+
+#### Editing a class: `editclass`
+
+1. Repeat the setup. Try `editclass`, `editclass 0 c/F02`, `editclass 999 c/F02`, `editclass 1`,
+   `editclass 1 m/123`, and `editclass 1 c/---`.
+   Expected: format, index, missing-field or validation errors; neither class changes.
+2. Try `editclass 1 m/ST2334 c/T24`.
+   Expected: a duplicate-class error; the original identities, memberships and attendance remain unchanged.
+3. Run `listbystudent 2`, then `editclass 1 c/T25` and `editclass 1 m/ST2334A`.
+   Expected: only the supplied field changes each time; the class becomes ST2334A-T25.
+   Run `editclass 1 m/CS2101 c/L01`: both fields change, and Bob's class filter stays active.
+4. Run `listclass`, then `listbyclass 2`.
+   Expected: CS2101-L01 contains Alice and Bob; Bob retains attendance `2020-01-02`.
+   Close the window and reopen the same JAR. The edited class, memberships and attendance persist;
+   CS2103T-F01 remains unchanged.
+5. In this disposable copy, run `clear`, then `editclass 1 c/F02`.
+   Expected: an invalid-index error for the empty class list; no class is created.
+
+### Persistent command history
+
+1. Start another disposable copy in a fresh folder. Before submitting any commands, focus the
+   empty command box and press Up and Down. Expected: the input stays blank and no error appears.
+   Then submit `list`,
+   `find HistoryNoMatch`, and `listclass`, then submit the invalid command `notacommand`.
+   Close using the window's close button, rather than the `exit` command, so shutdown adds no history entry.
+2. Reopen the same JAR and focus the command box. Press Up repeatedly.
+   Expected: `listclass`, `find HistoryNoMatch`, then `list`; further Up presses stay at `list`.
+   The failed command is absent. Recalling commands does not execute them or change the feedback.
+   Press Down until the input is blank; further Down presses keep it blank.
+3. Type `unfinished draft` without submitting it. Press Up, replace the recalled `listclass` with
+   `list` without submitting, then press Up and Down. Expected: the temporary edit `list` returns.
+   Press Down again: `unfinished draft` returns. Close using the window button and reopen the same JAR.
+   Expected: the input starts blank and Up recalls the original `listclass`; temporary edits and drafts are not saved.
+4. Press Down until the input is blank. Press Up to recall `listclass`, then press Enter.
+   Expected: the command executes successfully and the input clears. Close using the window button
+   and reopen the same JAR. Press Up twice: both newest entries must be `listclass`, confirming
+   that the recalled execution was saved as another entry. Press Down until the input is blank.
+5. Submit 21 separate commands, `find History01` through `find History21`, then close using the
+   window button and reopen. Expected: Up recalls `find History21` back through `find History02` only;
+   further Up presses stay at `find History02`. Only the latest 20 successful commands are retained.
+
 ### Assigning a student to a class
 
 1. Successful assignment and live count updates
