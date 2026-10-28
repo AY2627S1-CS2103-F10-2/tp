@@ -397,6 +397,8 @@ public class WorkspaceTest {
                         + "t/aVeryLongTagThatMustWrapWithinTheStudentCard");
                 stage.setWidth(720);
                 settle(stage);
+                students.scrollTo(students.getItems().size() - 1);
+                settle(stage);
                 capture(stage, "layout-long-details");
             } finally {
                 stage.hide();
