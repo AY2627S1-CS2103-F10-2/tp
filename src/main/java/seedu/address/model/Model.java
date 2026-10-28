@@ -68,6 +68,12 @@ public interface Model {
     /** Returns the AddressBook */
     ReadOnlyAddressBook getAddressBook();
 
+    /**
+     * Returns a copy of the address book that shares no mutable state with it, so later changes to either
+     * (e.g. class memberships or attendance dates) do not affect the other.
+     */
+    ReadOnlyAddressBook deepCopyAddressBook();
+
     /** Returns saved successful commands, oldest first, as an unmodifiable list. */
     List<String> getCommandHistory();
 

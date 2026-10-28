@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.model.tag.Tag;
@@ -40,6 +41,13 @@ public class Person {
         this.email = email;
         this.telegram = telegram;
         this.tags.addAll(tags);
+    }
+
+    /** Returns a new person with new copies of every detail. */
+    public Person copy() {
+        Set<Tag> copiedTags = tags.stream().map(tag -> new Tag(tag.tagName)).collect(Collectors.toSet());
+        return new Person(new StudentNumber(studentNumber.value), new Name(name.fullName), new Email(email.value),
+                telegram == null ? null : new Telegram(telegram.value), copiedTags);
     }
 
     public StudentNumber getStudentNumber() {

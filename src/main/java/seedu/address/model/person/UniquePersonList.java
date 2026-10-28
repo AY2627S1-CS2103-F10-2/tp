@@ -118,6 +118,13 @@ public class UniquePersonList implements Iterable<Person> {
     }
 
     /**
+     * Returns copies of all persons in this list, in the same order.
+     */
+    public List<Person> deepCopy() {
+        return internalList.stream().map(Person::copy).toList();
+    }
+
+    /**
      * Returns the backing list as an unmodifiable {@code ObservableList}.
      */
     public ObservableList<Person> asUnmodifiableObservableList() {

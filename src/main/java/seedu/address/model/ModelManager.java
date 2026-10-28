@@ -139,6 +139,11 @@ public class ModelManager implements Model {
     }
 
     @Override
+    public ReadOnlyAddressBook deepCopyAddressBook() {
+        return addressBook.deepCopy();
+    }
+
+    @Override
     public boolean hasPerson(Person person) {
         requireNonNull(person);
         return addressBook.hasPerson(person);

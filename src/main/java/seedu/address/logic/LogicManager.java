@@ -16,6 +16,7 @@ import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.AddressBookParser;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.Model;
+import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.attendance.Attendance;
 import seedu.address.model.person.Person;
@@ -25,10 +26,12 @@ import seedu.address.storage.Storage;
  * The main LogicManager of the app.
  */
 public class LogicManager implements Logic {
-    public static final String FILE_OPS_ERROR_FORMAT = "Could not save data due to the following error: %s";
+    public static final String FILE_OPS_ERROR_FORMAT =
+            "Could not save data due to the following error: %s\nYour command was not applied.";
 
     public static final String FILE_OPS_PERMISSION_ERROR_FORMAT =
-            "Could not save data to file %s due to insufficient permissions to write to the file or the folder.";
+            "Could not save data to file %s due to insufficient permissions to write to the file or the folder.\n"
+            + "Your command was not applied.";
 
     private final Logger logger = LogsCenter.getLogger(LogicManager.class);
 
@@ -53,6 +56,8 @@ public class LogicManager implements Logic {
         CommandResult commandResult;
         Command command = addressBookParser.parseCommand(commandText);
         List<String> previousHistory = model.getCommandHistory();
+        // Snapshot so a failed save can undo the command's changes, keeping memory consistent with the saved file.
+        ReadOnlyAddressBook previousData = model.deepCopyAddressBook();
         commandResult = command.execute(model);
 
         List<String> updatedHistory = new ArrayList<>(previousHistory);
@@ -63,10 +68,10 @@ public class LogicManager implements Logic {
         try {
             storage.saveAddressBook(model.getAddressBook());
         } catch (AccessDeniedException e) {
-            model.setCommandHistory(previousHistory);
+            model.setAddressBook(previousData);
             throw new CommandException(String.format(FILE_OPS_PERMISSION_ERROR_FORMAT, e.getMessage()), e);
         } catch (IOException ioe) {
-            model.setCommandHistory(previousHistory);
+            model.setAddressBook(previousData);
             throw new CommandException(String.format(FILE_OPS_ERROR_FORMAT, ioe.getMessage()), ioe);
         }
 
