@@ -168,7 +168,7 @@ parentheses, and canonical forward slashes. A stored name must contain at least 
 and must not begin with a space. Curly apostrophes, middle dots, accented letters, other scripts,
 and other punctuation are rejected. Existing digit-only names remain valid.
 
-This is the agreed scope of issue #203: support the selected US-keyboard punctuation while retaining
+This is the agreed scope of issue #208: support the selected US-keyboard punctuation while retaining
 ASCII-only names. The issue's accented-letter and other-script examples remain intentionally rejected;
 this change does not add Unicode name support.
 
