@@ -90,14 +90,18 @@ public class UnassignCommandTest {
     @Test
     public void execute_invalidStudentIndex_preservesMemberships() {
         assertThrows(CommandException.class,
-                Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX, () -> command(3, 1).execute(model));
+                Messages.getInvalidStudentIndexMessage(
+                        Index.fromOneBased(3), model.getFilteredPersonList().size()), ()
+                -> command(3, 1).execute(model));
         assertEquals(Set.of(ALICE, BENSON), target.getStudents());
     }
 
     @Test
     public void execute_invalidClassIndex_preservesMemberships() {
         assertThrows(CommandException.class,
-                Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX, () -> command(1, 3).execute(model));
+                Messages.getInvalidClassIndexMessage(
+                        Index.fromOneBased(3), model.getFilteredAcademicClassList().size()), ()
+                -> command(1, 3).execute(model));
         assertEquals(Set.of(ALICE, BENSON), target.getStudents());
     }
 
@@ -105,7 +109,9 @@ public class UnassignCommandTest {
     public void execute_emptyStudentView_rejectsHiddenStudent() {
         model.updateFilteredPersonList(person -> false);
         assertThrows(CommandException.class,
-                Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX, () -> command(1, 1).execute(model));
+                Messages.getInvalidStudentIndexMessage(
+                        Index.fromOneBased(1), model.getFilteredPersonList().size()), ()
+                -> command(1, 1).execute(model));
         assertEquals(Set.of(ALICE, BENSON), target.getStudents());
     }
 
@@ -113,7 +119,9 @@ public class UnassignCommandTest {
     public void execute_emptyClassView_rejectsHiddenClass() {
         model.updateFilteredAcademicClassList(academicClass -> false);
         assertThrows(CommandException.class,
-                Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX, () -> command(1, 1).execute(model));
+                Messages.getInvalidClassIndexMessage(
+                        Index.fromOneBased(1), model.getFilteredAcademicClassList().size()), ()
+                -> command(1, 1).execute(model));
         assertEquals(Set.of(ALICE, BENSON), target.getStudents());
     }
 

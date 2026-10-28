@@ -145,7 +145,8 @@ public class EditClassCommandTest {
     @Test
     public void execute_outOfBoundsIndex_throwsClassSpecificError() {
         EditClassCommand command = new EditClassCommand(Index.fromOneBased(3), descriptor(null, NEW_NAME));
-        assertThrows(CommandException.class, Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX, () ->
+        assertThrows(CommandException.class, Messages.getInvalidClassIndexMessage(
+                        Index.fromOneBased(3), model.getFilteredAcademicClassList().size()), () ->
                 command.execute(model));
         assertSame(original, model.getAcademicClassList().getFirst());
         assertEquals(Set.of(ALICE, BENSON), original.getStudents());
@@ -154,7 +155,8 @@ public class EditClassCommandTest {
     @Test
     public void execute_emptyDisplayedClassList_throwsClassSpecificError() {
         model.updateFilteredAcademicClassList(academicClass -> false);
-        assertThrows(CommandException.class, Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX, () ->
+        assertThrows(CommandException.class, Messages.getInvalidClassIndexMessage(
+                        Index.fromOneBased(1), model.getFilteredAcademicClassList().size()), () ->
                 command(null, NEW_NAME).execute(model));
         assertTrue(model.getFilteredAcademicClassList().isEmpty());
     }
@@ -254,7 +256,8 @@ public class EditClassCommandTest {
         // Rejected invalid index edit preserves active threshold
         EditClassCommand invalidIndexCommand =
                 new EditClassCommand(Index.fromOneBased(5), descriptor(null, NEW_NAME));
-        assertThrows(CommandException.class, Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX, () ->
+        assertThrows(CommandException.class, Messages.getInvalidClassIndexMessage(
+                        Index.fromOneBased(5), model.getFilteredAcademicClassList().size()), () ->
                 invalidIndexCommand.execute(model));
         assertEquals(List.of(ALICE), model.getFilteredPersonList());
 

@@ -71,9 +71,11 @@ public class AssignCommandTest {
 
     @Test
     public void execute_invalidIndices_preservesMemberships() {
-        assertThrows(CommandException.class, Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX, ()
+        assertThrows(CommandException.class, Messages.getInvalidStudentIndexMessage(
+                        Index.fromOneBased(3), model.getFilteredPersonList().size()), ()
                 -> command(3, 1).execute(model));
-        assertThrows(CommandException.class, Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX, ()
+        assertThrows(CommandException.class, Messages.getInvalidClassIndexMessage(
+                        Index.fromOneBased(3), model.getFilteredAcademicClassList().size()), ()
                 -> command(1, 3).execute(model));
         assertTrue(target.getStudents().isEmpty());
         assertTrue(other.getStudents().isEmpty());
@@ -82,11 +84,13 @@ public class AssignCommandTest {
     @Test
     public void execute_hiddenRecords_cannotBeSelected() {
         model.updateFilteredPersonList(person -> false);
-        assertThrows(CommandException.class, Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX, ()
+        assertThrows(CommandException.class, Messages.getInvalidStudentIndexMessage(
+                        Index.fromOneBased(1), model.getFilteredPersonList().size()), ()
                 -> command(1, 1).execute(model));
         model.updateFilteredPersonList(person -> true);
         model.updateFilteredAcademicClassList(academicClass -> false);
-        assertThrows(CommandException.class, Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX, ()
+        assertThrows(CommandException.class, Messages.getInvalidClassIndexMessage(
+                        Index.fromOneBased(1), model.getFilteredAcademicClassList().size()), ()
                 -> command(1, 1).execute(model));
         assertTrue(target.getStudents().isEmpty());
     }

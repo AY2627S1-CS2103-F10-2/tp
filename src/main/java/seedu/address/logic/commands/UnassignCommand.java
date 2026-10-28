@@ -18,7 +18,8 @@ public class UnassignCommand extends Command {
 
     public static final String COMMAND_WORD = "unassign";
     public static final String MESSAGE_USAGE = COMMAND_WORD + ": Unassigns a student from a class.\n"
-            + "Parameters: STUDENT_INDEX CLASS_INDEX (positive integers in their respective displayed lists)\n"
+            + "Parameters: STUDENT_INDEX CLASS_INDEX "
+            + "(whole numbers from 1 to 2147483647 in their respective displayed lists)\n"
             + "Example: unassign 1 2";
     public static final String MESSAGE_SUCCESS = "Student (%1$s) has been unassigned from %2$s.";
 
@@ -39,7 +40,8 @@ public class UnassignCommand extends Command {
 
         List<Person> displayedStudents = model.getFilteredPersonList();
         if (studentIndex.getZeroBased() >= displayedStudents.size()) {
-            throw new CommandException(Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
+            throw new CommandException(Messages.getInvalidStudentIndexMessage(
+                    studentIndex, model.getFilteredPersonList().size()));
         }
         Person person = displayedStudents.get(studentIndex.getZeroBased());
 
@@ -57,7 +59,8 @@ public class UnassignCommand extends Command {
     private AcademicClass getAcademicClass(Model model) throws CommandException {
         List<AcademicClass> displayedClasses = model.getFilteredAcademicClassList();
         if (classIndex.getZeroBased() >= displayedClasses.size()) {
-            throw new CommandException(Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX);
+            throw new CommandException(Messages.getInvalidClassIndexMessage(
+                    classIndex, model.getFilteredAcademicClassList().size()));
         }
 
         return displayedClasses.get(classIndex.getZeroBased());

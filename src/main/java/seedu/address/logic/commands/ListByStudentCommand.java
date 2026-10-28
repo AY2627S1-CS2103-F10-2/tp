@@ -20,7 +20,7 @@ public class ListByStudentCommand extends Command {
     public static final String COMMAND_WORD = "listbystudent";
     public static final String MESSAGE_USAGE = COMMAND_WORD
             + ": Lists classes assigned to the student at the displayed index.\n"
-            + "Parameters: INDEX (must be a positive integer)\n"
+            + "Parameters: INDEX (whole number from 1 to 2147483647)\n"
             + "Example: " + COMMAND_WORD + " 1";
     public static final String MESSAGE_SUCCESS = "Listed %1$d classes for %2$s (%3$s).";
     public static final String MESSAGE_SINGLE_CLASS_SUCCESS = "Listed 1 class for %1$s (%2$s).";
@@ -41,7 +41,8 @@ public class ListByStudentCommand extends Command {
         if (targetIndex.getZeroBased() >= displayedStudents.size()) {
             logger.fine(() -> "Rejected listbystudent index " + targetIndex.getOneBased()
                     + " for a displayed student list of size " + displayedStudents.size());
-            throw new CommandException(Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
+            throw new CommandException(Messages.getInvalidStudentIndexMessage(
+                    targetIndex, model.getFilteredPersonList().size()));
         }
 
         Person student = displayedStudents.get(targetIndex.getZeroBased());

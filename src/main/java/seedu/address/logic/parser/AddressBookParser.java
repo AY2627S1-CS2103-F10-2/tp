@@ -82,7 +82,7 @@ public class AddressBookParser {
             case UnassignCommand.COMMAND_WORD -> new UnassignCommandParser().parse(arguments);
             default -> {
                 logger.finer("This user input caused a ParseException: " + userInput);
-                throw new ParseException(MESSAGE_UNKNOWN_COMMAND);
+                throw new ParseException(String.format(MESSAGE_UNKNOWN_COMMAND, commandWord));
             }
         };
     }

@@ -22,6 +22,7 @@ public class EditClassCommandParser implements Parser<EditClassCommand> {
     @Override
     public EditClassCommand parse(String args) throws ParseException {
         requireNonNull(args);
+        ParserUtil.rejectUnknownPrefixes(args, PREFIX_MODULE_CODE, PREFIX_CLASS_NAME);
         ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(args,
                 PREFIX_CLASS_NAME, PREFIX_MODULE_CODE);
 

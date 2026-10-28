@@ -40,7 +40,8 @@ public class ListByClassCommandParserTest {
         assertParseFailure(parser, "", message);
         assertParseFailure(parser, "   ", message);
         assertParseFailure(parser, " t/5", message);
-        assertParseFailure(parser, " m/CS2103 c/F10-2", message);
+        assertParseFailure(parser, " m/CS2103 c/F10-2",
+                "Unknown parameter: m/. Supported parameters: t/.");
     }
 
     @Test
@@ -51,7 +52,8 @@ public class ListByClassCommandParserTest {
         assertParseFailure(parser, " -1", message);
         assertParseFailure(parser, " abc", message);
         assertParseFailure(parser, " 1 2", message);
-        assertParseFailure(parser, " 1 m/CS2103", message);
+        assertParseFailure(parser, " 1 m/CS2103",
+                "Unknown parameter: m/. Supported parameters: t/.");
         assertParseFailure(parser, " 0 t/5", message);
     }
 
@@ -66,7 +68,8 @@ public class ListByClassCommandParserTest {
         assertParseFailure(parser, " 1 t/1.5", MESSAGE_INVALID_POSITIVE_INTEGER);
         assertParseFailure(parser, " 1 t/2147483648", MESSAGE_INVALID_POSITIVE_INTEGER);
         assertParseFailure(parser, " 1 t/5 extra", MESSAGE_INVALID_POSITIVE_INTEGER);
-        assertParseFailure(parser, " 1 t/5 m/CS2103", MESSAGE_INVALID_POSITIVE_INTEGER);
+        assertParseFailure(parser, " 1 t/5 m/CS2103",
+                "Unknown parameter: m/. Supported parameters: t/.");
     }
 
     @Test

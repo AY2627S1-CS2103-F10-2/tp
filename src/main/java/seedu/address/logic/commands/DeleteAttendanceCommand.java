@@ -18,7 +18,8 @@ import seedu.address.model.person.Person;
 public class DeleteAttendanceCommand extends Command {
     public static final String COMMAND_WORD = "deleteattendance";
     public static final String MESSAGE_USAGE = COMMAND_WORD + ": Removes a recorded attendance date. "
-            + "Parameters: STUDENT_INDEX CLASS_INDEX (positive integers in their respective displayed lists) "
+            + "Parameters: STUDENT_INDEX CLASS_INDEX "
+            + "(whole numbers from 1 to 2147483647 in their respective displayed lists) "
             + "d/YYYY-MM-DD\n"
             + "Example: " + COMMAND_WORD + " 1 2 d/2024-02-29";
     public static final String MESSAGE_SUCCESS = "Removed attendance for student (%1$s) in %2$s on %3$s.";
@@ -42,12 +43,14 @@ public class DeleteAttendanceCommand extends Command {
         requireNonNull(model);
         List<Person> displayedStudents = model.getFilteredPersonList();
         if (index.getZeroBased() >= displayedStudents.size()) {
-            throw new CommandException(Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
+            throw new CommandException(Messages.getInvalidStudentIndexMessage(
+                    index, model.getFilteredPersonList().size()));
         }
         Person person = displayedStudents.get(index.getZeroBased());
         List<AcademicClass> displayedClasses = model.getFilteredAcademicClassList();
         if (classIndex.getZeroBased() >= displayedClasses.size()) {
-            throw new CommandException(Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX);
+            throw new CommandException(Messages.getInvalidClassIndexMessage(
+                    classIndex, model.getFilteredAcademicClassList().size()));
         }
         AcademicClass academicClass = displayedClasses.get(classIndex.getZeroBased());
         removeAttendance(model, person, academicClass);

@@ -85,4 +85,15 @@ public class EmailTest {
         // different values -> returns false
         assertFalse(email.equals(new Email("other.valid@email")));
     }
+
+    @Test
+    public void isValidEmail_specialCharacterAndFinalLabelRules_matchGuidance() {
+        for (String email : new String[] {"a..b@example.com", "a+_b@example.com", "a@example--name.com",
+            "a@example.b-c"}) {
+            assertFalse(Email.isValidEmail(email), email);
+        }
+        for (String email : new String[] {"alice.tan@u.nus.edu", "a+b_c.d-e@example-name.com", "a@example.bc-d"}) {
+            assertTrue(Email.isValidEmail(email), email);
+        }
+    }
 }

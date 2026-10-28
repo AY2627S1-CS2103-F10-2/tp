@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import seedu.address.commons.core.index.Index;
 import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.DeleteClassCommand;
@@ -72,7 +73,8 @@ public class DeleteClassIntegrationTest {
         assertCommandFailurePreservesData("deleteclass 0", ParseException.class, usage);
         assertCommandFailurePreservesData("deleteclass 1 2", ParseException.class, usage);
         assertCommandFailurePreservesData("deleteclass 2", CommandException.class,
-                Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX);
+                Messages.getInvalidClassIndexMessage(
+                        Index.fromOneBased(2), model.getFilteredAcademicClassList().size()));
     }
 
     @Test
@@ -87,7 +89,8 @@ public class DeleteClassIntegrationTest {
         assertEquals(1, displayed.size());
 
         assertCommandFailurePreservesData("deleteclass 2", CommandException.class,
-                Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX);
+                Messages.getInvalidClassIndexMessage(
+                        Index.fromOneBased(2), model.getFilteredAcademicClassList().size()));
         logic.execute("deleteclass 1");
 
         assertEquals(List.of(), displayed);

@@ -12,6 +12,7 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.commons.core.index.Index;
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.AddressBookParser;
@@ -45,7 +46,8 @@ public class AttendanceIndexTest {
         model.updateFilteredPersonList(person -> false);
         for (String command : List.of("addattendance", "deleteattendance")) {
             Command parsed = parser.parseCommand(command + " 1" + ARGUMENTS);
-            assertThrows(CommandException.class, Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX, () ->
+            assertThrows(CommandException.class, Messages.getInvalidStudentIndexMessage(
+                        Index.fromOneBased(1), model.getFilteredPersonList().size()), () ->
                     parsed.execute(model));
         }
         assertEquals(List.of(), model.getAttendanceList());
@@ -57,7 +59,8 @@ public class AttendanceIndexTest {
         model.updateFilteredPersonList(ALICE::equals);
         for (String command : List.of("addattendance", "deleteattendance")) {
             Command parsed = parser.parseCommand(command + " 2" + ARGUMENTS);
-            assertThrows(CommandException.class, Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX, () ->
+            assertThrows(CommandException.class, Messages.getInvalidStudentIndexMessage(
+                        Index.fromOneBased(2), model.getFilteredPersonList().size()), () ->
                     parsed.execute(model));
         }
         assertEquals(List.of(), model.getAttendanceList());
@@ -122,13 +125,15 @@ public class AttendanceIndexTest {
         model.updateFilteredAcademicClassList(otherClass::equals);
         for (String command : List.of("addattendance", "deleteattendance")) {
             Command parsed = parser.parseCommand(command + " 2 2 d/2024-02-29");
-            assertThrows(CommandException.class, Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX, () ->
+            assertThrows(CommandException.class, Messages.getInvalidClassIndexMessage(
+                        Index.fromOneBased(2), model.getFilteredAcademicClassList().size()), () ->
                     parsed.execute(model));
         }
         model.updateFilteredAcademicClassList(unused -> false);
         for (String command : List.of("addattendance", "deleteattendance")) {
             Command parsed = parser.parseCommand(command + " 2 1 d/2024-02-29");
-            assertThrows(CommandException.class, Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX, () ->
+            assertThrows(CommandException.class, Messages.getInvalidClassIndexMessage(
+                        Index.fromOneBased(1), model.getFilteredAcademicClassList().size()), () ->
                     parsed.execute(model));
         }
         assertEquals(List.of(), model.getAttendanceList());

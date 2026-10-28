@@ -5,9 +5,13 @@ import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.StringUtil;
@@ -25,10 +29,35 @@ import seedu.address.model.tag.Tag;
  */
 public class ParserUtil {
 
-    public static final String MESSAGE_INVALID_INDEX = "Index must be a positive integer.";
-    public static final String MESSAGE_INVALID_POSITIVE_INTEGER = "Value must be a positive integer.";
+    public static final String MESSAGE_INVALID_INDEX = "Index must be a whole number from 1 to 2147483647.";
+    public static final String MESSAGE_INVALID_POSITIVE_INTEGER =
+            "Attendance threshold t/ must be a whole number from 1 to 2147483647. Example: t/5.";
     public static final String MESSAGE_INVALID_ATTENDANCE_DATE =
             "Attendance date must be a valid date in YYYY-MM-DD format with a year from 0001 to 9999.";
+
+    private static final Pattern PREFIX_PATTERN = Pattern.compile("(?<=\\s)([^\\s/]+/)");
+
+    /** Rejects unsupported space-prefixed fields before they can be interpreted as field values. */
+    public static void rejectUnknownPrefixes(String args, Prefix... allowedPrefixes) throws ParseException {
+        requireNonNull(args);
+        Set<String> allowed = Arrays.stream(allowedPrefixes).map(Prefix::toString).collect(Collectors.toSet());
+        String supported = Arrays.stream(allowedPrefixes).map(Prefix::toString).collect(Collectors.joining(", "));
+        Matcher matcher = PREFIX_PATTERN.matcher(" " + args);
+        while (matcher.find()) {
+            if (!allowed.contains(matcher.group(1))) {
+                throw new ParseException("Unknown parameter: " + matcher.group(1)
+                        + ". Supported parameters: " + supported + ".");
+            }
+        }
+    }
+
+    /** Reports the missing field using its command-input prefix and placeholder. */
+    public static void requirePrefix(ArgumentMultimap arguments, Prefix prefix, String placeholder)
+            throws ParseException {
+        if (arguments.getValue(prefix).isEmpty()) {
+            throw new ParseException("Missing required parameter: " + prefix + placeholder);
+        }
+    }
 
     /**
      * Parses an attendance date, trimming outer whitespace without normalizing invalid dates.
