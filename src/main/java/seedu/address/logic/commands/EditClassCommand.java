@@ -49,6 +49,8 @@ public class EditClassCommand extends Command {
     private final EditClassDescriptor editClassDescriptor;
 
     /**
+     * Creates a command with an independent copy of the supplied edit descriptor.
+     * 
      * @param index of the academic class in the displayed class list to edit
      * @param editClassDescriptor details to edit the class with
      */
