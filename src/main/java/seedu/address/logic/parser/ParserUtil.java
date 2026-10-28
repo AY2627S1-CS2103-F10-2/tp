@@ -75,10 +75,21 @@ public class ParserUtil {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, commandUsage));
         }
         try {
-            return new Index[] {parseIndex(indices[0]), parseIndex(indices[1])};
+            return new Index[] {parseDisplayedIndex(indices[0]), parseDisplayedIndex(indices[1])};
         } catch (ParseException e) {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, commandUsage), e);
         }
+    }
+
+    /**
+     * Parses a displayed index, treating a positive integer too large for an {@code int} as an index that is
+     * out of range, so the command reports the standard invalid-index error rather than a format error.
+     */
+    private static Index parseDisplayedIndex(String oneBasedIndex) throws ParseException {
+        if (oneBasedIndex.matches("[1-9][0-9]*") && !StringUtil.isNonZeroUnsignedInteger(oneBasedIndex)) {
+            return Index.fromOneBased(Integer.MAX_VALUE);
+        }
+        return parseIndex(oneBasedIndex);
     }
 
     /** Parses a positive integer. */
