@@ -101,6 +101,8 @@ public class ParserUtil {
      * Parses a {@code String name} into a {@code Name}.
      * Leading and trailing whitespaces will be trimmed.
      * Backslashes in the extracted field represent forward slashes in the stored name.
+     * Conversion is performed on the extracted field so input such as {@code n\Alias}
+     * remains part of the name rather than becoming an {@code n/} field prefix.
      *
      * @throws ParseException if the given {@code name} is invalid.
      */
