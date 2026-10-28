@@ -48,6 +48,7 @@ public class Person {
 
     /**
      * Returns true if this person has the given student number, ignoring case.
+     *
      * @throws NullPointerException if {@code studentNumber} is null.
      */
     public boolean hasStudentNumber(StudentNumber studentNumber) {

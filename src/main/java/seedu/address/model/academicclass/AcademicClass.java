@@ -70,6 +70,7 @@ public class AcademicClass implements StudentObserver {
     /**
      * Assigns the given student to this class.
      * Returns true if membership was added, or false if the student was already assigned.
+     *
      * @throws NullPointerException if {@code person} is null.
      */
     public boolean assignStudent(Person person) {
