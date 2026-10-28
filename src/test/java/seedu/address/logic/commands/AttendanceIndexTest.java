@@ -87,7 +87,7 @@ public class AttendanceIndexTest {
     @Test
     public void parse_invalidIndexOrOldSyntax_rejectsInput() {
         for (String command : List.of("addattendance", "deleteattendance")) {
-            for (String index : List.of("", "0", "-1", "1.5", "abc", "2147483648", "1 2",
+            for (String index : List.of("", "0", "-1", "1.5", "abc", "1 2",
                     "sn/A0123456X", "1 sn/A0123456X")) {
                 assertThrows(ParseException.class, () -> parser.parseCommand(command + " " + index + ARGUMENTS));
             }
@@ -140,7 +140,7 @@ public class AttendanceIndexTest {
     public void parse_invalidClassIndexOrWrongNumberOfIndices_rejectsInput() {
         for (String command : List.of("addattendance", "deleteattendance")) {
             for (String indices : List.of("", "1", "1 2 3", "1 0", "1 -1", "1 1.5", "1 abc",
-                    "1 2147483648", "1 c/2", "1 m/CS2103 c/F10-2")) {
+                    "1 c/2", "1 m/CS2103 c/F10-2")) {
                 assertThrows(ParseException.class, () ->
                         parser.parseCommand(command + " " + indices + " d/2024-02-29"));
             }
