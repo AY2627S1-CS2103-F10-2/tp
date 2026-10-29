@@ -54,8 +54,8 @@ public class ReadOnlyListView<T> extends ListView<T> {
                 return;
             }
             switch (event.getCode()) {
-                case UP, KP_UP -> scrollToAdjacentRow(flow, first.getIndex() - 1);
-                case DOWN, KP_DOWN -> scrollToAdjacentRow(flow, first.getIndex() + 1);
+                case UP, KP_UP -> scrollUpOneRow(flow, first);
+                case DOWN, KP_DOWN -> flow.scrollPixels(first.getHeight());
                 case PAGE_UP -> flow.scrollPixels(-flow.getHeight());
                 case PAGE_DOWN -> flow.scrollPixels(flow.getHeight());
                 case HOME -> flow.scrollToTop(0);
@@ -67,13 +67,15 @@ public class ReadOnlyListView<T> extends ListView<T> {
             event.consume();
         }
 
-        private void scrollToAdjacentRow(VirtualFlow<ListCell<T>> flow, int targetIndex) {
-            int lastIndex = ReadOnlyListView.this.getItems().size() - 1;
-            if (lastIndex < 0) {
-                return;
+        private void scrollUpOneRow(VirtualFlow<ListCell<T>> flow, ListCell<T> first) {
+            int firstIndex = first.getIndex();
+            flow.scrollPixels(-first.getHeight());
+            flow.layout();
+            ListCell<T> updatedFirst = flow.getFirstVisibleCell();
+            // A partially visible first row may survive the pixel scroll; expose the preceding row in that case.
+            if (firstIndex > 0 && updatedFirst != null && updatedFirst.getIndex() >= firstIndex) {
+                flow.scrollToTop(firstIndex - 1);
             }
-            int boundedIndex = Math.max(0, Math.min(targetIndex, lastIndex));
-            flow.scrollToTop(boundedIndex);
         }
 
         private void scrollToEnd() {
