@@ -754,12 +754,12 @@ Furthermore, certain edits can cause TAssist to behave in unexpected ways (e.g.,
    1. Keep that session open and do not retry the failed command yet. The restored data in memory can be used
       to recover the saved file. Back up the existing file before attempting recovery, and retain any earlier
       known-good backup separately.
-   1. Resolve the cause of the error, such as missing write permission or insufficient disk space, while keeping
+   2. Resolve the cause of the error, such as missing write permission or insufficient disk space, while keeping
       the JAR and its data file at their current paths.
-   1. Run `list` in the same session. It shows all students and attempts to save the restored data, including
+   3. Run `list` in the same session. It shows all students and attempts to save the restored data, including
       classes and attendance. If another save error appears, recovery has not succeeded; resolve the storage
       problem before trying again. Do not use `exit` as a recovery command.
-   1. After `list` completes without a save error, the restored data has been written to the file. Check the
+   4. After `list` completes without a save error, the restored data has been written to the file. Check the
       displayed indices before re-entering the intended command: `list` clears the active student filter.
 
    If TAssist has already closed, do not rely on `list` to recover the previous session's data. Restore a
