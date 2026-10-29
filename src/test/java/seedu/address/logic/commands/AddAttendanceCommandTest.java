@@ -223,7 +223,7 @@ public class AddAttendanceCommandTest {
 
     @Test
     public void toString_containsTargetAndDate() {
-        String expected = AddAttendanceCommand.class.getCanonicalName() + "{index="
+        String expected = AddAttendanceCommand.class.getCanonicalName() + "{studentIndex="
                 + Index.fromOneBased(2) + ", classIndex=" + Index.fromOneBased(1) + ", date=2024-02-29}";
         assertEquals(expected, command(DATE).toString());
     }
