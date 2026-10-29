@@ -73,6 +73,20 @@ public class NameContainsKeywordsPredicateTest {
     }
 
     @Test
+    public void test_punctuatedNames_requiresWholeWordIncludingPunctuation() {
+        Person person = new PersonBuilder().withName("Anne-Marie O'Connor, Jr. (Alex) S/O Tan").build();
+        for (String keyword : List.of("anne-marie", "o'connor,", "jr.", "(alex)", "s/o", "tan")) {
+            assertTrue(new NameContainsKeywordsPredicate(List.of(keyword)).test(person), keyword);
+        }
+        for (String keyword : List.of("Anne", "Marie", "O'Connor", "Jr", "Alex", "S", "O")) {
+            assertFalse(new NameContainsKeywordsPredicate(List.of(keyword)).test(person), keyword);
+        }
+        Person commaName = new PersonBuilder().withName("John Tan, Jr. (Alex)").build();
+        assertFalse(new NameContainsKeywordsPredicate(List.of("Tan")).test(commaName));
+        assertTrue(new NameContainsKeywordsPredicate(List.of("Tan,")).test(commaName));
+    }
+
+    @Test
     public void toStringMethod() {
         List<String> keywords = List.of("keyword1", "keyword2");
         NameContainsKeywordsPredicate predicate = new NameContainsKeywordsPredicate(keywords);

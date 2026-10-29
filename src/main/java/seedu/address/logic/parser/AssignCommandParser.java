@@ -12,7 +12,7 @@ public class AssignCommandParser implements Parser<AssignCommand> {
     /**
      * Parses exactly two positive displayed indices and creates an assign command.
      *
-     * @throws ParseException if the arguments do not conform to the expected format
+     * @throws ParseException if the arguments do not conform to the expected format.
      */
     @Override
     public AssignCommand parse(String args) throws ParseException {

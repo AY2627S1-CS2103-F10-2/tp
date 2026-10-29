@@ -31,7 +31,7 @@ public class PersonUtil {
     public static String getPersonDetails(Person person) {
         StringBuilder sb = new StringBuilder();
         sb.append(PREFIX_STUDENT_NUMBER + person.getStudentNumber().value + " ");
-        sb.append(PREFIX_NAME + person.getName().fullName + " ");
+        sb.append(PREFIX_NAME + person.getName().fullName.replace('/', '\\') + " ");
         sb.append(PREFIX_EMAIL + person.getEmail().value + " ");
         person.getTelegram().ifPresent(telegram -> sb.append(PREFIX_TELEGRAM + telegram.value + " "));
         person.getTags().stream().forEach(
@@ -47,7 +47,8 @@ public class PersonUtil {
         StringBuilder sb = new StringBuilder();
         descriptor.getStudentNumber().ifPresent(studentNumber ->
                 sb.append(PREFIX_STUDENT_NUMBER).append(studentNumber.value).append(" "));
-        descriptor.getName().ifPresent(name -> sb.append(PREFIX_NAME).append(name.fullName).append(" "));
+        descriptor.getName().ifPresent(name ->
+                sb.append(PREFIX_NAME).append(name.fullName.replace('/', '\\')).append(" "));
         descriptor.getEmail().ifPresent(email -> sb.append(PREFIX_EMAIL).append(email.value).append(" "));
         if (descriptor.isTelegramEdited()) {
             sb.append(PREFIX_TELEGRAM);

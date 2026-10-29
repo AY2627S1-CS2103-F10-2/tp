@@ -82,6 +82,7 @@ public interface Model {
     /**
      * Finds the stored person by student number across the full address book, regardless of the current filter.
      * Returns an empty optional if no person matches. Does not change the current filter.
+     *
      * @throws NullPointerException if {@code studentNumber} is null.
      */
     Optional<Person> findPersonByStudentNumber(StudentNumber studentNumber);
@@ -169,6 +170,7 @@ public interface Model {
      * Both arguments must be the actual objects stored in this address book.
      * Returns true if membership was added, or false if already assigned.
      * Does not change the current person filter or displayed order.
+     *
      * @throws NullPointerException if either argument is null.
      */
     boolean assignStudentToClass(Person person, AcademicClass academicClass);

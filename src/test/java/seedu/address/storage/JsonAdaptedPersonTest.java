@@ -16,8 +16,10 @@ import org.junit.jupiter.api.Test;
 import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.model.person.Email;
 import seedu.address.model.person.Name;
+import seedu.address.model.person.Person;
 import seedu.address.model.person.StudentNumber;
 import seedu.address.model.person.Telegram;
+import seedu.address.testutil.PersonBuilder;
 
 public class JsonAdaptedPersonTest {
     private static final String INVALID_STUDENT_NUMBER = "A01 23456X";
@@ -73,6 +75,25 @@ public class JsonAdaptedPersonTest {
         JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_STUDENT_NUMBER, INVALID_NAME, VALID_EMAIL,
                 VALID_TELEGRAM, VALID_TAGS);
         String expectedMessage = Name.MESSAGE_CONSTRAINTS;
+        assertThrows(IllegalValueException.class, expectedMessage, person::toModelType);
+    }
+
+    @Test
+    public void toModelType_nameWithForwardSlash_preservesStoredName() throws Exception {
+        Person expected = new PersonBuilder(BENSON).withName("Ravi S/O Kumar").build();
+        assertEquals(expected, new JsonAdaptedPerson(expected).toModelType());
+    }
+
+    @Test
+    public void toModelType_nameWithBackslash_explainsStoredNameFormat() {
+        JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_STUDENT_NUMBER, "Ravi S\\O Kumar", VALID_EMAIL,
+                VALID_TELEGRAM, VALID_TAGS);
+        String expectedMessage = "Names must contain at least one letter (A-Z, a-z) or digit (0-9). "
+                + "Spaces are allowed.\n"
+                + "Allowed punctuation: hyphen (-), straight apostrophe ('), period (.), comma (,), "
+                + "parentheses ( ), and forward slash (/).\n"
+                + "Stored names must use / rather than \\. "
+                + "Non-ASCII characters and other punctuation are not allowed.";
         assertThrows(IllegalValueException.class, expectedMessage, person::toModelType);
     }
 
