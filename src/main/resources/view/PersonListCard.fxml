@@ -16,12 +16,12 @@
       <Label fx:id="studentNumber" styleClass="cell_small_label, student-identifier" minWidth="0" wrapText="true" />
       <Label fx:id="email" styleClass="cell_small_label" minWidth="0" maxWidth="Infinity" wrapText="true" />
       <Label fx:id="telegram" styleClass="cell_small_label" minWidth="0" maxWidth="Infinity" wrapText="true" />
-    </FlowPane>
-    <FlowPane fx:id="tags" minWidth="0" prefWrapLength="280">
+    </WrappingFlowPane>
+    <WrappingFlowPane fx:id="tags" minWidth="0" prefWrapLength="280">
       <VBox.margin>
         <Insets top="2" />
       </VBox.margin>
-    </FlowPane>
+    </WrappingFlowPane>
     <VBox fx:id="attendanceSection" spacing="5" minWidth="0" visible="false" managed="false"
           styleClass="attendance-section">
       <Label fx:id="attendance" styleClass="attendance-summary, cell_small_label"
