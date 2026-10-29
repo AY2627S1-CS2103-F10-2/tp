@@ -193,6 +193,8 @@ Format: `listbyclass INDEX [t/THRESHOLD]`
 * An existing class with no matching students shows an empty student list and a count of zero.
 * Deleting the class currently being displayed empties the student list without deleting student records.
   If you recreate the class, subsequent assignments update this view using the new class membership.
+  If you rename another class to the deleted class's module code and class name, the student list immediately
+  shows that class's members in alphabetical order, subject to any active attendance threshold.
 * Renaming the class currently being displayed with `editclass` preserves both the class view and any active `t/THRESHOLD` attendance filter.
 * This command changes only the displayed student list, not student records, class memberships, or the class list.
 * Use `list` to show all students again. `list` and `find` display results in their original insertion order.
