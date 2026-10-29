@@ -120,7 +120,14 @@ Format: `add sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM] [t/TAG]... `
 </box>
 
 * `STUDENT_NUMBER` must contain 5 to 20 letters or digits, with no spaces or special characters. It is stored and displayed in uppercase, and must be unique.
-* `NAME` must contain only letters, digits, and spaces, and must start with a letter or digit. Leading and trailing spaces are removed.
+* `NAME` must contain at least one ASCII letter (`A`–`Z`, `a`–`z`) or digit (`0`–`9`). Leading and trailing spaces are removed.
+  It accepts spaces, hyphens (`-`), straight apostrophes (`'`), periods (`.`), commas (`,`), and parentheses (`(` and `)`).
+  For example, `Anne-Marie Tan`, `Sean O'Connor`, `J. K. Tan`, `John Tan, Jr.`, and `Tan Wei Ming (Alex)` are valid names.
+* To include a forward slash in a name, type **one backslash** (`\`) in its place: `n/Ravi S\O Kumar` is stored and displayed as `Ravi S/O Kumar`.
+  Use this form in both `add` and `edit`; literal forward slashes (`/`) in name input are rejected.
+  Backslashes represent slashes and cannot be stored as literal backslashes in a name.
+* Curly apostrophes (`’`), middle dots (`·`), accented letters (such as `é`), other scripts, and unlisted punctuation are rejected.
+  Use a straight apostrophe (`'`) rather than a curly one. Blank names and names consisting only of punctuation are also rejected.
 * `EMAIL` must be in the format `local-part@domain`, with no spaces. Email comparisons are case-insensitive for duplicate checks.
 * `TELEGRAM`, if provided, may start with `@`. After removing `@`, it must contain 5 to 32 letters, digits, or underscores. It must be unique, ignoring case.
 * Parameters can be supplied in any order.
@@ -131,6 +138,8 @@ Examples:
 * `add sn/A0123456X n/Alice Tan e/alice@u.nus.edu tg/alice_tan`
 * `add sn/A0234567Y n/Benjamin Lim e/benjamin@u.nus.edu`
 * `add e/chloe@u.nus.edu sn/A0345678Z tg/@chloe_ng n/Chloe Ng`
+* `add sn/A0800001X n/Anne-Marie O'Connor e/anne@example.com`
+* `add sn/A0800002X n/Ravi S\O Kumar e/ravi@example.com` stores and displays the name as `Ravi S/O Kumar`.
 
 Expected output:
 * `New student added: Alice Tan; Student Number: A0123456X; Email: alice@u.nus.edu; Telegram: @alice_tan`
@@ -140,7 +149,12 @@ Common errors:
 * Duplicate email: `A student with this email already exists.`
 * Duplicate Telegram username: `A student with this Telegram username already exists.`
 * Invalid student number: `Invalid student number. Student numbers must contain 5–20 letters or digits with no spaces.`
-* Invalid name: `Names should only contain alphanumeric characters and spaces, and should not be blank`
+* Invalid name:
+  ```text
+  Names must contain at least one letter (A-Z, a-z) or digit (0-9). Spaces are allowed.
+  Allowed punctuation: hyphen (-), straight apostrophe ('), period (.), comma (,), parentheses ( ), and backslash (\).
+  Enter \ instead of /; it is stored and displayed as /. Non-ASCII characters and other punctuation are not allowed.
+  ```
 * Invalid Telegram username: `Invalid Telegram username. Usernames must contain 5–32 letters, digits, or underscores.`
 
 ### Listing all students: `list`
@@ -458,6 +472,7 @@ Format: `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]
 * To remove all of a student's tags, enter `t/` without a tag after it.
 * To remove a student's Telegram username, enter `tg/` without a username after it. Omitting `tg/` keeps the existing username.
 * Student number, email, and Telegram username must remain unique after editing.
+* Names follow the same character rules as [`add`](#adding-a-student-add). Use `\` for a displayed `/`, for example `edit 1 n/Ravi S\O Kumar`.
 * Editing keeps the current student filter, sorting, and attendance display. A student who no longer matches a `find` search disappears from its results; changing a name in a `listbyclass` view may change their alphabetical position.
 * Editing a student number preserves their class memberships and attendance history. Any active attendance threshold still applies.
 * Check the displayed indexes again before your next command, as an edit may change which students are shown and their indexes. Use `list` to show all students.
@@ -532,6 +547,9 @@ Format: `find KEYWORD [MORE_KEYWORDS]`
 * Keyword order does not matter; for example, `Hans Bo` matches `Bo Hans`.
 * The search considers only names.
 * Only full words match; for example, `Han` does not match `Hans`.
+* Punctuation remains part of a word: use `Anne-Marie` rather than `Anne` to match `Anne-Marie`, or `O'Connor` to match `O'Connor`.
+  For `John Tan, Jr. (Alex)`, search with `Tan,` or `(Alex)`; `Tan` and `Alex` do not match those words.
+* For a displayed slash, either input form works in searches: `find S\O` and `find S/O` both match the word `S/O`.
 * Students matching at least one keyword are returned (an `OR` search); for example, `Hans Bo` returns `Hans Gruber` and `Bo Yang`.
 
 Examples:
@@ -674,6 +692,11 @@ If the destination already contains data, choose which file to keep before repla
 ### Editing the data file
 
 TAssist data is saved automatically as a JSON file `[JAR file location]/data/addressbook.json`. Advanced users are welcome to update data directly by editing that data file.
+
+Close TAssist before editing the file. Student names in JSON use their displayed spelling, including
+forward slashes: for example, `"name": "Ravi S/O Kumar"`. The backslash convention applies only to
+command input; a literal backslash in a stored name is invalid, even if correctly escaped in JSON.
+The other [student name rules](#adding-a-student-add) still apply.
 
 <box type="warning" seamless>
 
