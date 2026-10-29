@@ -689,8 +689,8 @@ For example, running `java -jar "C:\TAssist\TAssist.jar"` from another folder st
 | `tassist.lock` | Prevents simultaneous launches from the same application folder |
 
 Keep the JAR in a writable folder. If a save fails, TAssist does not redirect your data to another folder.
-Changes may still appear on screen even though they were not saved. Stop entering commands and follow the
-recovery instructions in [Known issues](#known-issues) before retrying.
+Failed commands are rolled back in memory, but a write interrupted partway through can leave the saved file
+incomplete. Follow the recovery instructions in [Known issues](#known-issues) before closing or retrying.
 Separate JAR folders use separate data and preferences; copying only the JAR does not copy your records.
 When running from an IDE or with Gradle, files remain relative to the working directory.
 
@@ -741,21 +741,26 @@ Furthermore, certain edits can cause TAssist to behave in unexpected ways (e.g.,
   and ensure the copied data file is writable too. If a command has already reported a save error, follow the
   recovery steps below first.
 
-* **A failed save can leave changes on screen:** A command can change the running application's data before
-  saving fails. For example, `delete 1` may report a save error but still remove the first student from the
-  displayed list. Retrying `delete 1` can then target a different student. A later successful command can save
-  the earlier changes too, even though they originally produced an error.
+* **A failed save may leave an incomplete data file:** TAssist rolls back the failed command's changes in
+  memory, so the student records, class memberships and attendance in the running app return to their previous
+  state. However, if writing stops partway through, `data/addressbook.json` may be incomplete. Rolling back
+  the running app does not repair that file. A write denied before it starts leaves the previous file unchanged.
 
-  After a save error:
-  1. Stop entering commands, including `list` or `exit`, because commands can attempt another save.
-  1. Close TAssist using the main window's close button. This discards changes held only in memory; it does not
-     save student or class data.
-  1. Back up the existing `data/addressbook.json` before changing permissions or moving files. For a permission
-     failure like the one above, the previous saved file remains unchanged. Other storage failures may require
-     recovery from an earlier backup.
-  1. Resolve the storage problem, reopen TAssist, and check the loaded records and displayed indices before
-     re-entering any intended changes. If records are missing or the data cannot be loaded, close the app without
-     entering commands and restore a known-good backup first.
+  If saving fails while TAssist is still open:
+  1. Keep that session open and do not retry the failed command yet. The restored data in memory can be used
+     to recover the saved file. Back up the existing file before attempting recovery, and retain any earlier
+     known-good backup separately.
+  1. Resolve the cause of the error, such as missing write permission or insufficient disk space, while keeping
+     the JAR and its data file at their current paths.
+  1. Run `list` in the same session. It shows all students and attempts to save the restored data, including
+     classes and attendance. If another save error appears, recovery has not succeeded; resolve the storage
+     problem before trying again. Do not use `exit` as a recovery command.
+  1. After `list` completes without a save error, the restored data has been written to the file. Check the
+     displayed indices before re-entering the intended command: `list` clears the active student filter.
+
+  If TAssist has already closed, do not rely on `list` to recover the previous session's data. Restore a
+  known-good backup before launching again. If the app has restarted with missing or empty records, close it
+  without entering commands, then restore the backup; saving that empty state could overwrite the damaged file.
 
 --------------------------------------------------------------------------------------------------------------------
 
