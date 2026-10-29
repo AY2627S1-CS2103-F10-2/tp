@@ -83,6 +83,9 @@ public interface Model {
      * Used to undo a failed command.
      * A {@code Rollback} is single-use: restoring adopts the saved objects, so restore it at most once and
      * create a new one for each command.
+     * Saved filter predicates are restored as-is. A predicate must capture immutable values only, because restoring
+     * replaces model objects and a captured object would still be the old one. Look objects up in the model by
+     * identity inside the predicate instead.
      */
     Rollback createRollback();
 
@@ -223,6 +226,7 @@ public interface Model {
     /**
      * Updates the person filter and displays matching persons alphabetically by name.
      * Leaves the stored person records and their order unchanged.
+     * The predicate must capture immutable values only; see {@link #createRollback()}.
      * @throws NullPointerException if {@code predicate} is null.
      */
     void updateFilteredPersonListAlphabetically(Predicate<Person> predicate);
