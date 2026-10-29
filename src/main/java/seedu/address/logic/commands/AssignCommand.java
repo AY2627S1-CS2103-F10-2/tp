@@ -11,7 +11,9 @@ import seedu.address.model.Model;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.person.Person;
 
-/** Assigns an existing student to an existing class. */
+/**
+ * Assigns an existing student to an existing class.
+ */
 public class AssignCommand extends Command {
     public static final String COMMAND_WORD = "assign";
     public static final String MESSAGE_USAGE = COMMAND_WORD + ": Assigns a student to a class.\n"

@@ -14,10 +14,10 @@ Class UserPrefs
 
 Class UniquePersonList
 Class Person
-Class Address
 Class Email
+Class StudentNumber
 Class Name
-Class Phone
+Class Telegram
 Class Tag
 
 Class UniqueAcademicClassList
@@ -40,10 +40,10 @@ UserPrefs .up.|> ReadOnlyUserPrefs
 
 AddressBook *--> "1" UniquePersonList
 UniquePersonList --> "*" Person : all
+Person *--> StudentNumber
 Person *--> Name
-Person *--> Phone
 Person *--> Email
-Person *--> Address
+Person *--> "0..1" Telegram
 Person *--> "*" Tag
 
 AddressBook *--> "1" UniqueAcademicClassList
@@ -54,9 +54,9 @@ AcademicClass "*" -right-> "*" Person : students
 
 UniqueAcademicClassList -[hidden]right-> UniquePersonList
 
-Name -[hidden]right-> Phone
-Phone -[hidden]right-> Address
-Address -[hidden]right-> Email
+StudentNumber -[hidden]right-> Name
+Name -[hidden]right-> Email
+Email -[hidden]right-> Telegram
 
 ModelManager --> "*" Person : filtered
 ModelManager --> "*" AcademicClass : filtered

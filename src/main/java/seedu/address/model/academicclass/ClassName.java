@@ -11,8 +11,10 @@ import java.util.Locale;
  */
 public class ClassName {
 
-    public static final String MESSAGE_EMPTY = "Class name cannot be empty";
-    public static final String MESSAGE_CONSTRAINTS = "Class names can only contain letters, digits, or '-'";
+    public static final String MESSAGE_EMPTY = "Class name cannot be empty. Examples: F01, F10-2, T24.";
+    public static final String MESSAGE_CONSTRAINTS = "Class name must contain at least one letter (A-Z, a-z) "
+            + "or digit (0-9), and may contain only letters, digits, and hyphens (-), with no spaces. "
+            + "Examples: F01, F10-2, T24.";
 
     /*
      * The class name must contain at least one alphanumeric character,

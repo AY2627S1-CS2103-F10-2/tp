@@ -38,7 +38,6 @@ import org.junit.jupiter.api.Test;
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.model.person.Email;
-import seedu.address.model.person.Name;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.StudentNumber;
 import seedu.address.model.person.Telegram;
@@ -192,7 +191,7 @@ public class AddCommandParserTest {
 
         // invalid name
         assertParseFailure(parser, STUDENT_NUMBER_DESC_BOB + INVALID_NAME_DESC + EMAIL_DESC_BOB
-                + TELEGRAM_DESC_BOB + TAG_DESC_HUSBAND + TAG_DESC_FRIEND, Name.MESSAGE_CONSTRAINTS);
+                + TELEGRAM_DESC_BOB + TAG_DESC_HUSBAND + TAG_DESC_FRIEND, ParserUtil.MESSAGE_NAME_CONSTRAINTS);
 
         // invalid email
         assertParseFailure(parser, STUDENT_NUMBER_DESC_BOB + NAME_DESC_BOB + INVALID_EMAIL_DESC
@@ -208,7 +207,7 @@ public class AddCommandParserTest {
 
         // two invalid values, only first invalid value reported
         assertParseFailure(parser, STUDENT_NUMBER_DESC_BOB + INVALID_NAME_DESC + EMAIL_DESC_BOB
-                + INVALID_TELEGRAM_DESC, Name.MESSAGE_CONSTRAINTS);
+                + INVALID_TELEGRAM_DESC, ParserUtil.MESSAGE_NAME_CONSTRAINTS);
 
         // non-empty preamble
         assertParseFailure(parser, PREAMBLE_NON_EMPTY + STUDENT_NUMBER_DESC_BOB + NAME_DESC_BOB + EMAIL_DESC_BOB
