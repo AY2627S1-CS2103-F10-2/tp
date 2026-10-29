@@ -928,6 +928,42 @@ testers are expected to do more *exploratory* testing.
 
 1. _{ more test cases … }_
 
+### Finding students by name
+
+1. Successful case-insensitive and multi-keyword search
+
+   1. Prerequisites: In a fresh data folder, add three students with distinct names, for example with
+      `add sn/A0999801X n/Alice Tan e/alice.tan@example.com`,
+      `add sn/A0999802Y n/Bob Tan e/bob.tan@example.com`, and
+      `add sn/A0999803Z n/Charlie Lim e/charlie.lim@example.com`. Run `list` so all students are displayed.
+   2. Test case: `find alice`<br>
+      Expected: Only Alice Tan is displayed, and the result count is 1. The match is case-insensitive.
+   3. Test case: `find Alice Bob`<br>
+      Expected: Alice Tan and Bob Tan are displayed. A student matching either keyword is included, and the results
+      remain in their original insertion order.
+   4. Test case: `find tan`<br>
+      Expected: Alice Tan and Bob Tan are displayed; Charlie Lim is not.
+
+1. Full-word matching and invalid input
+
+   1. Test case: `find ali`<br>
+      Expected: No student is displayed because `ali` is not a complete word in `Alice`.
+   2. Test case: `find alice@example.com` (or another value that appears only in a student's email)<br>
+      Expected: No student is displayed unless that value is also a word in a student's name; only names are
+      searched.
+   3. Test case: `find`<br>
+      Expected: Invalid-command feedback is shown and the current student list remains unchanged.
+   4. Test case: `find   Alice    Bob`<br>
+      Expected: The command behaves like `find Alice Bob`; extra whitespace does not add keywords.
+
+1. Reset and persistence
+
+   1. Test case: `list`<br>
+      Expected: All students are displayed again in insertion order. The class list is unchanged.
+   2. Close and reopen the app.<br>
+      Expected: Student records remain saved, but the previous `find` filter is not restored; the default student
+      view is shown.
+
 ### Deleting and editing academic classes
 
 Use a disposable application folder. Repeat this setup before each subsection below;
