@@ -37,6 +37,7 @@ AddressBookParser -> Parser : parse(args)
 activate Parser
 note right of Parser
 ParserUtil.parseIndex(args) produces index.
+An optional t/THRESHOLD produces threshold.
 end note
 create Command
 Parser -> Command : ListByClassCommand(index)
@@ -59,21 +60,12 @@ Check index against lastShownList.size().
 academicClass = lastShownList.get(index.getZeroBased()).
 end note
 
-Command -> Model : filterPersonsByClass(academicClass)
+Command -> Model : filterPersonsByClassAndDisplayAttendance(academicClass, threshold)
 activate Model
 note right of Model
-Filter students by class membership
-and sort by name.
-The class view is unchanged.
-end note
-Model --> Command
-deactivate Model
-
-Command -> Model : setAttendanceDisplayClass(academicClass)
-activate Model
-note right of Model
-Set the class used to display attendance
-and refresh the student view.
+Filter students by class membership and optional
+attendance threshold, sort by name, and select
+the class used to display attendance.
 end note
 Model --> Command
 deactivate Model
