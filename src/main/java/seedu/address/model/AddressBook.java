@@ -53,6 +53,19 @@ public class AddressBook implements ReadOnlyAddressBook {
         resetData(toBeCopied);
     }
 
+    /**
+     * Returns a copy sharing no persons, classes, attendance records or their
+     * fields with this address book.
+     */
+    public AddressBook deepCopy() {
+        AddressBook copy = new AddressBook();
+        copy.setAcademicClasses(academicClasses.deepCopy());
+        copy.setPersons(persons.deepCopy());
+        copy.setAttendance(getAttendanceList());
+        copy.setCommandHistory(commandHistory);
+        return copy;
+    }
+
     @Override
     public List<String> getCommandHistory() {
         return List.copyOf(commandHistory);

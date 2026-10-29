@@ -209,7 +209,7 @@ Examples:
 
 The result message includes the student count and class (and the threshold when specified), for example:
 * `Listed 2 students taking CS2103 (F10-2).`
-* `Listed 1 students taking CS2103 (F10-2) with fewer than 5 recorded attendance dates.`
+* `Listed 1 student taking CS2103 (F10-2) with fewer than 5 recorded attendance dates.`
 
 Classes created with `addclass` start empty. Use `assign STUDENT_INDEX CLASS_INDEX`
 to assign an existing student before listing the class. Memberships are saved across restarts.
@@ -676,7 +676,7 @@ Format: `exit`
 
 TAssist automatically saves data after every successful command. You do not need to save manually.
 
-Data is saved to `[JAR file location]/data/addressbook.json`. If TAssist cannot save the data, it displays an error such as `Could not save data due to the following error: ...` or `Could not save data to file ... due to insufficient permissions to write to the file or the folder.`
+Data is saved to `[JAR file location]/data/addressbook.json`. If TAssist cannot save the data, it displays an error such as `Could not save data due to the following error: ...` or `Could not save data to file ... due to insufficient permissions to write to the file or the folder.` In either case, the command's changes are rolled back in TAssist, so the data you see is unchanged.
 
 The JAR file location means the **folder containing `TAssist.jar`**, not the terminal's current folder.
 For example, running `java -jar "C:\TAssist\TAssist.jar"` from another folder still uses `C:\TAssist\data\addressbook.json`.
