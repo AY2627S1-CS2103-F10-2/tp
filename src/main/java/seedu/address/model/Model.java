@@ -227,6 +227,7 @@ public interface Model {
      * Updates the person filter and displays matching persons alphabetically by name.
      * Leaves the stored person records and their order unchanged.
      * The predicate must capture immutable values only; see {@link #createRollback()}.
+     *
      * @throws NullPointerException if {@code predicate} is null.
      */
     void updateFilteredPersonListAlphabetically(Predicate<Person> predicate);
