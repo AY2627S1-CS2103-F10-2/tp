@@ -95,7 +95,7 @@ public class PersonListPanelTest {
             assertNotNull(cell.getGraphic());
             Label attendance = (Label) cell.getGraphic().lookup("#attendance");
             assertTrue(attendance.isVisible());
-            assertEquals("No attendance recorded", attendance.getText());
+            assertEquals("Attendance · 0 days", attendance.getText());
         });
     }
 
@@ -115,17 +115,17 @@ public class PersonListPanelTest {
                     model::getAttendanceDisplayClass, model::getAttendanceList);
             PersonListPanel.PersonListViewCell displayedCell = panel.new PersonListViewCell();
             displayedCell.updateItem(ALICE, false);
-            assertEquals("No attendance recorded", ((Label) displayedCell.getGraphic()
+            assertEquals("Attendance · 0 days", ((Label) displayedCell.getGraphic()
                     .lookup("#attendance")).getText());
 
             model.getFilteredPersonList().addListener((ListChangeListener<Person>) change ->
                     displayedCell.updateItem(ALICE, false));
 
             assertTrue(model.addAttendance(ALICE, academicClass, LocalDate.of(2020, 1, 1)));
-            assertEquals("2020-01-01", ((Label) displayedCell.getGraphic().lookup("#attendance")).getText());
+            assertEquals("Attendance · 1 day", ((Label) displayedCell.getGraphic().lookup("#attendance")).getText());
 
             assertTrue(model.removeAttendance(ALICE, academicClass, LocalDate.of(2020, 1, 1)));
-            assertEquals("No attendance recorded", ((Label) displayedCell.getGraphic()
+            assertEquals("Attendance · 0 days", ((Label) displayedCell.getGraphic()
                     .lookup("#attendance")).getText());
         });
     }
@@ -167,10 +167,10 @@ public class PersonListPanelTest {
             List<PersonListPanel.PersonListViewCell> renderedAfterRename = getRenderedNonEmptyCells(panel);
             assertEquals(2, renderedAfterRename.size());
             assertEquals("Alice Pauline", getCardLabelText(renderedAfterRename.get(0), "#name"));
-            assertEquals("2024-01-01, 2024-01-02, 2024-01-03, 2024-01-04",
+            assertEquals("Attendance · 4 days",
                     getCardLabelText(renderedAfterRename.get(0), "#attendance"));
             assertEquals("Daniel Meier", getCardLabelText(renderedAfterRename.get(1), "#name"));
-            assertEquals("No attendance recorded",
+            assertEquals("Attendance · 0 days",
                     getCardLabelText(renderedAfterRename.get(1), "#attendance"));
 
             AcademicClass renamedClass = model.getAcademicClassList().getFirst();
@@ -179,7 +179,7 @@ public class PersonListPanelTest {
             assertTrue(model.addAttendance(DANIEL, renamedClass, LocalDate.of(2024, 2, 1)));
             List<PersonListPanel.PersonListViewCell> renderedAfterDanielAttendance = getRenderedNonEmptyCells(panel);
             assertEquals(2, renderedAfterDanielAttendance.size());
-            assertEquals("2024-02-01",
+            assertEquals("Attendance · 1 day",
                     getCardLabelText(renderedAfterDanielAttendance.get(1), "#attendance"));
 
             // Crossing threshold removes ALICE and re-renders remaining cells

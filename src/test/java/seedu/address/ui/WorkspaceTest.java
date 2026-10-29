@@ -121,9 +121,10 @@ public class WorkspaceTest {
                 assertEquals(studentName.getFont(), className.getFont());
                 assertEquals(studentName.getFont(), moduleCode.getFont());
                 assertEquals(14, studentName.getFont().getSize());
-                for (String detail : List.of("id", "studentNumber", "email", "telegram", "attendance")) {
+                for (String detail : List.of("id", "studentNumber", "email", "telegram")) {
                     assertNormalCardFont((Label) students.lookup("#" + detail));
                 }
+                assertAttendanceFont((Label) students.lookup("#attendance"));
                 for (Node tag : students.lookup("#tags").lookupAll(".label")) {
                     assertNormalCardFont((Label) tag);
                 }
@@ -402,14 +403,14 @@ public class WorkspaceTest {
                 execute(input, "listbyclass 1");
                 assertEquals(List.of(ALICE, BENSON), students.getItems());
                 layout(stage);
-                assertLabelExists(students, "2020-01-01, 2020-01-02");
-                assertLabelExists(students, "No attendance recorded");
+                assertLabelExists(students, "Attendance · 2 days");
+                assertLabelExists(students, "Attendance · 0 days");
                 String classOutput = output.getText();
                 input.setText("listbyclass 2");
                 assertEquals(List.of(ALICE, BENSON), students.getItems());
                 assertEquals(classOutput, output.getText());
                 layout(stage);
-                assertLabelExists(students, "2020-01-01, 2020-01-02");
+                assertLabelExists(students, "Attendance · 2 days");
                 execute(input, "listbyclass 9999");
                 assertEquals(List.of(ALICE, BENSON), students.getItems());
                 assertTrue(input.getStyleClass().contains("error"));
@@ -420,11 +421,11 @@ public class WorkspaceTest {
                 execute(input, "listbyclass 1");
                 execute(input, "addattendance 2 1 d/2020-01-03");
                 layout(stage);
-                assertLabelExists(students, "2020-01-03");
+                assertLabelExists(students, "Attendance · 1 day");
                 capture(stage, "layout-attendance");
                 execute(input, "deleteattendance 2 1 d/2020-01-03");
                 layout(stage);
-                assertLabelExists(students, "No attendance recorded");
+                assertLabelExists(students, "Attendance · 0 days");
                 execute(input, "list");
                 execute(input, "listbystudent 3");
                 assertEquals(List.of(originalClasses.get(1)), classes.getItems());
@@ -712,6 +713,11 @@ public class WorkspaceTest {
     private static void assertNormalCardFont(Label label) {
         assertEquals(12, label.getFont().getSize(), label.getId());
         assertEquals(Font.font(label.getFont().getFamily(), FontWeight.NORMAL, 12), label.getFont(), label.getId());
+    }
+
+    private static void assertAttendanceFont(Label label) {
+        assertEquals(12, label.getFont().getSize(), label.getId());
+        assertEquals(Font.font(label.getFont().getFamily(), FontWeight.BOLD, 12), label.getFont(), label.getId());
     }
 
     private static void assertHeaders(Stage stage, int shownClasses, int totalClasses,
