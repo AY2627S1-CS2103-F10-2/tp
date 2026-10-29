@@ -1,7 +1,7 @@
 ---
   layout: default.md
   title: "TAssist User Guide"
-  pageNav: 3
+  pageNav: 4
 ---
 
 # TAssist User Guide
@@ -53,22 +53,6 @@ TAssist is a **desktop application for NUS Teaching Assistants who need to manag
 
 ## Features
 
-### Navigating the Students and Classes panels
-
-Click a panel's heading, a card, or the surrounding panel space to focus its list. A blue
-outline marks the focused list. Press **Up/Down** to scroll, **Page Up/Page Down** to move
-by a page, or **Home/End** to reach the beginning or end.
-
-From the command box, **Tab** moves through the result display, Students list, Classes list,
-and back to the command box. **Shift+Tab** moves in reverse. Scrolling does not select or
-change student or class records. Up/Down in the command box continues to browse command history.
-
-### Recalling previous commands
-
-In the command box, press **Up/Down** arrows to browse the latest **20 successful commands** across app sessions. History is saved automatically in the address book data file.
-
-Edits of past commands are kept while browsing and cleared when you submit a command. Failed input remains as your draft.
-
 <box type="info" seamless>
 
 **Notes about the command format:**<br>
@@ -97,18 +81,9 @@ Edits of past commands are kept while browsing and cleared when you submit a com
 * If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
 </box>
 
-### Viewing help: `help`
+### Student management
 
-Shows a message explaining how to access the help page.
-
-![help message](images/helpMessage.png)
-
-Format: `help`
-
-You can also open Help from the `Help` menu or by pressing `F1`. If the Help window is already open,
-these actions bring it to the front and restore it if it is minimized.
-
-### Adding a student: `add`
+#### Adding a student: `add`
 
 Adds a student to TAssist.
 
@@ -143,7 +118,53 @@ Common errors:
 * Invalid name: `Names should only contain alphanumeric characters and spaces, and should not be blank`
 * Invalid Telegram username: `Invalid Telegram username. Usernames must contain 5–32 letters, digits, or underscores.`
 
-### Listing all students: `list`
+#### Editing a student: `edit`
+
+Edits an existing student in TAssist.
+
+Format: `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]... `
+
+* Edits the student at the specified `INDEX`. The index refers to the index number shown in the displayed student list. The index **must be a positive integer** 1, 2, 3, ...
+* At least one of the optional fields must be provided.
+* Existing values will be updated to the input values.
+* When editing tags, all of the student's existing tags are removed; adding tags is not cumulative.
+* To remove all of a student's tags, enter `t/` without a tag after it.
+* To remove a student's Telegram username, enter `tg/` without a username after it. Omitting `tg/` keeps the existing username.
+* Student number, email, and Telegram username must remain unique after editing.
+* Editing keeps the current student filter, sorting, and attendance display. A student who no longer matches a `find` search disappears from its results; changing a name in a `listbyclass` view may change their alphabetical position.
+* Editing a student number preserves their class memberships and attendance history. Any active attendance threshold still applies.
+* Check the displayed indexes again before your next command, as an edit may change which students are shown and their indexes. Use `list` to show all students.
+
+Examples:
+*  `edit 1 tg/john_doe e/johndoe@example.com` edits the Telegram username and email address of the 1st student.
+*  `edit 1 tg/` removes the Telegram username of the 1st student.
+*  `edit 2 sn/A0234567Y n/Benjamin Lim t/` edits the student number and name of the 2nd student, and clears all existing tags.
+
+#### Deleting a student: `delete`
+
+Deletes the specified student from TAssist.
+
+Format: `delete INDEX`
+
+* Deletes the student at the specified `INDEX`.
+* The index refers to the index number shown in the displayed student list.
+* The index **must be a positive integer** 1, 2, 3, ...
+* Deleting keeps the current student filter, sorting, and attendance display. If no remaining students match, the student list stays empty instead of showing unrelated students.
+* Check the displayed indexes again before deleting another student, as the remaining students are renumbered. Use `list` to show all students.
+
+Examples:
+* `list` followed by `delete 2` deletes the 2nd student in TAssist.
+* `find Betsy` followed by `delete 1` deletes the 1st student in the results of the `find` command.
+
+Expected output:
+* `Deleted student: Alice Tan; Student Number: A0123456X; Email: alice@u.nus.edu; Telegram: @alice_tan`
+
+<box type="warning" seamless>
+
+The current build deletes students by displayed list index, not by student number. The MVP command `deletestudent sn/STUDENT_NUMBER` is not available in this build.
+</box>
+
+#### Listing all students: `list`
 
 Shows a list of all students in TAssist.
 
@@ -154,7 +175,229 @@ Expected output: `Listed all students.`
 The student list displays each student's name, student number, email, optional Telegram username, and tags.
 This command leaves the current class filter unchanged. Use `listclass` to restore all classes as well.
 
-### Listing students by class: `listbyclass`
+#### Locating students by name: `find`
+
+Finds students whose names contain any of the given keywords.
+
+Format: `find KEYWORD [MORE_KEYWORDS]`
+
+* The search is case-insensitive; for example, `hans` matches `Hans`.
+* Keyword order does not matter; for example, `Hans Bo` matches `Bo Hans`.
+* The search considers only names.
+* Only full words match; for example, `Han` does not match `Hans`.
+* Students matching at least one keyword are returned (an `OR` search); for example, `Hans Bo` returns `Hans Gruber` and `Bo Yang`.
+
+Examples:
+* `find John` returns `john` and `John Doe`
+* `find alex david` returns `Alex Yeoh`, `David Li`<br>
+  ![result for 'find alex david'](images/findAlexDavidResult.png)
+
+### Class management
+
+#### Creating a class: `addclass`
+
+Creates an academic class. Created classes appear in the class list section of the UI.
+
+Format: `addclass m/MODULE_CODE c/CLASS_NAME`
+
+For example, running `addclass m/ST2334 c/T24` adds a third class to the Classes panel.
+
+| Before | After |
+| :---: | :---: |
+| ![Before adding ST2334 T24: two classes are displayed](images/addclass-result-before.png) | ![After adding ST2334 T24: three classes and the success message are displayed](images/addclass-result-after.png) |
+
+* `MODULE_CODE` is the module that the class belongs to.
+* `CLASS_NAME` is the class name for that module.
+* The `m/` and `c/` parameters can be supplied in any order.
+* Each class is uniquely identified by its module code and class name pair.
+* Duplicate classes with the same module code and class name are not allowed.
+* Module codes and class names are normalized before being saved.
+* `MODULE_CODE` must begin with a letter and contain only letters or digits.
+* `CLASS_NAME` must contain at least one letter or digit, and may contain only letters, digits, or hyphens.
+
+Examples:
+* `addclass m/CS2103T c/F10-2`
+* `addclass c/T24 m/ST2334`
+
+Expected output:
+* `New class added: CS2103T-F10-2`
+
+Common errors:
+* Missing module code: `Missing required parameter: m/MODULE_CODE`
+* Missing class name: `Missing required parameter: c/CLASS_NAME`
+* Repeated module code: `Parameter m/ was specified more than once.`
+* Repeated class name: `Parameter c/ was specified more than once.`
+* Unknown parameter: `Unknown parameter: PREFIX`
+* Duplicate class: `A class with this name for this module already exists`
+* Invalid module code: `Module code must contain letters or digits`
+* Invalid class name: `Class names can only contain letters, digits, or '-'`
+
+#### Editing a class: `editclass`
+
+Changes an academic class's module code or class name. Use this when a class's details change but its existing student memberships should be kept.
+
+Format: `editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]`
+
+**Before you begin:** The academic class must exist. Run `listclass` and check its index in the displayed class list.
+
+* `INDEX` must be a positive integer, such as `1`, `2`, or `3`, and refer to a class in the displayed class list, not the student list.
+* At least one of `m/` or `c/` is required. Each supplied parameter must appear exactly once. You can enter them in either order after the index.
+* `MODULE_CODE` must start with a letter and contain only letters or digits.
+* `CLASS_NAME` may contain letters, digits, and hyphens (`-`), and must contain at least one letter or digit.
+* Leading and trailing spaces in field values are ignored, and letters are converted to uppercase. For example, `cs2103` becomes `CS2103`.
+* Supplied values replace the corresponding existing details. Omitted fields remain unchanged.
+* The resulting module code and class name must not identify another existing class. Different modules can have classes with the same name.
+* Student memberships are preserved. Student records, other classes, and memberships in other classes remain unchanged.
+* Attendance history is preserved, including records for students who are no longer assigned to the class.
+  Check the class's displayed index before using subsequent attendance commands.
+* If the current student view lists members of the edited class, it follows the renamed class and remains alphabetical. Other student filters and their displayed order remain unchanged.
+* Subsequent commands that identify the class by module code and class name must use its updated details.
+
+Examples
+
+Suppose class `F10` in module `CS2103` is at index `1` in the displayed class list. Run:
+
+```text
+editclass 1 c/F11
+```
+
+Expected feedback:
+
+```text
+Edited class: CS2103-F11
+```
+
+You can also change both details, reverse the parameter order, and use lowercase values:
+
+```text
+editclass 1 c/f12 m/cs2101
+```
+
+This changes the class to `CS2101-F12` while keeping its assigned students. Editing a class to its existing details is also accepted and leaves its memberships unchanged.
+
+Common errors:
+
+* Missing or invalid index, or unexpected text before the parameters: `Invalid command format!` followed by the command usage.
+* Index outside the displayed class list: `The class index provided is invalid.`
+* No fields supplied: `At least one field to edit must be provided.`
+* Another class already has the resulting details: `A class with these details already exists!`
+* Repeated parameter: `Multiple values specified for the following single-valued field(s):` followed by the repeated prefixes.
+* Empty or invalid module code or class name: the corresponding validation error from `addclass`.
+* Unknown parameter: rejected as invalid command format or an invalid field value, depending on its position. Only `m/` and `c/` are supported.
+
+Rejected commands leave class details, memberships, and student counts unchanged.
+
+#### Deleting a class: `deleteclass`
+
+Deletes the class at the specified index in the currently displayed class list from TAssist.
+
+Format: `deleteclass INDEX`
+
+* `INDEX` is required and must be a positive integer such as `1`, `2`, or `3`.
+* The index refers to the number shown beside a class in the current class list, starting from `1`.
+* The index must be within the displayed class list. If the list is filtered, only the displayed classes can be selected.
+* Use `listclass` to display all classes before choosing an index when needed.
+* Removes the class from the class list and saves the change automatically. Remaining displayed classes are renumbered.
+* Any student assignments and attendance records for the deleted class are removed with it. The students remain in TAssist, and other classes and their assignments are unchanged.
+* If the index is invalid, an error is shown and no data is changed.
+
+Examples (assuming the corresponding indices are displayed):
+
+* `deleteclass 1` deletes the first displayed class.
+* `deleteclass 2` deletes the second displayed class.
+
+The success message starts with `Deleted class:` and identifies the removed class.
+
+Common errors:
+
+* Missing index, non-positive or non-integer input, or extra arguments: `Invalid command format!`, followed by the command usage.
+* An index beyond the displayed list, including any index when the list is empty: `The class index provided is invalid.`
+
+#### Listing all classes: `listclass`
+
+Shows all academic classes in creation order and clears the class filter set by `listbystudent`.
+The displayed student list is unchanged.
+
+Format: `listclass`
+
+Expected output: `Listed all classes.` Extra arguments are rejected.
+
+The student and class filters can be reset independently:
+
+| Command | Students panel | Classes panel |
+| --- | --- | --- |
+| `list` | Shows all students | Keeps the current class filter |
+| `listclass` | Keeps the current student filter | Shows all classes, including empty classes |
+
+Run `list` followed by `listclass` to restore both complete lists.
+
+### Assignments and related lists
+
+#### Assigning a student to a class: `assign`
+
+Assigns an existing student to an existing academic class.
+
+Format: `assign STUDENT_INDEX CLASS_INDEX`
+
+* Put the student index first and the class index second. Both must be positive integers from their respective displayed lists.
+* `STUDENT_INDEX` uses the current Students panel, including `find` and `listbyclass` results.
+* `CLASS_INDEX` uses the current Classes panel, including `listbystudent` results.
+* The student and class must already exist and be visible. Use `list` and `listclass` to restore the complete lists if needed.
+* Check the displayed indices after filtering, editing records, changing memberships, or recalling a previous command.
+* Assignment preserves active filters. Membership-based views and class student counts update automatically.
+* After a successful assignment, both panels scroll to the affected student and class, provided they remain in the displayed results. Keyboard focus stays in the command box.
+* A student may belong to multiple classes. Repeating an assignment reports that the student is already assigned and leaves the membership unchanged.
+
+Example:
+* `assign 1 2` assigns the first displayed student to the second displayed class.
+
+Expected output (if the selected student is `A1111111H` and the class is `CS2103 F-10`):
+* `Student (A1111111H) has been assigned to CS2103-F-10.`
+
+Common errors:
+* Missing, extra, zero, negative, non-integer, or prefixed arguments: `Invalid command format!` followed by the command usage.
+* Student index outside the displayed list: `The student index provided is invalid.`
+* Class index outside the displayed list: `The class index provided is invalid.`
+* Student already assigned: `Student (A1234567H) is already assigned to class CS2101-L1.`
+
+Rejected commands leave memberships and student counts unchanged.
+
+#### Unassigning a student from an academic class: `unassign`
+
+Removes a student's membership from one academic class. The student remains in the address book and in other classes.
+
+Format: `unassign STUDENT_INDEX CLASS_INDEX`
+
+* Both indices are required positive integers, in student-then-class order, counting from `1` in their respective displayed panels.
+* The student and class must be visible, and the student must already be assigned to that class.
+* After `find`, `listbyclass`, or `listbystudent`, use the indices in the current results. Run `list` to restore all students or `listclass` to restore all classes if the target is hidden.
+* Only membership in the selected class is removed. Student and class records, other memberships, and recorded attendance history are retained.
+* Active filters and ordering are preserved. Membership-dependent views refresh, so a student or class may disappear and remaining indices may shift.
+* After a successful unassignment, both panels scroll to the affected student and class if they remain displayed. A record removed by an active filter stays hidden; the panel does not scroll to a different record in its place. Keyboard focus stays in the command box.
+* Check both panels before repeating a command. Reusing the same indices after a view changes can target a different student or class.
+
+Example: suppose student `A1111111H` is displayed at student index `2` and `CS2103-F10` is displayed at class index `1`:
+
+```text
+unassign 2 1
+```
+
+Expected feedback:
+
+```text
+Student (A1111111H) has been unassigned from CS2103-F10.
+```
+
+Common errors:
+
+* Missing, extra, or invalid indices (including zero, negative numbers, decimals, and the old prefixes): `Invalid command format!` followed by the command usage.
+* Student index outside the displayed list: `The student index provided is invalid.`
+* Class index outside the displayed list: `The class index provided is invalid.`
+* Student not assigned to the selected class: `Student (A1234567H) is not assigned to class CS2101-L1.` Repeating an unassignment produces this error only if the indices still identify the same student and class.
+
+Rejected commands leave memberships and student counts unchanged.
+
+#### Listing students by class: `listbyclass`
 
 Shows only students assigned to the class at the specified displayed index, alphabetically by name using the existing
 student cards.
@@ -210,13 +453,20 @@ memberships alphabetically. The filtered view itself is not saved. Run `list` to
 Editing a student updates their existing class memberships. Deleting a student removes their memberships
 while retaining the classes and other students.
 
-### Listing classes by student: `listbystudent`
+#### Listing classes by student: `listbystudent`
 
 Shows the classes assigned to the student at the specified index in the displayed student list.
 Matching classes appear in the **Classes** panel. The feedback message reports their count and the selected student's
 name and student number.
 
 Format: `listbystudent INDEX`
+
+For example, after finding Alice Tan, `listbystudent 1` shows only her two assigned classes.
+The Students panel stays unchanged while the Classes panel changes from four classes to two.
+
+| Before | After |
+| :---: | :---: |
+| ![Before listing Alice Tan's classes: all four classes are displayed](images/listbystudent-result-before.png) | ![After listing Alice Tan's classes: only CS2103T F01 and CS2100 T01 are displayed](images/listbystudent-result-after.png) |
 
 * `INDEX` must be a positive integer shown beside a student in the current Students panel.
   After `find` or `listbyclass`, use the index in those results, not the student's original index.
@@ -289,86 +539,9 @@ To restore the assignment, run `listclass`, check the index of `CS2106 DEMO-BOB`
 
 Rejected commands preserve both displayed lists. Selecting a valid student with no classes is a successful operation.
 
-### Listing all classes: `listclass`
+### Attendance
 
-Shows all academic classes in creation order and clears the class filter set by `listbystudent`.
-The displayed student list is unchanged.
-
-Format: `listclass`
-
-Expected output: `Listed all classes.` Extra arguments are rejected.
-
-The student and class filters can be reset independently:
-
-| Command | Students panel | Classes panel |
-| --- | --- | --- |
-| `list` | Shows all students | Keeps the current class filter |
-| `listclass` | Keeps the current student filter | Shows all classes, including empty classes |
-
-Run `list` followed by `listclass` to restore both complete lists.
-
-### Creating a class: `addclass`
-
-Creates an academic class. Created classes appear in the class list section of the UI.
-
-Format: `addclass m/MODULE_CODE c/CLASS_NAME`
-
-* `MODULE_CODE` is the module that the class belongs to.
-* `CLASS_NAME` is the class name for that module.
-* The `m/` and `c/` parameters can be supplied in any order.
-* Each class is uniquely identified by its module code and class name pair.
-* Duplicate classes with the same module code and class name are not allowed.
-* Module codes and class names are normalized before being saved.
-* `MODULE_CODE` must begin with a letter and contain only letters or digits.
-* `CLASS_NAME` must contain at least one letter or digit, and may contain only letters, digits, or hyphens.
-
-Examples:
-* `addclass m/CS2103T c/F10-2`
-* `addclass c/T24 m/ST2334`
-
-Expected output:
-* `New class added: CS2103T-F10-2`
-
-Common errors:
-* Missing module code: `Missing required parameter: m/MODULE_CODE`
-* Missing class name: `Missing required parameter: c/CLASS_NAME`
-* Repeated module code: `Parameter m/ was specified more than once.`
-* Repeated class name: `Parameter c/ was specified more than once.`
-* Unknown parameter: `Unknown parameter: PREFIX`
-* Duplicate class: `A class with this name for this module already exists`
-* Invalid module code: `Module code must contain letters or digits`
-* Invalid class name: `Class names can only contain letters, digits, or '-'`
-
-### Assigning a student to a class: `assign`
-
-Assigns an existing student to an existing academic class.
-
-Format: `assign STUDENT_INDEX CLASS_INDEX`
-
-* Put the student index first and the class index second. Both must be positive integers from their respective displayed lists.
-* `STUDENT_INDEX` uses the current Students panel, including `find` and `listbyclass` results.
-* `CLASS_INDEX` uses the current Classes panel, including `listbystudent` results.
-* The student and class must already exist and be visible. Use `list` and `listclass` to restore the complete lists if needed.
-* Check the displayed indices after filtering, editing records, changing memberships, or recalling a previous command.
-* Assignment preserves active filters. Membership-based views and class student counts update automatically.
-* After a successful assignment, both panels scroll to the affected student and class, provided they remain in the displayed results. Keyboard focus stays in the command box.
-* A student may belong to multiple classes. Repeating an assignment reports that the student is already assigned and leaves the membership unchanged.
-
-Example:
-* `assign 1 2` assigns the first displayed student to the second displayed class.
-
-Expected output (if the selected student is `A1111111H` and the class is `CS2103 F-10`):
-* `Student (A1111111H) has been assigned to CS2103-F-10.`
-
-Common errors:
-* Missing, extra, zero, negative, non-integer, or prefixed arguments: `Invalid command format!` followed by the command usage.
-* Student index outside the displayed list: `The student index provided is invalid.`
-* Class index outside the displayed list: `The class index provided is invalid.`
-* Student already assigned: `Student (A1234567H) is already assigned to class CS2101-L1.`
-
-Rejected commands leave memberships and student counts unchanged.
-
-### Recording attendance: `addattendance`
+#### Recording attendance: `addattendance`
 
 Records one attended date for a student in a particular module and class.
 
@@ -406,7 +579,7 @@ TAssist displays a confirmation message when the date is recorded. In a `listbyc
 on the student cards refresh for the selected class. Use `listbyclass CLASS_INDEX` without a threshold to see
 all members of that class, including students hidden by an attendance threshold.
 
-### Removing attendance: `deleteattendance`
+#### Removing attendance: `deleteattendance`
 
 Removes one previously recorded date for a student in a particular module and class.
 
@@ -445,186 +618,36 @@ Example (after recording attendance for student index `1` in class index `2` in 
 TAssist displays a confirmation message when the date is removed. Trying to remove the same date for the same
 student and class again reports that the date is not recorded. Check the current indices before repeating the command.
 
-### Editing a student: `edit`
+### Utilities
 
-Edits an existing student in TAssist.
+#### Navigating the Students and Classes panels
 
-Format: `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]... `
+Click a panel's heading, a card, or the surrounding panel space to focus its list. A blue
+outline marks the focused list. Press **Up/Down** to scroll, **Page Up/Page Down** to move
+by a page, or **Home/End** to reach the beginning or end.
 
-* Edits the student at the specified `INDEX`. The index refers to the index number shown in the displayed student list. The index **must be a positive integer** 1, 2, 3, ...
-* At least one of the optional fields must be provided.
-* Existing values will be updated to the input values.
-* When editing tags, all of the student's existing tags are removed; adding tags is not cumulative.
-* To remove all of a student's tags, enter `t/` without a tag after it.
-* To remove a student's Telegram username, enter `tg/` without a username after it. Omitting `tg/` keeps the existing username.
-* Student number, email, and Telegram username must remain unique after editing.
-* Editing keeps the current student filter, sorting, and attendance display. A student who no longer matches a `find` search disappears from its results; changing a name in a `listbyclass` view may change their alphabetical position.
-* Editing a student number preserves their class memberships and attendance history. Any active attendance threshold still applies.
-* Check the displayed indexes again before your next command, as an edit may change which students are shown and their indexes. Use `list` to show all students.
+From the command box, **Tab** moves through the result display, Students list, Classes list,
+and back to the command box. **Shift+Tab** moves in reverse. Scrolling does not select or
+change student or class records. Up/Down in the command box continues to browse command history.
 
-Examples:
-*  `edit 1 tg/john_doe e/johndoe@example.com` edits the Telegram username and email address of the 1st student.
-*  `edit 1 tg/` removes the Telegram username of the 1st student.
-*  `edit 2 sn/A0234567Y n/Benjamin Lim t/` edits the student number and name of the 2nd student, and clears all existing tags.
+#### Recalling previous commands
 
-### Editing a class: `editclass`
+In the command box, press **Up/Down** arrows to browse the latest **20 successful commands** across app sessions. History is saved automatically in the address book data file.
 
-Changes an academic class's module code or class name. Use this when a class's details change but its existing student memberships should be kept.
+Edits of past commands are kept while browsing and cleared when you submit a command. Failed input remains as your draft.
 
-Format: `editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]`
+#### Viewing help: `help`
 
-**Before you begin:** The academic class must exist. Run `listclass` and check its index in the displayed class list.
+Shows a message explaining how to access the help page.
 
-* `INDEX` must be a positive integer, such as `1`, `2`, or `3`, and refer to a class in the displayed class list, not the student list.
-* At least one of `m/` or `c/` is required. Each supplied parameter must appear exactly once. You can enter them in either order after the index.
-* `MODULE_CODE` must start with a letter and contain only letters or digits.
-* `CLASS_NAME` may contain letters, digits, and hyphens (`-`), and must contain at least one letter or digit.
-* Leading and trailing spaces in field values are ignored, and letters are converted to uppercase. For example, `cs2103` becomes `CS2103`.
-* Supplied values replace the corresponding existing details. Omitted fields remain unchanged.
-* The resulting module code and class name must not identify another existing class. Different modules can have classes with the same name.
-* Student memberships are preserved. Student records, other classes, and memberships in other classes remain unchanged.
-* Attendance history is preserved, including records for students who are no longer assigned to the class.
-  Check the class's displayed index before using subsequent attendance commands.
-* If the current student view lists members of the edited class, it follows the renamed class and remains alphabetical. Other student filters and their displayed order remain unchanged.
-* Subsequent commands that identify the class by module code and class name must use its updated details.
+![help message](images/helpMessage.png)
 
-Examples
+Format: `help`
 
-Suppose class `F10` in module `CS2103` is at index `1` in the displayed class list. Run:
+You can also open Help from the `Help` menu or by pressing `F1`. If the Help window is already open,
+these actions bring it to the front and restore it if it is minimized.
 
-```text
-editclass 1 c/F11
-```
-
-Expected feedback:
-
-```text
-Edited class: CS2103-F11
-```
-
-You can also change both details, reverse the parameter order, and use lowercase values:
-
-```text
-editclass 1 c/f12 m/cs2101
-```
-
-This changes the class to `CS2101-F12` while keeping its assigned students. Editing a class to its existing details is also accepted and leaves its memberships unchanged.
-
-Common errors:
-
-* Missing or invalid index, or unexpected text before the parameters: `Invalid command format!` followed by the command usage.
-* Index outside the displayed class list: `The class index provided is invalid.`
-* No fields supplied: `At least one field to edit must be provided.`
-* Another class already has the resulting details: `A class with these details already exists!`
-* Repeated parameter: `Multiple values specified for the following single-valued field(s):` followed by the repeated prefixes.
-* Empty or invalid module code or class name: the corresponding validation error from `addclass`.
-* Unknown parameter: rejected as invalid command format or an invalid field value, depending on its position. Only `m/` and `c/` are supported.
-
-Rejected commands leave class details, memberships, and student counts unchanged.
-
-### Locating students by name: `find`
-
-Finds students whose names contain any of the given keywords.
-
-Format: `find KEYWORD [MORE_KEYWORDS]`
-
-* The search is case-insensitive; for example, `hans` matches `Hans`.
-* Keyword order does not matter; for example, `Hans Bo` matches `Bo Hans`.
-* The search considers only names.
-* Only full words match; for example, `Han` does not match `Hans`.
-* Students matching at least one keyword are returned (an `OR` search); for example, `Hans Bo` returns `Hans Gruber` and `Bo Yang`.
-
-Examples:
-* `find John` returns `john` and `John Doe`
-* `find alex david` returns `Alex Yeoh`, `David Li`<br>
-  ![result for 'find alex david'](images/findAlexDavidResult.png)
-
-### Deleting a student: `delete`
-
-Deletes the specified student from TAssist.
-
-Format: `delete INDEX`
-
-* Deletes the student at the specified `INDEX`.
-* The index refers to the index number shown in the displayed student list.
-* The index **must be a positive integer** 1, 2, 3, ...
-* Deleting keeps the current student filter, sorting, and attendance display. If no remaining students match, the student list stays empty instead of showing unrelated students.
-* Check the displayed indexes again before deleting another student, as the remaining students are renumbered. Use `list` to show all students.
-
-Examples:
-* `list` followed by `delete 2` deletes the 2nd student in TAssist.
-* `find Betsy` followed by `delete 1` deletes the 1st student in the results of the `find` command.
-
-Expected output:
-* `Deleted student: Alice Tan; Student Number: A0123456X; Email: alice@u.nus.edu; Telegram: @alice_tan`
-
-<box type="warning" seamless>
-
-The current build deletes students by displayed list index, not by student number. The MVP command `deletestudent sn/STUDENT_NUMBER` is not available in this build.
-</box>
-
-### Deleting a class: `deleteclass`
-
-Deletes the class at the specified index in the currently displayed class list from TAssist.
-
-Format: `deleteclass INDEX`
-
-* `INDEX` is required and must be a positive integer such as `1`, `2`, or `3`.
-* The index refers to the number shown beside a class in the current class list, starting from `1`.
-* The index must be within the displayed class list. If the list is filtered, only the displayed classes can be selected.
-* Use `listclass` to display all classes before choosing an index when needed.
-* Removes the class from the class list and saves the change automatically. Remaining displayed classes are renumbered.
-* Any student assignments and attendance records for the deleted class are removed with it. The students remain in TAssist, and other classes and their assignments are unchanged.
-* If the index is invalid, an error is shown and no data is changed.
-
-Examples (assuming the corresponding indices are displayed):
-
-* `deleteclass 1` deletes the first displayed class.
-* `deleteclass 2` deletes the second displayed class.
-
-The success message starts with `Deleted class:` and identifies the removed class.
-
-Common errors:
-
-* Missing index, non-positive or non-integer input, or extra arguments: `Invalid command format!`, followed by the command usage.
-* An index beyond the displayed list, including any index when the list is empty: `The class index provided is invalid.`
-
-### Unassigning a student from an academic class: `unassign`
-
-Removes a student's membership from one academic class. The student remains in the address book and in other classes.
-
-Format: `unassign STUDENT_INDEX CLASS_INDEX`
-
-* Both indices are required positive integers, in student-then-class order, counting from `1` in their respective displayed panels.
-* The student and class must be visible, and the student must already be assigned to that class.
-* After `find`, `listbyclass`, or `listbystudent`, use the indices in the current results. Run `list` to restore all students or `listclass` to restore all classes if the target is hidden.
-* Only membership in the selected class is removed. Student and class records, other memberships, and recorded attendance history are retained.
-* Active filters and ordering are preserved. Membership-dependent views refresh, so a student or class may disappear and remaining indices may shift.
-* After a successful unassignment, both panels scroll to the affected student and class if they remain displayed. A record removed by an active filter stays hidden; the panel does not scroll to a different record in its place. Keyboard focus stays in the command box.
-* Check both panels before repeating a command. Reusing the same indices after a view changes can target a different student or class.
-
-Example: suppose student `A1111111H` is displayed at student index `2` and `CS2103-F10` is displayed at class index `1`:
-
-```text
-unassign 2 1
-```
-
-Expected feedback:
-
-```text
-Student (A1111111H) has been unassigned from CS2103-F10.
-```
-
-Common errors:
-
-* Missing, extra, or invalid indices (including zero, negative numbers, decimals, and the old prefixes): `Invalid command format!` followed by the command usage.
-* Student index outside the displayed list: `The student index provided is invalid.`
-* Class index outside the displayed list: `The class index provided is invalid.`
-* Student not assigned to the selected class: `Student (A1234567H) is not assigned to class CS2101-L1.` Repeating an unassignment produces this error only if the indices still identify the same student and class.
-
-Rejected commands leave memberships and student counts unchanged.
-
-### Clearing all entries: `clear`
+#### Clearing all entries: `clear`
 
 Clears all students and classes from TAssist.
 
@@ -632,13 +655,13 @@ Format: `clear`
 
 Expected output: `Address book has been cleared!`
 
-### Exiting the program: `exit`
+#### Exiting the program: `exit`
 
 Exits the program.
 
 Format: `exit`
 
-### Saving the data
+#### Saving the data
 
 TAssist automatically saves data after every successful command. You do not need to save manually.
 
@@ -658,7 +681,7 @@ Keep the JAR in a writable folder. If a save fails, TAssist does not redirect yo
 Separate JAR folders use separate data and preferences; copying only the JAR does not copy your records.
 When running from an IDE or with Gradle, files remain relative to the working directory.
 
-#### Moving existing data to the JAR folder
+##### Moving existing data to the JAR folder
 
 Older builds may have saved files in the folder from which you ran the terminal command.
 TAssist does not automatically find, move or merge those files.
@@ -671,7 +694,7 @@ TAssist does not automatically find, move or merge those files.
 
 If the destination already contains data, choose which file to keep before replacing it; TAssist does not merge the records.
 
-### Editing the data file
+#### Editing the data file
 
 TAssist data is saved automatically as a JSON file `[JAR file location]/data/addressbook.json`. Advanced users are welcome to update data directly by editing that data file.
 
@@ -682,11 +705,11 @@ If your changes make the data file invalid, TAssist starts with an empty address
 Furthermore, certain edits can cause TAssist to behave in unexpected ways (e.g., if a value entered is outside of the acceptable range). Therefore, edit the data file only if you are confident that you can update it correctly.
 </box>
 
-### Archiving data files `[coming in v2.0]`
+#### Archiving data files `[coming in v2.0]`
 
 _Details coming soon ..._
 
-### Features not yet available in this build
+#### Features not yet available in this build
 
 The following MVP commands are planned or specified, but are not currently accepted by this build:
 
@@ -695,6 +718,7 @@ The following MVP commands are planned or specified, but are not currently accep
 * `liststudent`: use `list` instead.
 
 If any of these command words are entered, TAssist displays `Unknown command.`
+
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -716,20 +740,20 @@ If any of these command words are entered, TAssist displays `Unknown command.`
 Action     | Format, Examples
 -----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 **Add**    | `add sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM] [t/TAG]... ` <br> e.g., `add sn/A0123456X n/James Ho e/jamesho@example.com tg/james_ho t/CS2103`
-**Add Class** | `addclass m/MODULE_CODE c/CLASS_NAME` <br> e.g., `addclass m/CS2103T c/F10-2`
-**Assign** | `assign STUDENT_INDEX CLASS_INDEX` <br> e.g., `assign 1 2`
-**Clear**  | `clear`
-**Add attendance** | `addattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD`<br> e.g., `addattendance 1 2 d/2024-02-29`
-**Delete** | `delete INDEX`<br> e.g., `delete 3`
-**Delete attendance** | `deleteattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD`<br> e.g., `deleteattendance 1 2 d/2024-02-29`
-**Delete Class** | `deleteclass INDEX`<br> e.g., `deleteclass 1`
 **Edit**   | `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
-**Edit Class** | `editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]`<br> e.g., `editclass 1 m/CS2103 c/F11`
-**Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
+**Delete** | `delete INDEX`<br> e.g., `delete 3`
 **List**   | `list`
+**Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
+**Add Class** | `addclass m/MODULE_CODE c/CLASS_NAME` <br> e.g., `addclass m/CS2103T c/F10-2`
+**Edit Class** | `editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]`<br> e.g., `editclass 1 m/CS2103 c/F11`
+**Delete Class** | `deleteclass INDEX`<br> e.g., `deleteclass 1`
+**List all classes** | `listclass`
+**Assign** | `assign STUDENT_INDEX CLASS_INDEX` <br> e.g., `assign 1 2`
+**Unassign** | `unassign STUDENT_INDEX CLASS_INDEX`<br> e.g., `unassign 2 1`
 **List students by class** | `listbyclass INDEX [t/THRESHOLD]`<br> e.g., `listbyclass 1`, `listbyclass 1 t/5`
 **List classes by student** | `listbystudent INDEX`<br> e.g., `listbystudent 1`
-**List all classes** | `listclass`
-**Unassign** | `unassign STUDENT_INDEX CLASS_INDEX`<br> e.g., `unassign 2 1`
+**Add attendance** | `addattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD`<br> e.g., `addattendance 1 2 d/2024-02-29`
+**Delete attendance** | `deleteattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD`<br> e.g., `deleteattendance 1 2 d/2024-02-29`
 **Help**   | `help`
+**Clear**  | `clear`
 **Exit**   | `exit`
