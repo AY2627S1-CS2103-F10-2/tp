@@ -46,7 +46,7 @@ public class AssignCommandParserTest {
     @Test
     public void parse_invalidIndices_failure() {
         for (String input : new String[] {"0 1", "1 0", "-1 1", "1 -1", "+1 1", "1 +1",
-            "1.5 1", "1 1.5", "abc 1", "1 abc", "2147483648 1", "1 2147483648"}) {
+            "1.5 1", "1 1.5", "abc 1", "1 abc"}) {
             assertInvalidArguments(input);
         }
     }

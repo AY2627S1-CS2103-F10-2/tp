@@ -12,6 +12,7 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.commons.core.index.Index;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.person.Email;
 import seedu.address.model.person.Name;
@@ -53,6 +54,25 @@ public class ParserUtilTest {
 
         // Leading and trailing whitespaces
         assertEquals(INDEX_FIRST_PERSON, ParserUtil.parseIndex("  1  "));
+    }
+
+    @Test
+    public void parseIndices_indexTooLargeForInt_treatedAsMaxIndex() throws Exception {
+        Index[] indices = ParserUtil.parseIndices("11111111111111111111 1", "usage");
+        assertEquals(Index.fromOneBased(Integer.MAX_VALUE), indices[0]);
+        assertEquals(INDEX_FIRST_PERSON, indices[1]);
+
+        indices = ParserUtil.parseIndices("1 11111111111111111111", "usage");
+        assertEquals(INDEX_FIRST_PERSON, indices[0]);
+        assertEquals(Index.fromOneBased(Integer.MAX_VALUE), indices[1]);
+    }
+
+    @Test
+    public void parseIndices_invalidIndex_throwsParseException() {
+        for (String preamble : List.of("0 1", "1 -1", "+1 1", "1 1.5", "abc 1", "1 abc", "-11111111111111111111 1",
+                "1", "1 2 3", "")) {
+            assertThrows(ParseException.class, () -> ParserUtil.parseIndices(preamble, "usage"));
+        }
     }
 
     @Test
