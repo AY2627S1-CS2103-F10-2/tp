@@ -863,6 +863,10 @@ Use case ends.
 
 Given below are instructions to test the app manually.
 
+Use disposable application folders with separate copies of `TAssist.jar`. Enter application commands
+one at a time in the command box; run `java -jar TAssist.jar` in the terminal to launch each copy.
+Close the application before changing its saved files, and keep a backup when testing recovery.
+
 <box type="info" seamless>
 
 **Note:** These instructions only provide a starting point for testers to work on;
@@ -875,17 +879,21 @@ testers are expected to do more *exploratory* testing.
 
    1. Download the JAR file and copy it into an empty folder.
 
-   1. Double-click the JAR file.<br>
-      Expected: The GUI opens with a set of sample contacts. The window size may not be optimal.
+   1. Run `java -jar TAssist.jar` in that folder using Java 25 or later.<br>
+      Expected: The GUI opens with sample students and no classes. The window size may not be optimal.
 
 1. Saving window preferences
 
    1. Resize the window to an optimal size. Move the window to a different location. Close the window.
 
-   1. Relaunch the app by double-clicking the JAR file.<br>
+   1. Relaunch the same JAR.<br>
        Expected: The most recent window size and location are retained.
 
-1. _{ more test cases … }_
+1. Preventing a duplicate launch
+
+   1. While the first copy is running, run the same JAR from a second terminal.<br>
+      Expected: The second launch reports that the application is already running; no second window opens.
+      The first window remains usable. Close it, then launch the same JAR again; it should open normally.
 
 ### Deleting a person
 
@@ -902,7 +910,17 @@ testers are expected to do more *exploratory* testing.
    1. Other incorrect delete commands to try: `delete`, `delete x`, `...` (where x is larger than the list size)<br>
       Expected: Similar to previous.
 
-1. _{ more test cases … }_
+1. Deleting from a filtered student list
+
+   1. In a separate disposable copy, run `clear`, then:
+      ```text
+      add sn/A0999601X n/Alice Manual e/alice.manual@example.com
+      add sn/A0999602Y n/Bob Manual e/bob.manual@example.com
+      find Bob
+      delete 1
+      ```
+      Expected: Bob is deleted using his displayed index; the filtered Students panel becomes empty.
+      Run `list`: Alice remains. Close and reopen the same JAR; Bob stays deleted.
 
 ### Deleting and editing academic classes
 
@@ -1068,8 +1086,42 @@ Use a disposable application folder for these checks.
 
 ### Saving data
 
-1. Dealing with missing/corrupted data files
+Use the default `data/addressbook.json` path beside the disposable JAR. Restore a valid backup after
+each missing, corrupt, or blocked-file check so later checks start with the same saved records.
 
-   1. _{Explain how to simulate missing or corrupted data files and state the expected behavior.}_
+1. Saving and reopening records
 
-1. _{ more test cases … }_
+   1. Run `clear`, then:
+      ```text
+      add sn/A0999601X n/Alice Manual e/alice.manual@example.com
+      addclass m/CS2103T c/F01
+      assign 1 1
+      addattendance 1 1 d/2020-01-01
+      ```
+      Close the window and reopen the same JAR. Run `listbyclass 1`.<br>
+      Expected: Alice, CS2103T-F01, the membership, and attendance `2020-01-01` remain.
+      Close the app and back up `data/addressbook.json` before the remaining checks.
+
+1. Missing data file
+
+   1. With the app closed, move `data/addressbook.json` out of the `data` folder, then reopen the JAR.<br>
+      Expected: sample students are loaded instead of the saved test records. Run `list`;
+      a new `data/addressbook.json` is created. Close the app and restore the valid backup.
+
+1. Corrupt data file
+
+   1. With the app closed and a valid backup retained, replace the file's contents with `{ invalid json`.
+      Reopen the JAR without submitting a command.<br>
+      Expected: the app opens with empty student and class lists, and the log beside the JAR reports
+      that the data file could not be loaded. The corrupt file remains unchanged until a successful
+      command saves data. Close using the window button, restore the backup, and reopen;
+      the saved records should return.
+
+1. Unwritable data destination
+
+   1. Close the app, move the valid data file aside, and create an empty **folder** named
+      `addressbook.json` inside `data`. Reopen the JAR and run
+      `add sn/A0999602Y n/Bob Manual e/bob.manual@example.com`.<br>
+      Expected: feedback reports that data could not be saved. The in-memory student may appear,
+      but the command is not persisted. Close the app, remove the empty folder, restore the valid
+      backup, and reopen; Bob is absent and the original saved records remain.
