@@ -18,6 +18,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -27,6 +28,7 @@ import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyAddressBook;
@@ -38,7 +40,6 @@ import seedu.address.model.person.Person;
 import seedu.address.storage.JsonAddressBookStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
 import seedu.address.storage.StorageManager;
-import seedu.address.testutil.PersonBuilder;
 
 public class LogicManagerTest {
     private static final IOException DUMMY_IO_EXCEPTION = new IOException("dummy IO exception");
@@ -289,10 +290,169 @@ public class LogicManagerTest {
         // Triggers the saveAddressBook method by executing an add command
         String addCommand = AddCommand.COMMAND_WORD + STUDENT_NUMBER_DESC_AMY + NAME_DESC_AMY
                 + EMAIL_DESC_AMY + TELEGRAM_DESC_AMY;
-        Person expectedPerson = new PersonBuilder(AMY).withTags().build();
-        ModelManager expectedModel = new ModelManager();
-        expectedModel.addPerson(expectedPerson);
-        assertCommandFailure(addCommand, CommandException.class, expectedMessage, expectedModel);
+        // The failed command must be rolled back, leaving the model unchanged.
+        assertCommandFailure(addCommand, CommandException.class, expectedMessage, new ModelManager());
         assertEquals(List.of(), logic.getCommandHistory());
+    }
+
+    @Test
+    public void execute_storageFailsAfterAssign_rollsBackClassMembership() throws Exception {
+        logic.execute("add sn/A0123456X n/Alice e/alice@example.com");
+        logic.execute("addclass m/CS2103 c/F10-2");
+        ReadOnlyAddressBook before = ((AddressBook) model.getAddressBook()).deepCopy();
+
+        logic = new LogicManager(model, new StorageManager(new JsonAddressBookStorage(
+                temporaryFolder.resolve("failing.json")) {
+            @Override
+            public void saveAddressBook(ReadOnlyAddressBook addressBook) throws IOException {
+                throw DUMMY_IO_EXCEPTION;
+            }
+        }, new JsonUserPrefsStorage(temporaryFolder.resolve("failingPrefs.json"))));
+
+        assertThrows(CommandException.class, () -> logic.execute("assign 1 1"));
+        assertEquals(before, model.getAddressBook());
+        assertEquals(Set.of(), model.getAddressBook().getAcademicClassList().getFirst().getStudents());
+    }
+
+    @Test
+    public void execute_storageFails_rollbackKeepsStudentFilter() throws Exception {
+        logic.execute("add sn/A0123456X n/Alice e/alice@example.com");
+        logic.execute("add sn/A0234567X n/Bob e/bob@example.com");
+        logic.execute("find Bob");
+        List<Person> filteredBefore = List.copyOf(model.getFilteredPersonList());
+        assertEquals(1, filteredBefore.size());
+
+        logic = new LogicManager(model, new StorageManager(new JsonAddressBookStorage(
+                temporaryFolder.resolve("failing.json")) {
+            @Override
+            public void saveAddressBook(ReadOnlyAddressBook addressBook) throws IOException {
+                throw DUMMY_IO_EXCEPTION;
+            }
+        }, new JsonUserPrefsStorage(temporaryFolder.resolve("failingPrefs.json"))));
+
+        assertThrows(CommandException.class, () -> logic.execute("addclass m/CS2103 c/F10-2"));
+        assertEquals(filteredBefore, model.getFilteredPersonList());
+    }
+
+    @Test
+    public void execute_storageFailsAfterDelete_rollsBackStudentAndMemberships() throws Exception {
+        assertStorageFailureRollsBack(null, "delete 1");
+    }
+
+    @Test
+    public void execute_storageFailsAfterEdit_rollsBackStudent() throws Exception {
+        assertStorageFailureRollsBack(null, "edit 1 n/Zed");
+    }
+
+    @Test
+    public void execute_storageFailsAfterClear_rollsBackAllData() throws Exception {
+        assertStorageFailureRollsBack(null, "clear");
+    }
+
+    @Test
+    public void execute_storageFailsAfterDeleteClass_rollsBackClassAndAttendance() throws Exception {
+        assertStorageFailureRollsBack(null, "deleteclass 1");
+    }
+
+    @Test
+    public void execute_storageFailsAfterEditClass_rollsBackClassIdentity() throws Exception {
+        assertStorageFailureRollsBack(null, "editclass 1 c/T99");
+    }
+
+    @Test
+    public void execute_storageFailsAfterUnassign_rollsBackMembership() throws Exception {
+        assertStorageFailureRollsBack(null, "unassign 1 1");
+    }
+
+    @Test
+    public void execute_storageFailsAfterAddAttendance_rollsBackAttendance() throws Exception {
+        assertStorageFailureRollsBack(null, "addattendance 1 2 d/2020-02-02");
+    }
+
+    @Test
+    public void execute_storageFailsAfterDeleteAttendance_rollsBackAttendance() throws Exception {
+        assertStorageFailureRollsBack(null, "deleteattendance 1 1 d/2020-01-01");
+    }
+
+    @Test
+    public void execute_storageFailsWithClassFilter_rollbackKeepsClassFilterAndAttendanceDisplay()
+            throws Exception {
+        assertStorageFailureRollsBack("listbyclass 1", "edit 1 n/Zed");
+        assertEquals("CS2103", model.getAttendanceDisplayClass().orElseThrow().getModuleCode().toString());
+    }
+
+    @Test
+    public void execute_storageFailsAfterEditClassWithClassFilter_rollbackKeepsOriginalClassFilter()
+            throws Exception {
+        assertStorageFailureRollsBack("listbyclass 1", "editclass 1 c/T99");
+        assertEquals("F10-2", model.getAttendanceDisplayClass().orElseThrow().getClassName().toString());
+    }
+
+    @Test
+    public void execute_storageFailsWithStudentClassFilter_rollbackKeepsClassList() throws Exception {
+        assertStorageFailureRollsBack("listbystudent 2", "deleteclass 1");
+    }
+
+    @Test
+    public void execute_storageFailsWithSortedList_rollbackKeepsOrder() throws Exception {
+        assertStorageFailureRollsBack("find Bob", "add sn/A0345678X n/Carol e/carol@example.com");
+    }
+
+    @Test
+    public void execute_accessDeniedAfterEditClass_rollsBackAndReportsPermissionError() throws Exception {
+        prepareStateForRollbackTests(null);
+        ReadOnlyAddressBook before = ((AddressBook) model.getAddressBook()).deepCopy();
+        useStorageThatThrows(DUMMY_AD_EXCEPTION);
+
+        CommandException e = Assertions.assertThrows(CommandException.class, () -> logic.execute("editclass 1 c/T99"));
+        assertEquals(String.format(LogicManager.FILE_OPS_PERMISSION_ERROR_FORMAT, DUMMY_AD_EXCEPTION.getMessage()),
+                e.getMessage());
+        assertEquals(before, model.getAddressBook());
+    }
+
+    /**
+     * Sets up two students, two classes, memberships and attendance, optionally applies {@code displayCommand},
+     * then checks that {@code failingCommand} is rolled back when saving fails: the data, history and displayed
+     * lists must all match what they were before the command.
+     */
+    private void assertStorageFailureRollsBack(String displayCommand, String failingCommand) throws Exception {
+        prepareStateForRollbackTests(displayCommand);
+        ReadOnlyAddressBook dataBefore = ((AddressBook) model.getAddressBook()).deepCopy();
+        List<Person> personsBefore = List.copyOf(model.getFilteredPersonList());
+        List<AcademicClass> classesBefore = List.copyOf(model.getFilteredAcademicClassList());
+        List<String> historyBefore = List.copyOf(logic.getCommandHistory());
+        useStorageThatThrows(DUMMY_IO_EXCEPTION);
+
+        assertThrows(CommandException.class, () -> logic.execute(failingCommand));
+
+        assertEquals(dataBefore, model.getAddressBook());
+        assertEquals(personsBefore, model.getFilteredPersonList());
+        assertEquals(classesBefore, model.getFilteredAcademicClassList());
+        assertEquals(historyBefore, logic.getCommandHistory());
+    }
+
+    private void prepareStateForRollbackTests(String displayCommand) throws Exception {
+        logic.execute("add sn/A0123456X n/Alice e/alice@example.com");
+        logic.execute("add sn/A0234567X n/Bob e/bob@example.com");
+        logic.execute("addclass m/CS2103 c/F10-2");
+        logic.execute("addclass m/ST2334 c/T24");
+        logic.execute("assign 1 1");
+        logic.execute("assign 1 2");
+        logic.execute("assign 2 2");
+        logic.execute("addattendance 1 1 d/2020-01-01");
+        logic.execute("addattendance 2 2 d/2020-01-02");
+        if (displayCommand != null) {
+            logic.execute(displayCommand);
+        }
+    }
+
+    private void useStorageThatThrows(IOException exception) {
+        logic = new LogicManager(model, new StorageManager(new JsonAddressBookStorage(
+                temporaryFolder.resolve("failing.json")) {
+            @Override
+            public void saveAddressBook(ReadOnlyAddressBook addressBook) throws IOException {
+                throw exception;
+            }
+        }, new JsonUserPrefsStorage(temporaryFolder.resolve("failingPrefs.json"))));
     }
 }

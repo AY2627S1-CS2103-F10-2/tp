@@ -2,6 +2,7 @@ package seedu.address.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_NAME_BOB;
@@ -54,6 +55,36 @@ public class AddressBookTest {
         assertThrows(NullPointerException.class, ()
                 -> addressBook.setCommandHistory(Arrays.asList("help", null)));
         assertEquals(List.of("list"), addressBook.getCommandHistory());
+    }
+
+    @Test
+    public void deepCopy_sharesNoObjectsWithOriginal() {
+        AcademicClass storedClass = new AcademicClass(new ModuleCode("CS2103T"), new ClassName("F10-2"));
+        addressBook.addPerson(ALICE);
+        addressBook.addAcademicClass(storedClass);
+        addressBook.assignStudentToClass(ALICE, storedClass);
+        addressBook.addAttendance(ALICE, storedClass, java.time.LocalDate.of(2024, 2, 28));
+        addressBook.setCommandHistory(List.of("list"));
+
+        AddressBook copy = addressBook.deepCopy();
+
+        assertEquals(addressBook, copy);
+        assertEquals(List.of("list"), copy.getCommandHistory());
+        Person copiedPerson = copy.getPersonList().get(0);
+        AcademicClass copiedClass = copy.getAcademicClassList().get(0);
+        assertNotSame(ALICE, copiedPerson);
+        assertNotSame(storedClass, copiedClass);
+        // The copy's class and attendance refer to the copy's own person and class.
+        assertSame(copiedPerson, copiedClass.getStudents().iterator().next());
+        assertSame(copiedPerson, copy.getAttendanceList().get(0).getStudent());
+        assertSame(copiedClass, copy.getAttendanceList().get(0).getAcademicClass());
+
+        // Changing the original leaves the copy untouched.
+        addressBook.unassignStudentFromClass(ALICE, storedClass);
+        addressBook.addAttendance(ALICE, storedClass, java.time.LocalDate.of(2024, 2, 29));
+        assertEquals(Set.of(copiedPerson), copiedClass.getStudents());
+        assertEquals(Set.of(java.time.LocalDate.of(2024, 2, 28)),
+                copy.getAttendanceList().get(0).getAttendedDates());
     }
 
     @Test

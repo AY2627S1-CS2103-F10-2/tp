@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -136,6 +137,43 @@ public class ModelManager implements Model {
     @Override
     public ReadOnlyAddressBook getAddressBook() {
         return addressBook;
+    }
+
+    private record DisplayState(Predicate<Person> personFilter, AcademicClass personFilterClass,
+            Optional<Integer> personFilterThreshold, Comparator<? super Person> comparator,
+            AcademicClass attendanceDisplayClass, Predicate<AcademicClass> academicClassFilter,
+            StudentNumber classFilterStudentNumber) {}
+
+    @Override
+    public Rollback createRollback() {
+        ReadOnlyAddressBook savedData = addressBook.deepCopy();
+        DisplayState savedDisplay = new DisplayState(personFilter, personFilterClass, personFilterThreshold,
+                sortedPersons.getComparator(), attendanceDisplayClass, academicClassFilter,
+                classFilterStudentNumber);
+        return () -> restore(savedData, savedDisplay);
+    }
+
+    private void restore(ReadOnlyAddressBook savedData, DisplayState state) {
+        this.addressBook.resetData(savedData);
+        // resetData replaces class objects, so look the saved classes up again by identity.
+        personFilterClass = findStoredClass(state.personFilterClass());
+        attendanceDisplayClass = findStoredClass(state.attendanceDisplayClass());
+        personFilter = state.personFilter();
+        personFilterThreshold = state.personFilterThreshold();
+        academicClassFilter = state.academicClassFilter();
+        classFilterStudentNumber = state.classFilterStudentNumber();
+        sortedPersons.setComparator(state.comparator());
+        refreshFilteredPersonList();
+        refreshFilteredAcademicClassList();
+        logger.fine("Restored address book and previous student and class display");
+    }
+
+    private AcademicClass findStoredClass(AcademicClass academicClass) {
+        if (academicClass == null) {
+            return null;
+        }
+        return addressBook.findAcademicClass(academicClass.getModuleCode(), academicClass.getClassName())
+                .orElse(academicClass);
     }
 
     @Override

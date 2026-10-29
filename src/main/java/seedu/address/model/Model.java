@@ -68,6 +68,24 @@ public interface Model {
     /** Returns the AddressBook */
     ReadOnlyAddressBook getAddressBook();
 
+    /**
+     * Restores the address book data and the student and class list display (filters, sorting and the
+     * attendance display) captured by {@link #createRollback()}.
+     */
+    @FunctionalInterface
+    interface Rollback {
+        void restore();
+    }
+
+    /**
+     * Captures the current address book data and list display. Calling {@link Rollback#restore()} on the result
+     * returns the model to this state, so index-based commands keep resolving against the same lists.
+     * Used to undo a failed command.
+     * A {@code Rollback} is single-use: restoring adopts the saved objects, so restore it at most once and
+     * create a new one for each command.
+     */
+    Rollback createRollback();
+
     /** Returns saved successful commands, oldest first, as an unmodifiable list. */
     List<String> getCommandHistory();
 
