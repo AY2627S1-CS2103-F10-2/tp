@@ -84,6 +84,8 @@
         "appendix-instructions-for-manual-testing": "Appendix: Instructions for manual testing",
         "launch-and-shutdown": "Launch and shutdown",
         "deleting-a-person": "Deleting a person",
+        "deleting-and-editing-academic-classes": "Deleting and editing academic classes",
+        "persistent-command-history": "Persistent command history",
         "assigning-a-student-to-a-class": "Assigning a student to a class",
         "listing-classes-by-student": "Listing classes by student",
         "saving-data": "Saving data"
