@@ -42,6 +42,25 @@ public class AddressBookParserTest {
     private final AddressBookParser parser = new AddressBookParser();
 
     @Test
+    public void parseCommand_unicodeSpaces_treatedAsOrdinarySpaces() throws Exception {
+        String nbsp = String.valueOf((char) 0xA0);
+        String emSpace = String.valueOf((char) 0x2003);
+
+        // between command word and arguments
+        assertEquals(new ListByStudentCommand(INDEX_FIRST_PERSON), parser.parseCommand("listbystudent" + nbsp + "1"));
+
+        // around and between keywords
+        assertEquals(new FindCommand(new NameContainsKeywordsPredicate(List.of("Alice", "Tan"))),
+                parser.parseCommand(nbsp + "find" + emSpace + "Alice" + nbsp + "Tan" + nbsp));
+
+        // between prefixed fields and inside a name
+        Person person = new PersonBuilder().build();
+        String addCommand = PersonUtil.getAddCommand(person);
+        assertEquals(new AddCommand(person), parser.parseCommand(addCommand.replace(" ", nbsp)));
+        assertEquals(parser.parseCommand(addCommand), parser.parseCommand(addCommand.replace(" ", nbsp)));
+    }
+
+    @Test
     public void parseCommand_listByStudent() throws Exception {
         assertEquals(new ListByStudentCommand(INDEX_FIRST_PERSON), parser.parseCommand("listbystudent 1"));
         assertThrows(ParseException.class, () -> parser.parseCommand("listbystudent"));

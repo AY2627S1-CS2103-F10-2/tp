@@ -3,6 +3,8 @@ package seedu.address.ui;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import seedu.address.commons.util.StringUtil;
+
 /** Syntax guidance for drafts, without parsing arguments or accessing application data. */
 final class CommandHints {
     static final String DEFAULT_HINT = "Type a command, then press Enter to run it.";
@@ -27,7 +29,7 @@ final class CommandHints {
 
     /** Returns syntax for a command word; incomplete or invalid arguments do not change the guidance. */
     static String forInput(String draft) {
-        String command = draft.strip().split("\\s+", 2)[0];
+        String command = StringUtil.normalizeWhitespace(draft).strip().split("\\s+", 2)[0];
         if (command.isEmpty()) {
             return DEFAULT_HINT;
         }

@@ -6,11 +6,26 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
+import java.util.regex.Pattern;
 
 /**
  * Helper functions for handling strings.
  */
 public class StringUtil {
+
+    /**
+     * Matches Unicode space separators other than the ordinary space, such as the non-breaking space (U+00A0),
+     * which commonly sneak in when commands are pasted.
+     */
+    private static final Pattern UNICODE_SPACE = Pattern.compile("[\\p{Z}&&[^ ]]");
+
+    /**
+     * Replaces Unicode space separators (e.g. pasted non-breaking spaces) in {@code input} with ordinary spaces.
+     */
+    public static String normalizeWhitespace(String input) {
+        requireNonNull(input);
+        return UNICODE_SPACE.matcher(input).replaceAll(" ");
+    }
 
     /**
      * Returns true if the {@code sentence} contains the {@code word}.
