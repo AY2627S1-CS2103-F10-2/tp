@@ -16,10 +16,10 @@ participant "m:ModelManager" as Model MODEL_COLOR
 end box
 
 note over LogicManager, AddressBookParser
-commandText = "listbyclass 1"
-args = " 1"
+commandText = "listbyclass 1 t/5"
+args = " 1 t/5"
 The displayed class list contains CS2103 (F10-2)
-at index 1.
+at index 1. The attendance threshold is 5.
 end note
 
 [-> LogicManager : execute(commandText)
@@ -37,9 +37,10 @@ AddressBookParser -> Parser : parse(args)
 activate Parser
 note right of Parser
 ParserUtil.parseIndex(args) produces index.
+ParserUtil.parsePositiveInteger(...) produces threshold 5.
 end note
 create Command
-Parser -> Command : ListByClassCommand(index)
+Parser -> Command : ListByClassCommand(index, Optional.of(5))
 activate Command
 Command --> Parser
 deactivate Command
@@ -59,21 +60,13 @@ Check index against lastShownList.size().
 academicClass = lastShownList.get(index.getZeroBased()).
 end note
 
-Command -> Model : filterPersonsByClass(academicClass)
+Command -> Model : filterPersonsByClassAndDisplayAttendance(academicClass, threshold)
 activate Model
 note right of Model
-Filter students by class membership
-and sort by name.
+Filter class members with fewer than 5
+attendance dates for this class, sort by name,
+set attendance display class, and refresh students.
 The class view is unchanged.
-end note
-Model --> Command
-deactivate Model
-
-Command -> Model : setAttendanceDisplayClass(academicClass)
-activate Model
-note right of Model
-Set the class used to display attendance
-and refresh the student view.
 end note
 Model --> Command
 deactivate Model
@@ -84,7 +77,7 @@ Model --> Command : displayedPersons
 deactivate Model
 
 create Result
-Command -> Result : CommandResult(successMessage)
+Command -> Result : CommandResult("Listed N students ... with fewer than 5 dates.")
 activate Result
 Result --> Command
 deactivate Result
