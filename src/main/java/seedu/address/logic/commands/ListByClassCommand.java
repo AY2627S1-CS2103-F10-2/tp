@@ -29,8 +29,11 @@ public class ListByClassCommand extends Command {
             + "Parameters: INDEX [" + PREFIX_THRESHOLD + "THRESHOLD]\n"
             + "Example: " + COMMAND_WORD + " 1 " + PREFIX_THRESHOLD + "5";
     public static final String MESSAGE_SUCCESS = "Listed %1$d students taking %2$s (%3$s).";
+    public static final String MESSAGE_SINGLE_STUDENT_SUCCESS = "Listed 1 student taking %1$s (%2$s).";
     public static final String MESSAGE_SUCCESS_WITH_THRESHOLD =
             "Listed %1$d students taking %2$s (%3$s) with fewer than %4$d recorded attendance dates.";
+    public static final String MESSAGE_SINGLE_STUDENT_SUCCESS_WITH_THRESHOLD =
+            "Listed 1 student taking %1$s (%2$s) with fewer than %3$d recorded attendance dates.";
 
     private static final Logger logger = LogsCenter.getLogger(ListByClassCommand.class);
 
@@ -68,13 +71,21 @@ public class ListByClassCommand extends Command {
         AcademicClass academicClass = lastShownList.get(index.getZeroBased());
         model.filterPersonsByClassAndDisplayAttendance(academicClass, threshold);
         int count = model.getFilteredPersonList().size();
-        logger.info("Listed " + count + " students for academic class "
+        logger.info("Listed " + count + " " + (count == 1 ? "student" : "students") + " for academic class "
                 + academicClass.getModuleCode() + " (" + academicClass.getClassName() + ")"
                 + threshold.map(value -> " with fewer than " + value + " recorded attendance dates").orElse(""));
-        String feedback = threshold.map(value -> String.format(MESSAGE_SUCCESS_WITH_THRESHOLD, count,
-                academicClass.getModuleCode(), academicClass.getClassName(), value))
-                .orElseGet(() -> String.format(MESSAGE_SUCCESS, count,
-                        academicClass.getModuleCode(), academicClass.getClassName()));
+        String feedback;
+        if (count == 1) {
+            feedback = threshold.map(value -> String.format(MESSAGE_SINGLE_STUDENT_SUCCESS_WITH_THRESHOLD,
+                    academicClass.getModuleCode(), academicClass.getClassName(), value))
+                    .orElseGet(() -> String.format(MESSAGE_SINGLE_STUDENT_SUCCESS,
+                            academicClass.getModuleCode(), academicClass.getClassName()));
+        } else {
+            feedback = threshold.map(value -> String.format(MESSAGE_SUCCESS_WITH_THRESHOLD, count,
+                    academicClass.getModuleCode(), academicClass.getClassName(), value))
+                    .orElseGet(() -> String.format(MESSAGE_SUCCESS, count,
+                            academicClass.getModuleCode(), academicClass.getClassName()));
+        }
         return new CommandResult(feedback);
     }
 
