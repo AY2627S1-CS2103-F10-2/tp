@@ -182,7 +182,7 @@ public class DeleteAttendanceCommandTest {
 
     @Test
     public void toString_containsTargetAndDate() {
-        assertEquals(DeleteAttendanceCommand.class.getCanonicalName() + "{index="
+        assertEquals(DeleteAttendanceCommand.class.getCanonicalName() + "{studentIndex="
                 + Index.fromOneBased(2) + ", classIndex=" + Index.fromOneBased(1) + ", date=2024-02-29}",
                 command(DATE).toString());
     }

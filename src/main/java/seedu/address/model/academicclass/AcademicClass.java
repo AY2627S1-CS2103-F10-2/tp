@@ -68,8 +68,16 @@ public class AcademicClass implements StudentObserver {
     }
 
     /**
+     * Returns true if the given student is assigned to this class.
+     */
+    public boolean hasStudent(Person person) {
+        return students.contains(person);
+    }
+
+    /**
      * Assigns the given student to this class.
      * Returns true if membership was added, or false if the student was already assigned.
+     *
      * @throws NullPointerException if {@code person} is null.
      */
     public boolean assignStudent(Person person) {

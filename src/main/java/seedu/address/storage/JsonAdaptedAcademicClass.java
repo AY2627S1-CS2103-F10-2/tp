@@ -61,6 +61,7 @@ class JsonAdaptedAcademicClass {
     /**
      * Restores memberships using the address book's stored students, after all students have been loaded.
      * Repeated identifiers result in a single membership.
+     *
      * @throws IllegalValueException if an identifier is invalid or refers to a missing student.
      */
     public void restoreStudents(AcademicClass academicClass, ReadOnlyAddressBook addressBook)

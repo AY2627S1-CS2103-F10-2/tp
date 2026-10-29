@@ -31,4 +31,11 @@ public class FindCommandParserTest {
         assertParseSuccess(parser, " \n Alice \n \t Bob  \t", expectedFindCommand);
     }
 
+    @Test
+    public void parse_backslashOrForwardSlash_matchesStoredForwardSlash() {
+        FindCommand expected = new FindCommand(new NameContainsKeywordsPredicate(List.of("S/O", "O'Connor")));
+        assertParseSuccess(parser, "S\\O O'Connor", expected);
+        assertParseSuccess(parser, "S/O O'Connor", expected);
+    }
+
 }

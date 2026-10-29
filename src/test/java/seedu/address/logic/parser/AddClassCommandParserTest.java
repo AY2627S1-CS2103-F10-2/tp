@@ -35,6 +35,15 @@ public class AddClassCommandParserTest {
     }
 
     @Test
+    public void parse_documentedExamplesAndNumericClassName_success() {
+        for (String[] example : new String[][] {{"CS2103T", "F01"}, {"CS2103T", "F10-2"},
+            {"ST2334", "T24"}, {"CS2103", "01"}}) {
+            AcademicClass academicClass = new AcademicClass(new ModuleCode(example[0]), new ClassName(example[1]));
+            assertParseSuccess(parser, " m/" + example[0] + " c/" + example[1], new AddClassCommand(academicClass));
+        }
+    }
+
+    @Test
     public void parse_repeatedValue_failure() {
         assertParseFailure(parser, " m/CS2103 m/CS2103T c/F10-2",
                 String.format(MESSAGE_DUPLICATE_PARAMETER, PREFIX_MODULE_CODE));
@@ -54,7 +63,7 @@ public class AddClassCommandParserTest {
         assertParseFailure(parser, " m/ c/F10-2", ModuleCode.MESSAGE_EMPTY);
 
         // invalid module codes
-        assertParseFailure(parser, " m/2103 c/F10-2", ModuleCode.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, " m/123 c/F01", ModuleCode.MESSAGE_CONSTRAINTS);
         assertParseFailure(parser, " m/CS 2103 c/F10-2", ModuleCode.MESSAGE_CONSTRAINTS);
         assertParseFailure(parser, " m/CS-2103 c/F10-2", ModuleCode.MESSAGE_CONSTRAINTS);
 
