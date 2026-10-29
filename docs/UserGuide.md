@@ -95,6 +95,8 @@ Shows a message explaining how to access the help page.
 
 Format: `help`
 
+You can also open Help from the `Help` menu or by pressing `F1`. If the Help window is already open,
+these actions bring it to the front and restore it if it is minimized.
 
 ### Adding a student: `add`
 
@@ -694,7 +696,6 @@ If any of these command words are entered, TAssist displays `Unknown command.`
 ## Known issues
 
 1. **When using multiple screens**, if you move the application to a secondary screen, and later switch to using only the primary screen, the GUI will open off-screen. The remedy is to delete the `preferences.json` file created by the application before running the application again.
-2. **If you minimize the Help Window** and then run the `help` command (or use the `Help` menu, or the keyboard shortcut `F1`) again, the original Help Window will remain minimized, and no new Help Window will appear. The remedy is to manually restore the minimized Help Window.
 
 --------------------------------------------------------------------------------------------------------------------
 
