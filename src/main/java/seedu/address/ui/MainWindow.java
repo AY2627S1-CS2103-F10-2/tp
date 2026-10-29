@@ -378,7 +378,7 @@ public class MainWindow extends UiPart<Stage> {
 
     /** Resolves a class index before execution, since commands can change the displayed class list. */
     private OptionalInt getCommandClassPosition(String commandText) {
-        String[] tokens = commandText.strip().split("\\s+");
+        String[] tokens = StringUtil.normalizeWhitespace(commandText).strip().split("\\s+");
         int indexToken = switch (tokens[0]) {
             case ListByClassCommand.COMMAND_WORD, EditClassCommand.COMMAND_WORD -> 1;
             case AssignCommand.COMMAND_WORD, AddAttendanceCommand.COMMAND_WORD, DeleteAttendanceCommand.COMMAND_WORD,
@@ -400,7 +400,7 @@ public class MainWindow extends UiPart<Stage> {
 
     /** Captures the affected student before assignment changes can remove it from the displayed list. */
     private Optional<Person> getCommandStudent(String commandText) {
-        String[] tokens = commandText.strip().split("\\s+");
+        String[] tokens = StringUtil.normalizeWhitespace(commandText).strip().split("\\s+");
         if ((!tokens[0].equals(AssignCommand.COMMAND_WORD) && !tokens[0].equals(UnassignCommand.COMMAND_WORD))
                 || tokens.length < 2 || !StringUtil.isNonZeroUnsignedInteger(tokens[1])) {
             return Optional.empty();
