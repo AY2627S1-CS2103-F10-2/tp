@@ -316,6 +316,45 @@ public class WorkspaceTest {
     }
 
     @Test
+    public void workspace_clickingPanelSurfaces_focusesListAndEnablesArrowScrolling() throws Exception {
+        runOnFxThreadAndWait(() -> {
+            Stage stage = new Stage();
+            try {
+                openWindow(stage, createLogic(30, 30));
+                TextField input = (TextField) stage.getScene().lookup("#commandTextField");
+                for (String prefix : List.of("student", "class")) {
+                    String listId = prefix.equals("student") ? "personListView" : "academicClassListView";
+                    ListView<?> list = (ListView<?>) stage.getScene().lookup("#" + listId);
+                    Node header = stage.getScene().lookup("#" + prefix + "Header");
+                    VirtualFlow<?> flow = (VirtualFlow<?>) list.lookup(".virtual-flow");
+                    Node panel = stage.getScene().lookup(prefix.equals("student")
+                            ? ".student-workspace" : ".class-sidebar");
+                    for (Node target : List.of(list, flow, flow.getFirstVisibleCell(),
+                            header, header.getParent(), panel)) {
+                        press(list, KeyCode.HOME);
+                        layout(stage);
+                        input.requestFocus();
+                        click(target);
+                        assertSame(list, stage.getScene().getFocusOwner(),
+                                prefix + " click target: " + target);
+                        double beforeDown = flow.getPosition();
+                        press(stage.getScene().getFocusOwner(), KeyCode.DOWN);
+                        layout(stage);
+                        assertTrue(flow.getPosition() > beforeDown, prefix + " Down must scroll");
+                        double beforeUp = flow.getPosition();
+                        press(stage.getScene().getFocusOwner(), KeyCode.UP);
+                        layout(stage);
+                        assertTrue(flow.getPosition() < beforeUp, prefix + " Up must scroll");
+                        assertNull(list.getSelectionModel());
+                    }
+                }
+            } finally {
+                stage.hide();
+            }
+        });
+    }
+
+    @Test
     public void workspace_draftsAndCardClicks_leaveDataUntilCommandExecutes() throws Exception {
         runOnFxThreadAndWait(() -> {
             Logic logic = createLogic();
@@ -397,6 +436,8 @@ public class WorkspaceTest {
                         + "tg/wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww "
                         + "t/aVeryLongTagThatMustWrapWithinTheStudentCard");
                 stage.setWidth(720);
+                settle(stage);
+                students.scrollTo(students.getItems().size() - 1);
                 settle(stage);
                 capture(stage, "layout-long-details");
             } finally {
@@ -513,16 +554,17 @@ public class WorkspaceTest {
                 scrollTargets.clear();
                 execute(input, "list");
                 execute(input, "assign 1 32");
-                assertTrue(scrollTargets.isEmpty());
-                assertEquals(0, flow.getFirstVisibleCell().getIndex());
-                execute(input, "addattendance 1 32 d/2020-01-03");
                 settle(stage);
                 assertEquals(List.of(31), scrollTargets);
+                assertEquals(31, flow.getLastVisibleCell().getIndex());
+                execute(input, "addattendance 1 32 d/2020-01-03");
+                settle(stage);
+                assertEquals(List.of(31, 31), scrollTargets);
                 assertEquals(31, flow.getLastVisibleCell().getIndex());
                 press(classes, KeyCode.HOME);
                 execute(input, "deleteattendance 1 32 d/2020-01-03");
                 settle(stage);
-                assertEquals(List.of(31, 31), scrollTargets);
+                assertEquals(List.of(31, 31, 31), scrollTargets);
                 assertEquals(31, flow.getLastVisibleCell().getIndex());
 
                 execute(input, "listbystudent 1");
@@ -543,6 +585,68 @@ public class WorkspaceTest {
                 assertTrue(scrollTargets.isEmpty(), "Failed commands must not scroll a valid class target");
                 assertEquals(0, flow.getFirstVisibleCell().getIndex());
                 assertNull(classes.getSelectionModel());
+            } finally {
+                stage.hide();
+            }
+        });
+    }
+
+    @Test
+    public void workspace_membershipChanges_revealBothTargetsWithoutChangingFiltersOrFocus() throws Exception {
+        runOnFxThreadAndWait(() -> {
+            Logic logic = createLogic(30, 40);
+            Stage stage = new Stage();
+            try {
+                openWindow(stage, logic);
+                TextField input = (TextField) stage.getScene().lookup("#commandTextField");
+                ListView<?> students = (ListView<?>) stage.getScene().lookup("#personListView");
+                ListView<?> classes = (ListView<?>) stage.getScene().lookup("#academicClassListView");
+                VirtualFlow<?> studentFlow = (VirtualFlow<?>) students.lookup(".virtual-flow");
+                VirtualFlow<?> classFlow = (VirtualFlow<?>) classes.lookup(".virtual-flow");
+                List<Integer> studentTargets = new ArrayList<>();
+                List<Integer> classTargets = new ArrayList<>();
+                students.addEventHandler(ScrollToEvent.scrollToTopIndex(),
+                        event -> studentTargets.add(event.getScrollTarget()));
+                classes.addEventHandler(ScrollToEvent.scrollToTopIndex(),
+                        event -> classTargets.add(event.getScrollTarget()));
+                input.requestFocus();
+                for (String command : List.of("  assign   43   32  ", "unassign 43 32")) {
+                    press(students, KeyCode.HOME);
+                    press(classes, KeyCode.HOME);
+                    studentTargets.clear();
+                    classTargets.clear();
+                    execute(input, command);
+                    settle(stage);
+                    assertEquals(List.of(42), studentTargets);
+                    assertEquals(List.of(31), classTargets);
+                    assertEquals(42, studentFlow.getLastVisibleCell().getIndex());
+                    assertEquals(31, classFlow.getLastVisibleCell().getIndex());
+                    assertSame(input, stage.getScene().getFocusOwner());
+                    assertNull(students.getSelectionModel());
+                    assertNull(classes.getSelectionModel());
+                }
+                studentTargets.clear();
+                classTargets.clear();
+                input.setText("assign 43 32");
+                assertTrue(studentTargets.isEmpty(), "Typing must not move either panel");
+                assertTrue(classTargets.isEmpty());
+                for (String invalid : List.of("unassign 43 32", "assign 999 32", "assign 43 999",
+                        "assign 0 32", "assign 999999999999999999 32", "assign")) {
+                    execute(input, invalid);
+                    assertTrue(studentTargets.isEmpty(), "Failed commands must not reveal a student");
+                    assertTrue(classTargets.isEmpty(), "Failed commands must not reveal a class");
+                }
+                execute(input, "assign 43 32");
+                execute(input, "listbyclass 32");
+                studentTargets.clear();
+                classTargets.clear();
+                execute(input, "unassign 1 32");
+                settle(stage);
+                assertTrue(logic.getFilteredPersonList().isEmpty());
+                assertTrue(studentTargets.isEmpty(), "A filtered-out student must not reveal a replacement row");
+                assertEquals(List.of(31), classTargets);
+                execute(input, "list");
+                assertEquals(43, logic.getFilteredPersonList().size());
             } finally {
                 stage.hide();
             }

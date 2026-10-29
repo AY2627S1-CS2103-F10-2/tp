@@ -52,7 +52,8 @@
 
         <SplitPane fx:id="workspaceSplitPane" dividerPositions="0.45" VBox.vgrow="ALWAYS"
                    styleClass="workspace-bottom">
-          <VBox minWidth="220" spacing="12" styleClass="student-workspace">
+          <VBox minWidth="220" spacing="12" styleClass="student-workspace"
+                onMousePressed="#handleStudentPanelMousePressed">
             <HBox alignment="CENTER_LEFT" spacing="8">
               <Label fx:id="studentHeader" text="Students" styleClass="section-title" minWidth="-Infinity" />
               <Region HBox.hgrow="ALWAYS" />
@@ -61,7 +62,8 @@
             </HBox>
             <StackPane fx:id="personListPanelPlaceholder" minWidth="0" VBox.vgrow="ALWAYS" />
           </VBox>
-          <VBox minWidth="170" spacing="12" styleClass="class-sidebar">
+          <VBox minWidth="170" spacing="12" styleClass="class-sidebar"
+                onMousePressed="#handleClassPanelMousePressed">
             <HBox alignment="CENTER_LEFT" spacing="8">
               <Label fx:id="classHeader" text="Classes" styleClass="section-title" minWidth="-Infinity" />
               <Region HBox.hgrow="ALWAYS" />

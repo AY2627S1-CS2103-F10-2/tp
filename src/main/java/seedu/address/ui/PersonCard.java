@@ -10,7 +10,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -95,9 +94,6 @@ public class PersonCard extends UiPart<Region> {
             telegram.setVisible(false);
             telegram.setManaged(false);
         }
-        for (Label detail : List.of(studentNumber, email, telegram)) {
-            constrainWrapping(detail, details);
-        }
         if (attendanceClass == null) {
             attendanceSection.setVisible(false);
             attendanceSection.setManaged(false);
@@ -116,18 +112,10 @@ public class PersonCard extends UiPart<Region> {
                     Label tagLabel = new Label(tag.tagName);
                     tagLabel.setWrapText(true);
                     tagLabel.setMinWidth(0);
-                    constrainWrapping(tagLabel, tags);
                     tags.getChildren().add(tagLabel);
                 });
         tags.setManaged(!tags.getChildren().isEmpty());
         tags.setVisible(!tags.getChildren().isEmpty());
-    }
-
-    private void constrainWrapping(Label label, FlowPane parent) {
-        label.maxWidthProperty().bind(parent.widthProperty());
-        // FlowPane measures preferred height without a width; reserve enough height for wrapped text.
-        label.minHeightProperty().bind(Bindings.createDoubleBinding(() -> label.prefHeight(parent.getWidth()),
-                parent.widthProperty(), label.fontProperty(), label.textProperty(), label.insetsProperty()));
     }
 
     private void updateAttendance(AcademicClass attendanceClass, List<Attendance> attendanceRecords) {
