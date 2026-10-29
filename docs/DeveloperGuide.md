@@ -175,40 +175,46 @@ This section describes some noteworthy details on how certain features are imple
 
 The `listbyclass` command displays students assigned to the class at a one-based index in the currently displayed
 class list, not necessarily the full stored class list.
+It optionally accepts a positive attendance threshold and displays only class members with fewer than that many
+recorded attendance dates for the selected class. Students with no attendance recorded for the class have a count of
+zero; dates recorded for other classes do not contribute. Without a threshold, all members are displayed.
 It changes the student view, not the stored student records, class memberships, or the current class view.
 
-The following sequence diagram traces `listbyclass 1`, assuming CS2103 (F10-2) is the first displayed class
-and saving succeeds.
+The following sequence diagram traces `listbyclass 1 t/5`, assuming CS2103 (F10-2) is the first displayed class,
+the selected threshold is 5, and saving succeeds.
 It starts at `LogicManager`, omitting the UI caller. The input strings are defined in the diagram note.
 `m:ModelManager` is accessed through the `Model` interface.
 
-<puml src="diagrams/ListByClassSequenceDiagram.puml" alt="Successful ListByClass execution from index parsing through displayed class selection, student filtering, attendance display setup and result creation" />
+<puml src="diagrams/ListByClassSequenceDiagram.puml" alt="Successful listbyclass execution with an attendance threshold, from parsing through class filtering, attendance display and result creation" />
 
 1. `LogicManager` passes `commandText` to `AddressBookParser`, which creates a `ListByClassCommandParser`
-   and calls `parse(args)`. The command parser uses `ParserUtil#parseIndex(args)` to validate the positive integer
-   and creates a `ListByClassCommand` with the resulting `Index`.
+   and calls `parse(args)`. The parser uses `ParserUtil#parseIndex(args)` for the displayed class index and,
+   if `t/THRESHOLD` is present, `ParserUtil#parsePositiveInteger(...)` to validate the positive threshold.
+   It creates a `ListByClassCommand` with the index and optional threshold.
 2. `LogicManager` calls `execute(model)` on the command. The command obtains the currently displayed classes through
    `Model#getFilteredAcademicClassList()`, checks the index against the list size, and selects the class using
    `lastShownList.get(index.getZeroBased())`.
-3. The command calls `Model#filterPersonsByClass(academicClass)`. `ModelManager` installs a membership predicate
-   and uses `PersonNameComparator` to display matching students alphabetically. Name comparison ignores case,
-   with original spelling as a tie-breaker. The underlying student storage order is unchanged.
-4. The command calls `Model#setAttendanceDisplayClass(academicClass)` to select the class used for attendance display.
-   `ModelManager` refreshes the student view so the displayed attendance corresponds to that class.
-5. The command obtains the displayed student list and uses its size and the class identity to construct the success message:
-   `Listed N students taking CS2103 (F10-2).` It returns a `CommandResult` to `LogicManager`.
-6. `LogicManager` saves the address book before returning the result, even though this command only changes the view.
+3. The command calls `Model#filterPersonsByClassAndDisplayAttendance(academicClass, threshold)`. `ModelManager`
+   combines the class-membership predicate with the optional threshold predicate, using attendance counts for the
+   selected class. It also selects the class for attendance display and sorts matching students alphabetically with
+   `PersonNameComparator`. Name comparison ignores case, with original spelling as a tie-breaker. The student storage
+   order and current class view are unchanged.
+4. The command obtains the displayed student list and uses its size, the class identity, and the optional threshold
+   to construct the success message. With `t/5`, it reports `Listed N students taking CS2103 (F10-2) with fewer
+   than 5 recorded attendance dates.` It returns a `CommandResult` to `LogicManager`.
+5. `LogicManager` saves the address book before returning the result, even though this command only changes the view.
    The view filter itself is not persisted.
 
-The diagram summarises index parsing and class selection in notes. It omits model-internal filtering and refresh calls,
-logging (including its extra student-list access), list-size and class-field access, message formatting, and storage calls
-to keep the successful path readable.
+The diagram summarises index and threshold parsing, class selection, and the combined model call. It omits
+model-internal filtering and refresh calls, logging (including its extra student-list access), list-size and class-field
+access, message formatting, and storage calls to keep the successful path readable.
 
 **Other outcomes:** Missing, non-integer, zero, negative, or overflowing indices cause a `ParseException` before
-command creation. A positive index beyond the displayed class list (including when that list is empty) causes
-a `CommandException` before the student filter or attendance display changes. A valid class with no students succeeds:
-the student view becomes empty and the result reports zero students. If saving fails after filtering,
-`LogicManager` reports a `CommandException`; the already-updated view is not rolled back.
+command creation. A malformed, zero, negative, or overflowing threshold is also rejected before command execution.
+A positive index beyond the displayed class list (including when that list is empty) causes a `CommandException`
+before the student filter or attendance display changes. A valid class with no matching students succeeds: the student
+view becomes empty and the result reports zero students. If saving fails after filtering, `LogicManager` reports a
+`CommandException`; the already-updated view is not rolled back.
 
 ### Recording and removing attendance
 
