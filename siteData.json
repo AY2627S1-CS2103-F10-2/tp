@@ -87,6 +87,7 @@
         "deleting-and-editing-academic-classes": "Deleting and editing academic classes",
         "persistent-command-history": "Persistent command history",
         "assigning-a-student-to-a-class": "Assigning a student to a class",
+        "list-panel-feedback-and-student-card-layout": "List-panel feedback and student-card layout",
         "listing-classes-by-student": "Listing classes by student",
         "saving-data": "Saving data"
       },
@@ -136,6 +137,7 @@
         "tassist-user-guide": "TAssist User Guide",
         "quick-start": "Quick start",
         "features": "Features",
+        "navigating-the-students-and-classes-panels": "Navigating the Students and Classes panels",
         "recalling-previous-commands": "Recalling previous commands",
         "viewing-help-help": "Viewing help: help",
         "adding-a-student-add": "Adding a student: add",
