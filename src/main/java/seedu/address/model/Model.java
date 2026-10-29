@@ -81,6 +81,8 @@ public interface Model {
      * Captures the current address book data and list display. Calling {@link Rollback#restore()} on the result
      * returns the model to this state, so index-based commands keep resolving against the same lists.
      * Used to undo a failed command.
+     * A {@code Rollback} is single-use: restoring adopts the saved objects, so restore it at most once and
+     * create a new one for each command.
      */
     Rollback createRollback();
 
