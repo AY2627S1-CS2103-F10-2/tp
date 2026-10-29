@@ -796,19 +796,18 @@ testers are expected to do more *exploratory* testing.
 
 1. Initial launch
 
-   1. Download the JAR file and copy it into an empty folder.
+   1. Install Java 25 or later. Download the JAR file and copy it into an empty, writable test folder.
 
-   1. Double-click the JAR file.<br>
+   1. Open a terminal in that folder and run `java -jar TAssist.jar`.
+      Alternatively, double-click the JAR if your system associates `.jar` files with a compatible Java installation.<br>
       Expected: The GUI opens with a set of sample contacts. The window size may not be optimal.
 
 1. Saving window preferences
 
    1. Resize the window to an optimal size. Move the window to a different location. Close the window.
 
-   1. Relaunch the app by double-clicking the JAR file.<br>
+   1. Relaunch the app using the same launch method and JAR folder.<br>
        Expected: The most recent window size and location are retained.
-
-1. _{ more test cases … }_
 
 ### Deleting a person
 
@@ -875,10 +874,124 @@ testers are expected to do more *exploratory* testing.
 7. Run `listclass` to restore all classes, and `list` to restore all students.
    Restart the app and repeat Alice's lookup to verify that memberships persist while display filters reset.
 
+### Listing students by class and recording attendance
+
+Use a separate copy of the JAR in a disposable, writable folder. The `clear` command below removes all
+records in that copy. Do not run this setup against your real data. Run each workflow in order and check
+the displayed indices after each change; student and class indices refer to separate panels.
+
+#### Setup
+
+Run these commands one at a time:
+
+```text
+clear
+add sn/A0999801X n/Zoe Test e/zoe.test@example.com
+add sn/A0999802Y n/Alice Test e/alice.test@example.com
+addclass m/CS2103 c/TEST-A
+addclass m/CS2100 c/TEST-B
+assign 1 1
+assign 2 1
+```
+
+Expected: the Students panel lists Zoe then Alice, TEST-A has two students, and TEST-B has none.
+
+#### Class filtering and displayed indices
+
+| Commands (run in order) | Expected result |
+| --- | --- |
+| `listbyclass 1` | Alice is student 1 and Zoe is student 2, in alphabetical order. Only TEST-A members appear. Both classes remain displayed. |
+| `listbyclass 0`, `listbyclass 999`, `listbyclass 1 t/0` | Each is rejected; the student view stays unchanged. |
+| `listbyclass 2` | No students appear because TEST-B is empty. The two stored students are not deleted. |
+| `listbyclass 1` | Alice and Zoe appear again, in alphabetical order. |
+| `addattendance 1 1 d/2024-02-29` | Attendance is recorded for Alice, the currently displayed student 1, rather than Zoe, who was first in insertion order. Alice's card shows the recorded date. |
+| `listbyclass 1 t/1` | Only Zoe appears: Alice has one date and no longer has fewer than one date. |
+| `addattendance 1 1 d/2024-03-01` | Attendance is recorded for Zoe. The active threshold view becomes empty immediately. |
+| `listbyclass 1` | Both students appear; omitting the threshold removes the attendance-count restriction. |
+
+#### Attendance validation and removal
+
+Continue with Alice at student index 1, Zoe at student index 2, and TEST-A at class index 1.
+
+| Commands | Expected result |
+| --- | --- |
+| `addattendance 1 1 d/2024-02-29` | Duplicate attendance is rejected; Alice still has one date. |
+| `addattendance 1 2 d/2024-02-29` | Rejected because Alice is not assigned to TEST-B. |
+| `addattendance 0 1 d/2024-02-29`, `addattendance -1 1 d/2024-02-29`, `addattendance 999 1 d/2024-02-29`, `addattendance 1 999 d/2024-02-29` | Invalid format or displayed-index feedback; no attendance changes. |
+| `addattendance 1 1 d/2024-02-30`, `addattendance 1 1`, `addattendance d/2024-02-29 1 1` | Invalid date or command format; no attendance changes. |
+| `addattendance 1 1 d/DATE` with `DATE` replaced by tomorrow's local date in `YYYY-MM-DD` format | A future date is rejected. |
+| `deleteattendance 1 1 d/2024-02-29` | Only Alice's specified date is removed. Her student record, membership and Zoe's date remain. |
+| Repeat `deleteattendance 1 1 d/2024-02-29` | Attendance-not-recorded feedback; no further changes. |
+| `deleteattendance 0 1 d/2024-02-29`, `deleteattendance 999 1 d/2024-02-29`, `deleteattendance 1 999 d/2024-02-29`, `deleteattendance 1 1 d/2024-02-30` | Invalid format, index or date feedback; no changes. |
+| `listbyclass 1 t/1` | Alice appears with zero dates; Zoe is hidden because she has one date. |
+
+#### Retained attendance after unassignment
+
+Run `listbyclass 1` first to restore Alice (1) and Zoe (2), then:
+
+1. Run `unassign 2 1`. Expected: Zoe disappears from the class-filtered view; Alice remains.
+1. Run `list`. Expected: Zoe is student 1 and Alice is student 2, in insertion order.
+1. Run `addattendance 1 1 d/2024-03-02`. Expected: rejected because Zoe is no longer assigned.
+1. Run `deleteattendance 1 1 d/2024-03-01`. Expected: Zoe's retained date can be removed without reassigning her.
+1. Run `assign 1 1`, then `listbyclass 1`. Expected: both students appear with no attendance dates.
+
+### Preserving student filters after changes
+
+Use a separate disposable JAR folder for this workflow; `clear` removes that folder's records.
+
+| Commands (run in order) | Expected result |
+| --- | --- |
+| `clear`, then `add sn/A0999811X n/Alice Test e/alice.filter@example.com`, then `find Alice` | Only Alice appears. |
+| `add sn/A0999812Y n/Bob Test e/bob.filter@example.com` | Bob is stored but remains hidden by the active search. Alice stays visible. |
+| `add sn/A0999813Z n/Alice Other e/alice.other@example.com` | The new matching student appears as student 2 without clearing the search. |
+| `edit 2 n/Carol Other` | The edited student leaves the results; Alice Test remains. |
+| `delete 1` | The results stay empty rather than revealing Bob and Carol. |
+| `list` | Bob and Carol appear, confirming they were retained. |
+
 ### Saving data
 
-1. Dealing with missing/corrupted data files
+Always use disposable test folders and back up their data before permission or corruption tests.
+Close the main window before changing files, except where a test explicitly asks to keep it open.
 
-   1. _{Explain how to simulate missing or corrupted data files and state the expected behavior.}_
+1. Successful save and restart
 
-1. _{ more test cases … }_
+   1. Complete the setup in **Listing students by class and recording attendance** in a fresh test folder.
+      Run `listbyclass 1`, then `addattendance 1 1 d/2024-02-29`.
+   1. Close the main window and restart the same JAR. Run `listbyclass 1`.<br>
+      Expected: Alice and Zoe remain assigned to TEST-A; Alice's recorded date remains.
+      TEST-B still exists and is empty. Display filters need to be selected again after restart.
+
+1. Storage location and independent JAR copies
+
+   1. Close the app. From a terminal whose working folder is different from the JAR folder, run
+      `java -jar "ABSOLUTE_PATH_TO_TAssist.jar"`, replacing the quoted path with the test JAR's actual path.<br>
+      Expected: the same saved records load, and the status bar points to `data/addressbook.json` beside that JAR.
+   1. Close it and copy only the JAR to another empty writable folder. Launch that copy.<br>
+      Expected: sample students appear rather than the first copy's test records; its storage path is different.
+
+1. Missing or corrupted data
+
+   1. Close the app and rename its test `data/addressbook.json` to `addressbook.backup.json`. Restart.<br>
+      Expected: sample students load because the configured data file is missing. Close without entering commands.
+   1. Create a new `data/addressbook.json` containing only `not-json`, and restart.<br>
+      Expected: the app starts with an empty address book. Do not enter commands, because a successful command
+      can overwrite the invalid file with the current data. Close the main window.
+   1. Move the deliberately invalid file aside and restore the backup as `addressbook.json`. Restart.<br>
+      Expected: the original test records load again.
+
+1. Permission failures (known limitation, related to #207)
+
+   1. In a separate test copy with saved students, keep TAssist open and deny write access to its
+      `data/addressbook.json` using your operating system's file permissions. Record the original permissions
+      so they can be restored; do not change permissions on real data or system folders.
+   1. Run `delete 1`.<br>
+      Current behaviour: a save error appears but the student disappears from the running app. The previous
+      saved file remains unchanged when the write is denied. This is a known limitation, not a successful deletion.
+   1. Do not retry or issue further commands: a later successful save can persist the in-memory deletion.
+      Close using the main window's close button, restore the original permissions and restart.<br>
+      Expected: the student returns from the unchanged saved file.
+   1. For a startup check, use another fresh folder containing only the JAR. Deny file creation in that
+      folder while retaining read/execute access, then launch from a terminal.<br>
+      Expected: no application window opens; the terminal reports that the application lock cannot be accessed.
+      Restore the folder's original permissions after the test. A directory's read-only checkbox alone may not
+      deny writes; use an actual permission restriction.
