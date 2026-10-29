@@ -39,6 +39,24 @@ public class NameTest {
     }
 
     @Test
+    public void isValidName_allowedPunctuation_acceptsStoredNames() {
+        for (String name : new String[] {"Anne-Marie Tan", "Sean O'Connor", "J. K. Tan", "John Tan, Jr.",
+            "Tan Wei Ming (Alex)", "Ravi S/O Kumar", "'t Hooft", "(Alex) Tan", "A/B-C'D.E,F(G)"}) {
+            assertTrue(Name.isValidName(name), name);
+        }
+    }
+
+    @Test
+    public void isValidName_disallowedCharactersOrPunctuationOnly_rejectsName() {
+        for (String name : new String[] {"---", "()", " . , '/- ", "Sean O\u2019Connor", "Anne\u2013Marie",
+            "Anne\u2014Marie", "Anne\u2011Marie", "Jos\u00e9", "Jose\u0301", "\u738b\u660e",
+            "\u0645\u062d\u0645\u062f", "Marcel\u00b7li", "Alex_Name", "Alex@Tan", "Alex+Tan", "Alex&Tan",
+            "Alex\tTan", "Alex\nTan", "Alex\u00a0Tan", "Alex\ud83d\ude00", "Ravi S\\O Kumar", " Alex"}) {
+            assertFalse(Name.isValidName(name), name);
+        }
+    }
+
+    @Test
     public void equals() {
         Name name = new Name("Valid Name");
 

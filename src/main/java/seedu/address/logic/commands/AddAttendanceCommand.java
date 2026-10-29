@@ -25,7 +25,7 @@ public class AddAttendanceCommand extends Command {
     public static final String MESSAGE_DUPLICATE_ATTENDANCE =
             "Attendance for student (%1$s) in %2$s on %3$s is already recorded.";
 
-    private final Index index;
+    private final Index studentIndex;
     private final Index classIndex;
     private final LocalDate date;
 
@@ -33,9 +33,9 @@ public class AddAttendanceCommand extends Command {
      * Creates a command with validated indices and a parsed date.
      * Date eligibility is checked by the model when the command executes.
      */
-    public AddAttendanceCommand(Index index, Index classIndex, LocalDate date) {
-        requireAllNonNull(index, classIndex, date);
-        this.index = index;
+    public AddAttendanceCommand(Index studentIndex, Index classIndex, LocalDate date) {
+        requireAllNonNull(studentIndex, classIndex, date);
+        this.studentIndex = studentIndex;
         this.classIndex = classIndex;
         this.date = date;
     }
@@ -44,16 +44,16 @@ public class AddAttendanceCommand extends Command {
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
         List<Person> displayedStudents = model.getFilteredPersonList();
-        if (index.getZeroBased() >= displayedStudents.size()) {
+        if (studentIndex.getZeroBased() >= displayedStudents.size()) {
             throw new CommandException(Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
         }
-        Person person = displayedStudents.get(index.getZeroBased());
+        Person person = displayedStudents.get(studentIndex.getZeroBased());
         List<AcademicClass> displayedClasses = model.getFilteredAcademicClassList();
         if (classIndex.getZeroBased() >= displayedClasses.size()) {
             throw new CommandException(Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX);
         }
         AcademicClass academicClass = displayedClasses.get(classIndex.getZeroBased());
-        if (!academicClass.getStudents().contains(person)) {
+        if (!academicClass.hasStudent(person)) {
             throw new CommandException(String.format(Messages.MESSAGE_STUDENT_NOT_IN_CLASS,
                     person.getStudentNumber(), academicClass));
         }
@@ -83,14 +83,14 @@ public class AddAttendanceCommand extends Command {
         if (!(other instanceof AddAttendanceCommand otherCommand)) {
             return false;
         }
-        return index.equals(otherCommand.index)
+        return studentIndex.equals(otherCommand.studentIndex)
                 && classIndex.equals(otherCommand.classIndex)
                 && date.equals(otherCommand.date);
     }
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this).add("index", index)
+        return new ToStringBuilder(this).add("studentIndex", studentIndex)
                 .add("classIndex", classIndex).add("date", date).toString();
     }
 }

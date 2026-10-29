@@ -82,6 +82,16 @@ The `UI` component,
 * keeps a reference to the `Logic` component, because the `UI` relies on the `Logic` to execute commands.
 * depends on some classes in the `Model` component because it displays `Person` objects from the model.
 
+Student cards use `WrappingFlowPane` for contact details and tags. It calculates each child's
+wrapped height using the proposed available width, and uses the same row calculation for layout.
+This avoids sizing a newly created or recycled list cell using its previous width. Optional
+Telegram details and empty tag groups remain unmanaged, so they do not reserve layout space.
+
+`MainWindow` forwards primary mouse presses on each outer list panel, including its heading
+and padding, to that panel's list through `requestFocus()`. The outer containers do not add
+extra Tab stops. `ReadOnlyListView` handles arrow, page and Home/End scrolling independently
+of row selection; normal Tab and Shift+Tab traversal remains available.
+
 ### Logic component
 
 **API** : [`Logic.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/logic/Logic.java)
@@ -124,7 +134,7 @@ How the parsing works:
 
 The `Model` component,
 
-* stores the address book data i.e., all `Person` objects (which are contained in a `UniquePersonList` object).
+* stores the address book data i.e., all `Person` objects (which are contained in a `UniquePersonList` object). A `Person` is uniquely identified by its `StudentNumber`: two persons are the same (`Person#isSamePerson()`) if they share a student number. In addition, each `Email` and (if provided) `Telegram` username must be unique across all persons.
 * stores all `AcademicClass` objects in a `UniqueAcademicClassList`. Each class is identified by its `ModuleCode` and `ClassName` and references its assigned students as `Person` objects. Students can belong to multiple classes.
 * stores the `Person` objects selected by the current filter, such as search results, in a separate _filtered_ list. It exposes this list as an unmodifiable `ObservableList<Person>` that the UI can observe and bind to, so the UI updates when the list changes.
 * exposes the academic classes selected by the current filter as an unmodifiable `ObservableList<AcademicClass>` for the UI to observe.
@@ -199,6 +209,89 @@ command creation. A positive index beyond the displayed class list (including wh
 a `CommandException` before the student filter or attendance display changes. A valid class with no students succeeds:
 the student view becomes empty and the result reports zero students. If saving fails after filtering,
 `LogicManager` reports a `CommandException`; the already-updated view is not rolled back.
+
+### Recording and removing attendance
+
+The `addattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD` and
+`deleteattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD` commands update one attended date for a student-class pair.
+Both indices refer to the current displayed lists, which may be filtered independently. They are resolved when
+the command executes, rather than against the full stored lists during parsing.
+
+`Attendance` represents the association between a `Person` and an `AcademicClass`. It stores unique attended dates
+in a `TreeSet<LocalDate>` and derives the attendance count from the set size. `AddressBook` owns the records and
+resolves their endpoints to stored students and classes. Membership eligibility is command policy: additions
+require the student to be assigned to the class, but removals can correct retained history after unassignment.
+
+#### Recording a date
+
+The following success path uses `addattendance 1 2 d/2024-02-29`. The selected student is assigned to the selected
+class, the date is not in the future, and it has not already been recorded for that pair.
+
+<puml src="diagrams/AddAttendanceSequenceDiagram.puml" alt="Successful addattendance execution from parsing and displayed index selection through membership validation, recording a date and refreshing the student view" />
+
+[Open the recording diagram at full size](diagrams/AddAttendanceSequenceDiagram.png).
+
+1. `LogicManager` calls `AddressBookParser#parseCommand(commandText)`, which delegates to
+   `AddAttendanceCommandParser#parse(args)`. `AttendanceParserUtil#parseArguments` rejects unknown or duplicate
+   prefixes and requires `d/`. `ParserUtil#parseIndices` parses exactly two positive indices;
+   `ParserUtil#parseAttendanceDate` validates the calendar date. The parser creates an `AddAttendanceCommand`.
+2. The command obtains `Model#getFilteredPersonList()`, validates the student index and selects the student.
+   It then obtains `Model#getFilteredAcademicClassList()`, validates the class index and selects the class.
+   It checks membership before attempting to record attendance.
+3. The command calls `Model#addAttendance(person, academicClass, date)`. `ModelManager` delegates to
+   `AddressBook`, which reuses the pair's record or creates one if none exists. `Attendance#addDate` rejects
+   future dates using the computer's local calendar date and returns whether the date was newly added.
+4. On success, `ModelManager#refreshFilteredPersonList()` re-evaluates the existing predicate and recomputes
+   attendance counts when a class threshold is active. Filters and ordering are retained, but students who
+   reach the threshold disappear and displayed indices may shift. The UI observes the list and refreshes its cards.
+5. The command returns a success `CommandResult`. `LogicManager` updates command history and saves the address
+   book through `Storage` before returning the result.
+
+#### Removing a date
+
+The following success path uses `deleteattendance 1 2 d/2024-02-29`. The date is already recorded for the selected
+student-class pair. The student and class still exist, but current membership is not required.
+
+<puml src="diagrams/DeleteAttendanceSequenceDiagram.puml" alt="Successful deleteattendance execution from parsing and displayed index selection through removal of a recorded date and student view refresh" />
+
+[Open the removal diagram at full size](diagrams/DeleteAttendanceSequenceDiagram.png).
+
+1. `DeleteAttendanceCommandParser` uses the same argument, index and date parsing helpers, then creates a
+   `DeleteAttendanceCommand`. The command validates and resolves the displayed student and class indices in that order.
+2. The command calls `Model#removeAttendance(person, academicClass, date)` without a membership check.
+   `ModelManager` delegates to `AddressBook`, which resolves stored endpoints and locates their attendance record.
+   `Attendance#removeDate` removes only the specified date and returns whether it existed.
+3. A successful removal triggers the same student-view refresh as an addition. Other histories and memberships
+   are unchanged. Removing the last date leaves a zero count; it does not delete the student or class.
+4. The command returns a success `CommandResult`, and `LogicManager` updates command history and saves the address book.
+
+Both diagrams follow the existing Logic/Model colours and start at `LogicManager`, omitting the UI caller.
+The constructor arguments denote the parsed student index, class index and date. Parser helpers, list indexing,
+membership inspection, private command helpers, model internals, logging, history and storage calls are summarised
+in notes rather than shown as additional lifelines. `ModelManager` is accessed through the `Model` interface.
+
+#### Validation, persistence and lifecycle
+
+* Invalid argument structure, non-positive or overflowing indices, and malformed or impossible dates cause a
+  `ParseException` before command creation. Date syntax uses years `0001` to `9999`; future-date eligibility is
+  checked by the model during execution, not by the parser.
+* An index beyond its displayed list, including an empty list, causes a `CommandException` before mutation.
+  Adding attendance for an unassigned student also fails before mutation.
+* A duplicate addition or an absent date on removal returns `false` from the model; the command converts it
+  into a `CommandException`. Model `IllegalArgumentException`s, including future-date errors, are also converted
+  into command failures. Rejected operations do not change attendance.
+* Previously recorded dates remain removable after a clock rollback or timezone change, even if they now appear
+  to be in the future. An unrecorded future date is rejected. Storage restores history through
+  `Attendance#fromRecordedDates` without applying today's date as a new-entry restriction.
+* `JsonAdaptedAttendance` and `JsonSerializableAddressBook` persist the association and dates. Student and class
+  edits preserve history by rebinding the association; unassignment retains it, while deletion of either endpoint
+  removes the associated records. Reassignment can reuse retained history.
+* If saving fails after a successful command mutation, `LogicManager` reports a `CommandException` and restores
+  the previous command history. The attendance mutation and refreshed view are not rolled back in memory.
+
+The parser and command tests cover invalid input and duplicate/missing dates. `AttendanceIndexTest` covers
+independently filtered panels and displayed bounds, while `AttendanceLifecycleTest` covers edits, deletion,
+unassignment/reassignment, clock-related history handling and save/reload.
 
 ### Listing all classes
 
@@ -382,6 +475,16 @@ The guards distinguish successful and rejected paths. An unchanged membership me
 student is already assigned for `assign`, or is not assigned for `unassign`. In either case, the
 command reports an error before `LogicManager` reaches the saving step. A failure to save after
 a successful membership change is different: the in-memory change has already occurred.
+
+#### Revealing affected records
+
+Before calling `Logic#execute`, `MainWindow` captures the displayed student for `assign` and
+`unassign`, and the stored class position. After successful execution, it locates each target
+in its updated displayed list and calls `PersonListPanel#scrollToStudent` and
+`AcademicClassListPanel#scrollToClass`. Both methods ignore out-of-range indices, including
+`-1` for a target that has disappeared from a membership-dependent filter. This preserves
+filters and ordering without revealing a replacement row. Typing and rejected commands do not
+scroll either panel; the reveal methods do not change keyboard focus or selection.
 
 #### Validation, errors and persistence
 
@@ -573,24 +676,19 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 **Guarantee:** If creation fails, existing data remains unchanged.  
 **Main Success Scenario (MSS):**
 
-1. TA requests to create a student, providing the student number, name,
-   email address and, optionally, Telegram username.
-2. TAssist creates the student profile and confirms successful creation.
-3. TAssist displays the updated student list, including the newly created student.
+1. TA requests to create a student.
+2. TAssist creates the student profile.
+3. TAssist displays the updated student list based on current display filters.
 
 Use case ends.  
 **Extensions:**
 
-- **1a. Required details are missing, or the supplied details are invalid.**
+- **1a. TAssist detects an error in entered data.**
   - 1a1. TAssist informs TA of the error and the expected input.
   - Use case ends.
 
-- **1b. The student number, email address or supplied Telegram username matches an existing student's corresponding detail.**
-  - 1b1. TAssist informs TA of the duplicate detail and rejects the creation request.
-  - Use case ends.
-
-- **1c. TAssist is unable to save the new student.**
-  - 1c1. TAssist informs TA that the student could not be saved and asks TA to try again.
+- **2a. TAssist is unable to save the new student.**
+  - 2a1. TAssist informs TA that the student could not be saved.
   - Use case ends.
 
 #### **Create Class**
@@ -601,24 +699,20 @@ Use case ends.
 
 **Main Success Scenario (MSS):**
 
-1. TA requests to create a class, providing its module code and class name.
-2. TAssist creates the class and confirms successful creation.
-3. TAssist displays the updated class list, including the newly created class.
+1. TA requests to create a class.
+2. TAssist creates the class.
+3. TAssist displays the updated class list based on current display filters.
 
 Use case ends.
 
 **Extensions:**
 
-- **1a. Required details are missing, or the supplied details are invalid.**
+- **1a. Tassist detects an error in entered data.**
   - 1a1. TAssist informs TA of the error and the expected input.
   - Use case ends.
 
-- **1b. A class with the same module code and class name already exists.**
-  - 1b1. TAssist informs TA that the class already exists and rejects the creation request.
-  - Use case ends.
-
-- **1c. TAssist is unable to save the new class.**
-  - 1c1. TAssist informs TA that the class could not be saved and asks TA to try again.
+- **2a. TAssist is unable to save the new class.**
+  - 2a1. TAssist informs TA that the class could not be saved.
   - Use case ends.
 
 #### **Search Student**
@@ -628,8 +722,8 @@ Use case ends.
 
 **Main Success Scenario (MSS):**
 
-1. TA requests to search for students by providing one or more name keywords.
-2. TAssist displays the matching students.
+1. TA requests to search for students.
+2. TAssist displays the matching students and number of students found.
 
 Use case ends.
 
@@ -637,10 +731,6 @@ Use case ends.
 
 - **1a. The search keywords are missing or invalid.**
   - 1a1. TAssist informs TA of the error and the expected input.
-  - Use case ends.
-
-- **1b. No students match the search keywords.**
-  - 1b1. TAssist displays an empty student list and informs TA that no students were found.
   - Use case ends.
 
 #### **Assign Student to Class**
@@ -651,67 +741,46 @@ Use case ends.
 
 **Main Success Scenario (MSS):**
 
-1. TA requests to assign a student to a class, providing the student index first and the class index second,
-   in their respective displayed lists.
-2. TAssist assigns the student to the specified class and automatically saves the assignment.
+1. TA requests to assign a student to a class.
+2. TAssist assigns the student to the specified class.
 3. TAssist returns a confirmation of the successful assignment, identifying the student and the class.
 
 Use case ends.
 
 **Extensions:**
 
-- **1a. The request does not contain exactly two positive integer indices, or includes prefixed or extra arguments.**
-  - 1a1. TAssist reports an invalid command format and the required student-index-first format, without changing any assignments.
+- **1a. Tassist detects an error in entered data.**
+  - 1a1. TAssist informs TA of the error and the expected input.
   - Use case ends.
 
-- **1b. The student index is outside the displayed student list.**
-  - 1b1. TAssist reports an invalid displayed student index.
-  - 1b2. TAssist rejects the request without changing any assignments.
+- **1b. The student is already assigned to the specified class.**
+  - 1b1. TAssist informs TA that the student is already assigned, identifying the student number and class.
   - Use case ends.
-
-- **1c. The class index is outside the displayed class list.**
-  - 1c1. TAssist reports an invalid displayed class index.
-  - 1c2. TAssist rejects the request without changing any assignments.
+- **2a. TAssist is unable to save the change.**
+  - 2a1. TAssist informs TA that the assignment could not be saved.
   - Use case ends.
-
-- **1d. The student is already assigned to the specified class.**
-  - 1d1. TAssist keeps the existing assignment without creating a duplicate.
-  - 1d2. TAssist informs TA that the student is already assigned, identifying the student number and class.
-  - Use case ends.
-
+  
 #### **Unassign Student from Class**
 
 **System:** TAssist  
 **Actor:** Teaching Assistant (TA)  
-**Guarantee:** The student profile, class and all other class assignments remain unchanged.
 
 **Main Success Scenario (MSS):**
 
-1. TA requests to unassign a student from a class, providing the student index and class index
-   in their respective displayed lists.
-2. TAssist removes the student's assignment to the specified class and automatically saves the change.
+1. TA requests to unassign a student from a class.
+2. TAssist removes the student's assignment to the specified class.
 3. TAssist returns a confirmation that the student is no longer assigned to the class, identifying the student and the class.
 
 Use case ends.
 
 **Extensions:**
 
-- **1a. Required details are missing, or unrecognised or extra details are supplied.**
-  - 1a1. TAssist informs TA of the error and the required details, without changing any assignments.
+- **1a. Tassist detects an error in entered data.**
+  - 1a1. TAssist informs TA of the error and the expected input.
   - Use case ends.
 
-- **1b. The student index is outside the displayed student list.**
-  - 1b1. TAssist reports an invalid displayed student index.
-  - 1b2. TAssist rejects the request without changing any assignments.
-  - Use case ends.
-
-- **1c. The class index is outside the displayed class list.**
-  - 1c1. TAssist reports an invalid displayed class index.
-  - 1c2. TAssist rejects the request without changing any assignments.
-  - Use case ends.
-
-- **1d. The student is not assigned to the specified class.**
-  - 1d1. TAssist reports that the student is not assigned to the class without changing any data.
+- **1b. The student is not assigned to the specified class.**
+  - 1b1. TAssist reports that the student is not assigned.
   - Use case ends.
 
 - **2a. TAssist is unable to save the change.**
@@ -722,28 +791,36 @@ Use case ends.
 
 **System:** TAssist  
 **Actor:** Teaching Assistant (TA)  
-**Guarantee:** Student profiles, classes and class assignments remain unchanged.
 
 **Main Success Scenario (MSS):**
 
-1. TA requests to list the students assigned to a class, providing its module code and class name.
-2. TAssist displays the names of all students assigned to the specified class in alphabetical order,
-   identifying the module code and class name.
+1. TA requests to list the students assigned to a class.
+2. TAssist displays the students assigned to the specified class and the number of students found.
 
 Use case ends.
 
 **Extensions:**
 
-- **1a. Required details are missing or blank, or the request is invalid.**
-  - 1a1. TAssist informs TA of the error and the required details.
+- **1a. Tassist detects an error in entered data.**
+  - 1a1. TAssist informs TA of the error and the expected input.
   - Use case ends.
 
-- **1b. No class matches the supplied module code and class name.**
-  - 1b1. TAssist informs TA that the class does not exist and asks TA to create the class or specify an existing class.
-  - Use case ends.
+#### **List Classes of a Student**
 
-- **1c. The specified class exists but has no assigned students.**
-  - 1c1. TAssist displays an empty student list for the specified module code and class name.
+**System:** TAssist  
+**Actor:** Teaching Assistant (TA)  
+
+**Main Success Scenario (MSS):**
+
+1. TA requests to list the classes of a student.
+2. TAssist displays the classes the student is assigned to and the number of classes found.
+
+Use case ends.
+
+**Extensions:**
+
+- **1a. Tassist detects an error in entered data.**
+  - 1a1. TAssist informs TA of the error and the expected input.
   - Use case ends.
 
 ### Non-Functional Requirements
@@ -827,6 +904,79 @@ testers are expected to do more *exploratory* testing.
 
 1. _{ more test cases … }_
 
+### Deleting and editing academic classes
+
+Use a disposable application folder. Repeat this setup before each subsection below;
+`clear` removes all students and classes in that test copy.
+Enter each command separately in TAssist's command box, not in the terminal or as a single pasted block.
+
+```text
+clear
+add sn/A0999701X n/Alice Manual e/alice.manual@example.com
+add sn/A0999702Y n/Bob Manual e/bob.manual@example.com
+addclass m/CS2103T c/F01
+addclass m/ST2334 c/T24
+assign 1 1
+assign 1 2
+assign 2 2
+addattendance 1 1 d/2020-01-01
+addattendance 2 2 d/2020-01-02
+```
+
+#### Deleting a class: `deleteclass`
+
+1. Try `deleteclass`, `deleteclass 0`, `deleteclass abc`, `deleteclass 1 extra`, and `deleteclass 999`.
+   Expected: format or invalid-index errors; both classes, memberships and attendance remain unchanged.
+2. Run `listbystudent 2`, then `deleteclass 1`.
+   Expected: the displayed ST2334-T24 class is deleted, even though it was class 2 in the full list.
+   The filtered Classes panel becomes empty.
+3. Run `list` and `listclass`. Expected: both student records remain; CS2103T-F01 is now class 1.
+   Run `listbyclass 1`: Alice remains assigned with attendance `2020-01-01`.
+   In `data/addressbook.json`, the `classes` and `attendance` arrays must contain no ST2334-T24 records.
+4. Run `list`, `listbystudent 2`, then `deleteclass 1`.
+   Expected: an invalid-index error for the empty class list. Run `listclass`, close the window and
+   reopen the same JAR. The deleted class stays absent; both students and the surviving class remain.
+
+#### Editing a class: `editclass`
+
+1. Repeat the setup. Try `editclass`, `editclass 0 c/F02`, `editclass 999 c/F02`, `editclass 1`,
+   `editclass 1 m/123`, and `editclass 1 c/---`.
+   Expected: format, index, missing-field or validation errors; neither class changes.
+2. Try `editclass 1 m/ST2334 c/T24`.
+   Expected: a duplicate-class error; the original identities, memberships and attendance remain unchanged.
+3. Run `listbystudent 2`, then `editclass 1 c/T25` and `editclass 1 m/ST2334A`.
+   Expected: only the supplied field changes each time; the class becomes ST2334A-T25.
+   Run `editclass 1 m/CS2101 c/L01`: both fields change, and Bob's class filter stays active.
+4. Run `listclass`, then `listbyclass 2`.
+   Expected: CS2101-L01 contains Alice and Bob; Bob retains attendance `2020-01-02`.
+   Close the window and reopen the same JAR. The edited class, memberships and attendance persist;
+   CS2103T-F01 remains unchanged.
+5. In this disposable copy, run `clear`, then `editclass 1 c/F02`.
+   Expected: an invalid-index error for the empty class list; no class is created.
+
+### Persistent command history
+
+1. Start another disposable copy in a fresh folder. Before submitting any commands, focus the
+   empty command box and press Up and Down. Expected: the input stays blank and no error appears.
+   Then submit `list`,
+   `find HistoryNoMatch`, and `listclass`, then submit the invalid command `notacommand`.
+   Close using the window's close button, rather than the `exit` command, so shutdown adds no history entry.
+2. Reopen the same JAR and focus the command box. Press Up repeatedly.
+   Expected: `listclass`, `find HistoryNoMatch`, then `list`; further Up presses stay at `list`.
+   The failed command is absent. Recalling commands does not execute them or change the feedback.
+   Press Down until the input is blank; further Down presses keep it blank.
+3. Type `unfinished draft` without submitting it. Press Up, replace the recalled `listclass` with
+   `list` without submitting, then press Up and Down. Expected: the temporary edit `list` returns.
+   Press Down again: `unfinished draft` returns. Close using the window button and reopen the same JAR.
+   Expected: the input starts blank and Up recalls the original `listclass`; temporary edits and drafts are not saved.
+4. Press Down until the input is blank. Press Up to recall `listclass`, then press Enter.
+   Expected: the command executes successfully and the input clears. Close using the window button
+   and reopen the same JAR. Press Up twice: both newest entries must be `listclass`, confirming
+   that the recalled execution was saved as another entry. Press Down until the input is blank.
+5. Submit 21 separate commands, `find History01` through `find History21`, then close using the
+   window button and reopen. Expected: Up recalls `find History21` back through `find History02` only;
+   further Up presses stay at `find History02`. Only the latest 20 successful commands are retained.
+
 ### Assigning a student to a class
 
 1. Successful assignment and live count updates
@@ -854,6 +1004,47 @@ testers are expected to do more *exploratory* testing.
 
    1. Close and reopen the app after successful assignments.<br>
       Expected: The class still shows 2 students, and each student number occurs once in its `studentNumbers` JSON list.
+
+### List-panel feedback and student-card layout
+
+Use a disposable application folder for these checks.
+
+#### Revealing records after assignment and unassignment
+
+1. Prepare at least 30 students and 25 classes. Run `list` and `listclass`. Check that
+   student 30 has no class memberships and class 25 has no students.
+2. Scroll both panels to the top so student 30 and class 25 are off-screen. Run `assign 30 25`.
+   Expected: both targets come into view, class 25 shows one student, and the command box keeps focus.
+3. Scroll both panels back to the top, then run `unassign 30 25`.
+   Expected: both targets come into view and class 25 shows zero students.
+4. Scroll back to the top and repeat `unassign 30 25`.
+   Expected: a not-assigned error, unchanged membership, and no command-triggered scrolling.
+   Typing `assign 30 25` without submitting it must also leave both panels in place.
+5. Submit `assign 30 25`, then run `listbyclass 25`, `listbystudent 1`, and `unassign 1 1`.
+   Expected: both filtered panels become empty. Neither filter resets or reveals an unrelated record.
+   Run `list` and `listclass` to restore the full lists.
+
+#### Repeated scrolling with changing card heights
+
+1. Prepare enough students to scroll through several screens. Include short and long names,
+   emails and tags, students with and without Telegram usernames, and students with no tags.
+   Use distinct Telegram usernames so misplaced details can be identified.
+2. Make the Students panel narrow, scroll repeatedly from the top to the middle and bottom,
+   then widen the panel and repeat. Also resize while positioned in the middle.
+   Expected: each card retains its own details; contact details, tags and adjacent cards do not overlap.
+3. Find one student using a unique name keyword. Run `edit 1 tg/ t/`, then `list` and scroll away
+   and back. Expected: the edited student's Telegram username and tags disappear without leaving
+   an empty tag row or showing another student's details.
+4. Find the same student again. Restore optional fields using an unused valid username, for example
+   `edit 1 tg/layout_probe_unique t/tutorial t/ThisIsAVeryLongTagThatMustWrapInsideTheStudentCard`.
+   Run `list` and repeat scrolling and resizing. Expected: the username and tags reappear and wrap
+   within that student's card.
+5. Repeat the scrolling checks after `listbyclass CLASS_INDEX`, replacing `CLASS_INDEX` with a
+   displayed class containing enough assigned students to scroll. Include students with no
+   attendance dates and students with enough dates to wrap over several lines.
+   Expected: attendance remains below the contact details and tags, inside the correct card.
+6. Click a panel heading or background, or use Tab/Shift+Tab to focus its list, then press Up/Down.
+   Expected: only the focused list scrolls; records remain unselected and unchanged.
 
 ### Listing classes by student
 

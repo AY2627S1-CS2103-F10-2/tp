@@ -61,6 +61,14 @@ public class AddressBookParserTest {
     }
 
     @Test
+    public void parseCommand_generatedAddWithSlashes_preservesNameAndFields() throws Exception {
+        for (String name : List.of("Ravi S/O Kumar", "Alex n/Alias e/Other sn/Number tg/Handle t/Group")) {
+            Person person = new PersonBuilder().withName(name).build();
+            assertEquals(new AddCommand(person), parser.parseCommand(PersonUtil.getAddCommand(person)));
+        }
+    }
+
+    @Test
     public void parseCommand_addClass() throws Exception {
         AcademicClass academicClass = new AcademicClass(new ModuleCode("CS2103"), new ClassName("F10-2"));
         AddClassCommand command = (AddClassCommand) parser.parseCommand(AddClassCommand.COMMAND_WORD
@@ -102,6 +110,17 @@ public class AddressBookParserTest {
         EditCommand command = (EditCommand) parser.parseCommand(EditCommand.COMMAND_WORD + " "
                 + INDEX_FIRST_PERSON.getOneBased() + " " + PersonUtil.getEditPersonDescriptorDetails(descriptor));
         assertEquals(new EditCommand(INDEX_FIRST_PERSON, descriptor), command);
+    }
+
+    @Test
+    public void parseCommand_generatedEditWithSlashes_preservesNameAndFields() throws Exception {
+        for (String name : List.of("Ravi S/O Kumar", "Alex n/Alias e/Other sn/Number tg/Handle t/Group")) {
+            Person person = new PersonBuilder().withName(name).build();
+            EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder(person).build();
+            String command = EditCommand.COMMAND_WORD + " " + INDEX_FIRST_PERSON.getOneBased() + " "
+                    + PersonUtil.getEditPersonDescriptorDetails(descriptor);
+            assertEquals(new EditCommand(INDEX_FIRST_PERSON, descriptor), parser.parseCommand(command));
+        }
     }
 
     @Test

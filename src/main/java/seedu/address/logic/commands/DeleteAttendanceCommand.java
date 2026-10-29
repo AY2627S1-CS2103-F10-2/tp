@@ -25,14 +25,14 @@ public class DeleteAttendanceCommand extends Command {
     public static final String MESSAGE_ATTENDANCE_NOT_FOUND =
             "Attendance for student (%1$s) in %2$s on %3$s is not recorded.";
 
-    private final Index index;
+    private final Index studentIndex;
     private final Index classIndex;
     private final LocalDate date;
 
     /** Creates a deletion command with validated indices and a parsed date. */
-    public DeleteAttendanceCommand(Index index, Index classIndex, LocalDate date) {
-        requireAllNonNull(index, classIndex, date);
-        this.index = index;
+    public DeleteAttendanceCommand(Index studentIndex, Index classIndex, LocalDate date) {
+        requireAllNonNull(studentIndex, classIndex, date);
+        this.studentIndex = studentIndex;
         this.classIndex = classIndex;
         this.date = date;
     }
@@ -41,10 +41,10 @@ public class DeleteAttendanceCommand extends Command {
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
         List<Person> displayedStudents = model.getFilteredPersonList();
-        if (index.getZeroBased() >= displayedStudents.size()) {
+        if (studentIndex.getZeroBased() >= displayedStudents.size()) {
             throw new CommandException(Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
         }
-        Person person = displayedStudents.get(index.getZeroBased());
+        Person person = displayedStudents.get(studentIndex.getZeroBased());
         List<AcademicClass> displayedClasses = model.getFilteredAcademicClassList();
         if (classIndex.getZeroBased() >= displayedClasses.size()) {
             throw new CommandException(Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX);
@@ -76,14 +76,14 @@ public class DeleteAttendanceCommand extends Command {
         if (!(other instanceof DeleteAttendanceCommand otherCommand)) {
             return false;
         }
-        return index.equals(otherCommand.index)
+        return studentIndex.equals(otherCommand.studentIndex)
                 && classIndex.equals(otherCommand.classIndex)
                 && date.equals(otherCommand.date);
     }
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this).add("index", index)
+        return new ToStringBuilder(this).add("studentIndex", studentIndex)
                 .add("classIndex", classIndex).add("date", date).toString();
     }
 }

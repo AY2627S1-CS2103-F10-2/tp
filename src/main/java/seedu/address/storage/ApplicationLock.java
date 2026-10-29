@@ -9,7 +9,9 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Optional;
 
-/** Holds an operating-system lock for an application's working folder. */
+/**
+ * Holds an operating-system lock for an application's working folder.
+ */
 public final class ApplicationLock implements AutoCloseable {
     private final FileChannel channel;
     private final FileLock lock;
