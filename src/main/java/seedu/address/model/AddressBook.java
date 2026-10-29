@@ -129,7 +129,6 @@ public class AddressBook implements ReadOnlyAddressBook {
     /**
      * Removes the given observer so it no longer receives student change notifications.
      *
-     * TODO: When implementing DeleteClassCommand, ensure the model's class deletion method
      * calls this method with the deleted class's stored instance after successful removal.
      *
      * @throws NullPointerException if {@code studentObserver} is null
