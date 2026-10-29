@@ -76,6 +76,9 @@ Edits of past commands are kept while browsing and cleared when you submit a com
 * Words in `UPPER_CASE` are the parameters to be supplied by the user.<br>
   For example, in `add sn/STUDENT_NUMBER n/NAME`, replace `STUDENT_NUMBER` with a value such as `A0123456X` and `NAME` with a value such as `John Doe`.
 
+* `INDEX` refers to a student or class in the relevant displayed list. Commands taking both indices use
+  `STUDENT_INDEX CLASS_INDEX`, in that order. `KEYWORD` in `find` is a full word in a student's name.
+
 * Items in square brackets are optional.<br>
   For example, `n/NAME [t/TAG]` can be used as `n/John Doe t/friend` or as `n/John Doe`.
 
@@ -332,9 +335,11 @@ Format: `addclass m/MODULE_CODE c/CLASS_NAME`
 * The `m/` and `c/` parameters can be supplied in any order.
 * Each class is uniquely identified by its module code and class name pair.
 * Duplicate classes with the same module code and class name are not allowed.
-* Module codes and class names are normalized before being saved.
+* Leading and trailing whitespace is removed from module codes and class names, and letters are stored in uppercase.
 * `MODULE_CODE` must begin with a letter and contain only letters or digits.
 * `CLASS_NAME` must contain at least one letter or digit, and may contain only letters, digits, or hyphens.
+  Examples include `F01`, `F10-2`, and `T24`; numeric class names such as `01` remain valid.
+  These examples do not impose a fixed module-code length or class-name prefix.
 
 Examples:
 * `addclass m/CS2103T c/F10-2`
@@ -350,8 +355,13 @@ Common errors:
 * Repeated class name: `Parameter c/ was specified more than once.`
 * Unknown parameter: `Unknown parameter: PREFIX`
 * Duplicate class: `A class with this name for this module already exists`
-* Invalid module code: `Module code must contain letters or digits`
-* Invalid class name: `Class names can only contain letters, digits, or '-'`
+* Empty module code: `Module code cannot be empty. Examples: CS2103T, ST2334.`
+* Invalid module code: `Module code must start with a letter (A-Z, a-z) and contain only letters and digits, with no spaces. Examples: CS2103T, ST2334.`
+* Empty class name: `Class name cannot be empty. Examples: F01, F10-2, T24.`
+* Invalid class name: `Class name must contain at least one letter (A-Z, a-z) or digit (0-9), and may contain only letters, digits, and hyphens (-), with no spaces. Examples: F01, F10-2, T24.`
+
+For example, `addclass m/123 c/F01` is rejected because the module code starts with a digit.
+`addclass m/CS2103 c/---` is rejected because the class name contains no letter or digit.
 
 ### Assigning a student to a class: `assign`
 
@@ -541,7 +551,7 @@ Rejected commands leave class details, memberships, and student counts unchanged
 
 Finds students whose names contain any of the given keywords.
 
-Format: `find KEYWORD [MORE_KEYWORDS]`
+Format: `find KEYWORD [MORE_KEYWORDS]...`
 
 * The search is case-insensitive; for example, `hans` matches `Hans`.
 * Keyword order does not matter; for example, `Hans Bo` matches `Bo Hans`.
@@ -748,7 +758,7 @@ Action     | Format, Examples
 **Delete Class** | `deleteclass INDEX`<br> e.g., `deleteclass 1`
 **Edit**   | `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
 **Edit Class** | `editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]`<br> e.g., `editclass 1 m/CS2103 c/F11`
-**Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
+**Find**   | `find KEYWORD [MORE_KEYWORDS]...`<br> e.g., `find James Jake`
 **List**   | `list`
 **List students by class** | `listbyclass INDEX [t/THRESHOLD]`<br> e.g., `listbyclass 1`, `listbyclass 1 t/5`
 **List classes by student** | `listbystudent INDEX`<br> e.g., `listbystudent 1`

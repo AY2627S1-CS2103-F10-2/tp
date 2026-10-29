@@ -5,9 +5,17 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.logic.commands.DeleteClassCommand;
+import seedu.address.logic.commands.DeleteCommand;
+import seedu.address.logic.commands.EditClassCommand;
+import seedu.address.logic.commands.EditCommand;
+import seedu.address.logic.commands.FindCommand;
+import seedu.address.logic.commands.ListByClassCommand;
+import seedu.address.logic.commands.ListByStudentCommand;
 import seedu.address.logic.parser.AddressBookParser;
 
 public class CommandHintsTest {
@@ -24,17 +32,17 @@ public class CommandHintsTest {
         String[][] commands = {
             {"add sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM] [t/TAG]...",
                 "add sn/A0123456X n/Alice Tan e/alice@example.com tg/alice_tan t/friends t/tutorial"},
-            {"edit STUDENT_INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]...",
+            {"edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]...",
                 "edit 1 sn/A0123456X n/Alice Tan e/alice@example.com tg/ t/friends t/tutorial"},
-            {"delete STUDENT_INDEX", "delete 1"},
-            {"find NAME [MORE_NAMES]...", "find Alice Benson"},
+            {"delete INDEX", "delete 1"},
+            {"find KEYWORD [MORE_KEYWORDS]...", "find Alice Benson"},
             {"list", "list"},
             {"addclass m/MODULE_CODE c/CLASS_NAME", "addclass m/CS2103 c/F10"},
-            {"editclass CLASS_INDEX [m/MODULE_CODE] [c/CLASS_NAME]", "editclass 1 m/CS2103 c/F10"},
-            {"deleteclass CLASS_INDEX", "deleteclass 1"},
+            {"editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]", "editclass 1 m/CS2103 c/F10"},
+            {"deleteclass INDEX", "deleteclass 1"},
             {"listclass", "listclass"},
-            {"listbyclass CLASS_INDEX [t/THRESHOLD]", "listbyclass 1 t/2"},
-            {"listbystudent STUDENT_INDEX", "listbystudent 1"},
+            {"listbyclass INDEX [t/THRESHOLD]", "listbyclass 1 t/2"},
+            {"listbystudent INDEX", "listbystudent 1"},
             {"assign STUDENT_INDEX CLASS_INDEX", "assign 1 2"},
             {"unassign STUDENT_INDEX CLASS_INDEX", "unassign 1 2"},
             {"addattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD", "addattendance 1 2 d/2020-01-03"},
@@ -76,5 +84,27 @@ public class CommandHintsTest {
             assertEquals(CommandHints.forInput("listbyclass"), CommandHints.forInput(draft));
             assertFalse(CommandHints.forInput(draft).contains("Invalid"));
         }
+    }
+
+    @Test
+    public void indexedAndFindHints_matchUsageParameterNames() throws Exception {
+        Map<String, String> usages = Map.of(
+                "edit", EditCommand.MESSAGE_USAGE,
+                "delete", DeleteCommand.MESSAGE_USAGE,
+                "editclass", EditClassCommand.MESSAGE_USAGE,
+                "deleteclass", DeleteClassCommand.MESSAGE_USAGE,
+                "listbyclass", ListByClassCommand.MESSAGE_USAGE,
+                "listbystudent", ListByStudentCommand.MESSAGE_USAGE,
+                "find", FindCommand.MESSAGE_USAGE);
+        AddressBookParser parser = new AddressBookParser();
+        for (var entry : usages.entrySet()) {
+            String syntax = CommandHints.forInput(entry.getKey()).split("\n", 2)[0];
+            String arguments = syntax.split(" ", 2)[1];
+            String firstParameter = arguments.split(" ", 2)[0];
+            assertTrue(entry.getValue().contains("Parameters: " + firstParameter), syntax);
+            parser.parseCommand(entry.getValue().split("Example: ", 2)[1]);
+        }
+        assertTrue(FindCommand.MESSAGE_USAGE.contains("Parameters: "
+                + CommandHints.forInput("find").split("\n", 2)[0].substring("find ".length()) + "\n"));
     }
 }
