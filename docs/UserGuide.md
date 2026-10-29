@@ -85,8 +85,11 @@ Edits of past commands are kept while browsing and cleared when you submit a com
 * Items followed by `...` can appear zero or more times.<br>
   For example, `[t/TAG]... ` may be omitted, or written as `t/friend` or `t/friend t/family`.
 
-* Parameters can be in any order.<br>
+* Prefixed parameters can be in any order.<br>
   For example, if the command specifies `sn/STUDENT_NUMBER n/NAME e/EMAIL`, `e/EMAIL sn/STUDENT_NUMBER n/NAME` is also acceptable.
+
+* Index-based parameters (e.g. `STUDENT_INDEX`, `CLASS_INDEX`) cannot be reordered and must stay in the position the command specifies.<br>
+  For example, if the command specifies `assign STUDENT_INDEX CLASS_INDEX`, `assign CLASS_INDEX STUDENT_INDEX` will be interpreted incorrectly, with the first number treated as the student and the second as the class.
 
 * Prefixes identify the kind of information you are providing.<br>
   For example, `n/` is used for student names, `m/` for module codes, and `c/` for class names.
