@@ -201,20 +201,20 @@ public class ModelManagerClassFilterTest {
     }
 
     @Test
-    public void deleteAcademicClass_displayedClass_clearsAttendanceDisplayContext() {
+    public void deleteAcademicClass_displayedClass_preservesAttendanceDisplayContext() {
         model.filterPersonsByClassAndDisplayAttendance(first, Optional.empty());
         assertEquals(Optional.of(first), model.getAttendanceDisplayClass());
 
         AcademicClass equivalent = new AcademicClass(first.getModuleCode(), first.getClassName());
         model.deleteAcademicClass(equivalent);
 
-        assertTrue(model.getAttendanceDisplayClass().isEmpty());
+        assertSame(first, model.getAttendanceDisplayClass().orElseThrow());
         assertTrue(model.getFilteredPersonList().isEmpty());
 
         AcademicClass recreated = new AcademicClass(first.getModuleCode(), first.getClassName());
         model.addAcademicClass(recreated);
         model.assignStudentToClass(BENSON, recreated);
-        assertTrue(model.getAttendanceDisplayClass().isEmpty());
+        assertSame(first, model.getAttendanceDisplayClass().orElseThrow());
     }
 
     @Test

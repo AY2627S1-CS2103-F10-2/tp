@@ -276,12 +276,7 @@ public class ModelManager implements Model {
 
     @Override
     public void deleteAcademicClass(AcademicClass target) {
-        boolean isDisplayingDeletedClass = attendanceDisplayClass != null
-                && attendanceDisplayClass.isSameClass(target);
         addressBook.removeAcademicClass(target);
-        if (isDisplayingDeletedClass) {
-            clearAttendanceDisplayClass();
-        }
         refreshFilteredPersonList();
     }
 

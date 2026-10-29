@@ -161,7 +161,7 @@ public interface Model {
 
     /**
      * Deletes the given academic class.
-     * Clears the attendance display context if it refers to the deleted class.
+     * Retains the attendance display context if it refers to the deleted class.
      * The academic class must exist in the address book.
      */
     void deleteAcademicClass(AcademicClass target);
