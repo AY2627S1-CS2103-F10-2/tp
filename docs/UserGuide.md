@@ -734,36 +734,37 @@ Furthermore, certain edits can cause TAssist to behave in unexpected ways (e.g.,
 
 ## Known issues
 
-* **macOS fullscreen mode:** Mac users using fullscreen mode for secondary dialogs, such as the Help window,
-  may encounter unexpected behaviour.
+1. **macOS fullscreen mode:** Mac users using fullscreen mode for secondary dialogs, such as the Help window,
+   may encounter unexpected behaviour.
 
-* **Write-protected application folder or data file:** TAssist may fail to launch if it cannot create or access
-  `tassist.lock` beside the JAR. If the data file cannot be written, commands may report a save-permission error.
-  Close TAssist and move it to a folder you can write to, such as a dedicated folder in your user directory.
-  To retain your records, follow [Moving existing data to the JAR folder](#moving-existing-data-to-the-jar-folder)
-  and ensure the copied data file is writable too. If a command has already reported a save error, follow the
-  recovery steps below first.
+2. **Write-protected application folder or data file:** TAssist may fail to launch if it cannot create or access
+   `tassist.lock` beside the JAR. If the data file cannot be written, commands may report a save-permission error.
+   Close TAssist and move it to a folder you can write to, such as a dedicated folder in your user directory.
+   To retain your records, follow [Moving existing data to the JAR folder](#moving-existing-data-to-the-jar-folder)
+   and ensure the copied data file is writable too. If a command has already reported a save error, follow the
+   recovery steps below first.
 
-* **A failed save may leave an incomplete data file:** TAssist rolls back the failed command's changes in
-  memory, so the student records, class memberships and attendance in the running app return to their previous
-  state. However, if writing stops partway through, `data/addressbook.json` may be incomplete. Rolling back
-  the running app does not repair that file. A write denied before it starts leaves the previous file unchanged.
+3. **A failed save may leave an incomplete data file:** TAssist rolls back the failed command's changes in
+   memory, so the student records, class memberships and attendance in the running app return to their previous
+   state. However, if writing stops partway through, `data/addressbook.json` may be incomplete. Rolling back
+   the running app does not repair that file. A write denied before it starts leaves the previous file unchanged.
 
-  If saving fails while TAssist is still open:
-  1. Keep that session open and do not retry the failed command yet. The restored data in memory can be used
-     to recover the saved file. Back up the existing file before attempting recovery, and retain any earlier
-     known-good backup separately.
-  1. Resolve the cause of the error, such as missing write permission or insufficient disk space, while keeping
-     the JAR and its data file at their current paths.
-  1. Run `list` in the same session. It shows all students and attempts to save the restored data, including
-     classes and attendance. If another save error appears, recovery has not succeeded; resolve the storage
-     problem before trying again. Do not use `exit` as a recovery command.
-  1. After `list` completes without a save error, the restored data has been written to the file. Check the
-     displayed indices before re-entering the intended command: `list` clears the active student filter.
+   If saving fails while TAssist is still open:
 
-  If TAssist has already closed, do not rely on `list` to recover the previous session's data. Restore a
-  known-good backup before launching again. If the app has restarted with missing or empty records, close it
-  without entering commands, then restore the backup; saving that empty state could overwrite the damaged file.
+   1. Keep that session open and do not retry the failed command yet. The restored data in memory can be used
+      to recover the saved file. Back up the existing file before attempting recovery, and retain any earlier
+      known-good backup separately.
+   1. Resolve the cause of the error, such as missing write permission or insufficient disk space, while keeping
+      the JAR and its data file at their current paths.
+   1. Run `list` in the same session. It shows all students and attempts to save the restored data, including
+      classes and attendance. If another save error appears, recovery has not succeeded; resolve the storage
+      problem before trying again. Do not use `exit` as a recovery command.
+   1. After `list` completes without a save error, the restored data has been written to the file. Check the
+      displayed indices before re-entering the intended command: `list` clears the active student filter.
+
+   If TAssist has already closed, do not rely on `list` to recover the previous session's data. Restore a
+   known-good backup before launching again. If the app has restarted with missing or empty records, close it
+   without entering commands, then restore the backup; saving that empty state could overwrite the damaged file.
 
 --------------------------------------------------------------------------------------------------------------------
 
