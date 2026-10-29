@@ -119,13 +119,15 @@ How the parsing works:
 ### Model component
 **API** : [`Model.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/model/Model.java)
 
-<puml src="diagrams/ModelClassDiagram.puml" width="450" />
+<puml src="diagrams/ModelClassDiagram.puml" width="800" />
 
 
 The `Model` component,
 
 * stores the address book data i.e., all `Person` objects (which are contained in a `UniquePersonList` object).
+* stores all `AcademicClass` objects in a `UniqueAcademicClassList`. Each class is identified by its `ModuleCode` and `ClassName` and references its assigned students as `Person` objects. Students can belong to multiple classes.
 * stores the `Person` objects selected by the current filter, such as search results, in a separate _filtered_ list. It exposes this list as an unmodifiable `ObservableList<Person>` that the UI can observe and bind to, so the UI updates when the list changes.
+* exposes the academic classes selected by the current filter as an unmodifiable `ObservableList<AcademicClass>` for the UI to observe.
 * stores a `UserPrefs` object that represents the user’s preferences (currently, just the GUI settings). This is exposed to the outside as a `ReadOnlyUserPrefs` object.
 * does not depend on any of the other three components (as the `Model` represents data entities of the domain, they should make sense on their own without depending on other components)
 
@@ -158,6 +160,277 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 ## **Implementation**
 
 This section describes some noteworthy details on how certain features are implemented.
+
+### Listing students by class
+
+The `listbyclass` command displays students assigned to the class at a one-based index in the currently displayed
+class list, not necessarily the full stored class list.
+It changes the student view, not the stored student records, class memberships, or the current class view. An optional
+`t/THRESHOLD` argument restricts the result to students with fewer than the specified number of attendance dates for
+the selected class.
+
+The following sequence diagram traces `listbyclass 1`, assuming CS2103 (F10-2) is the first displayed class
+and saving succeeds.
+It starts at `LogicManager`, omitting the UI caller. The input strings are defined in the diagram note.
+`m:ModelManager` is accessed through the `Model` interface.
+
+<puml src="diagrams/ListByClassSequenceDiagram.puml" alt="Successful ListByClass execution from index parsing through displayed class selection, student filtering, attendance display setup and result creation" />
+
+1. `LogicManager` passes `commandText` to `AddressBookParser`, which creates a `ListByClassCommandParser`
+   and calls `parse(args)`. The command parser tokenizes the optional `t/` prefix, uses
+   `ParserUtil#parseIndex(args)` to validate the positive class index, and parses `THRESHOLD` as a positive integer
+   when it is present. It then creates a `ListByClassCommand` containing the index and an optional threshold.
+2. `LogicManager` calls `execute(model)` on the command. The command obtains the currently displayed classes through
+   `Model#getFilteredAcademicClassList()`, checks the index against the list size, and selects the class using
+   `lastShownList.get(index.getZeroBased())`.
+3. The command calls `Model#filterPersonsByClassAndDisplayAttendance(academicClass, threshold)`. In
+   `ModelManager`, `applyClassFilter` stores the selected class and threshold, obtains attendance counts for the
+   selected class when needed, and installs a predicate that requires both class membership and
+   `attendanceCount < threshold`. Students without recorded attendance count as zero. The filtered list is sorted
+   with `PersonNameComparator`, which ignores case and uses original spelling as a tie-breaker. The underlying
+   student storage order is unchanged.
+4. The same model operation sets the selected class as `attendanceDisplayClass` and refreshes the student view so
+   each displayed student shows attendance for the selected class. Omitting `t/THRESHOLD` clears any active
+   threshold restriction while retaining the selected class for attendance display.
+5. The command obtains the displayed student list and uses its size and the class identity to construct the success
+   message. When a threshold is present, the message also reports that only students with fewer than that number of
+   recorded attendance dates are shown. It returns a `CommandResult` to `LogicManager`.
+6. `LogicManager` saves the address book before returning the result, even though this command only changes the view.
+   The view filter and selected attendance display class are not persisted.
+
+The diagram summarises index parsing and class selection in notes. It omits model-internal filtering and refresh calls,
+logging (including its extra student-list access), list-size and class-field access, message formatting, and storage calls
+to keep the successful path readable.
+
+**Other outcomes:** Missing, non-integer, zero, negative, or overflowing indices cause a `ParseException` before
+command creation. Missing, non-integer, zero, negative, or overflowing thresholds, duplicate `t/` prefixes, and
+malformed arguments are also rejected before command execution. A positive index beyond the displayed class list
+(including when that list is empty) causes a `CommandException` before the student filter or attendance display
+changes. A valid class with no students succeeds: the student view becomes empty and the result reports zero
+students. If saving fails after filtering, `LogicManager` reports a `CommandException`; the already-updated view is
+not rolled back.
+
+### Finding students by name
+
+The `find` command applies a name predicate to the current student list. It is a view-only operation: it does not
+modify student records, class memberships, attendance, or the class list.
+
+1. `LogicManager` passes `commandText` to `AddressBookParser`, which creates a `FindCommandParser` and calls
+   `parse(args)`. The parser trims the arguments, rejects an empty argument string, splits the remaining text on
+   whitespace, and creates a `NameContainsKeywordsPredicate` containing the resulting keywords.
+2. `LogicManager` calls `execute(model)` on the resulting `FindCommand`. The command passes the predicate to
+   `Model#updateFilteredPersonList(predicate)`.
+3. `ModelManager` installs the predicate on its `FilteredList<Person>`. The predicate tests only `Person#getName()`
+   and returns true when **any** keyword matches a complete name word, ignoring case. This gives the command
+   `OR` semantics: a student is shown when at least one keyword matches. `StringUtil#containsWordIgnoreCase` splits
+   the name into whitespace-delimited words, so a partial word such as `Ali` does not match `Alice`.
+4. Updating the person filter clears any class-specific attendance display, threshold, and class-membership filter.
+   The student comparator is also cleared, so `find` results retain the stored insertion order. The command counts
+   the filtered students and returns a message such as `1 person(s) listed!`.
+5. `LogicManager` saves the address book and command history before returning the result. The name predicate and
+   filtered view are not persisted, so the next launch starts with the default student view.
+
+**Other outcomes:** `find` with no keyword is rejected by `FindCommandParser` before command creation. Multiple
+spaces between keywords are ignored. A valid search with no matches succeeds and displays an empty student list.
+Names, rather than email addresses, student numbers, Telegram handles, or tags, are searched.
+
+### Listing all classes
+
+The `listclass` command restores the complete academic-class list by applying
+`PREDICATE_SHOW_ALL_ACADEMIC_CLASSES`. It takes no arguments and leaves the
+student list unchanged.
+
+The following sequence diagram shows the successful execution of `listclass`.
+Parsing helpers, model-internal predicate updates, result construction, and
+storage calls are shown at a high level or omitted for clarity.
+
+<puml src="diagrams/ListClassSequenceDiagram.puml" alt="Successful listclass execution through the Logic and Model components" />
+
+### Arrow key command history navigation
+
+Arrow key navigation lets users recall previously executed commands without executing them again. `CommandBox` delegates
+history storage and navigation to its `CommandHistory`, which holds two separate lists and tracks the draft and the
+current browsing position.
+
+Up moves towards older entries and Down moves towards the draft (newer entries). 
+Navigation stops at either boundary, and empty history leaves the input unchanged. 
+Modified arrow keys (such as Shift+Up or Ctrl+Down) do not trigger history navigation. 
+`AddressBook` stores the latest 20 successful command strings, serialized as `commandHistory` in the existing JSON file.
+`LogicManager` appends each successful command before saving and restores the previous history if saving fails.
+History survives `clear` and application restarts. Older JSON files without this field load with empty history.
+`MainWindow` seeds `CommandBox` through `Logic.getCommandHistory()` on startup; drafts, browsing positions and temporary
+edits remain in memory only.
+
+<puml src="diagrams/CommandHistoryObjects.puml" alt="CommandBox linked to CommandHistory, its draft and position, and its original and working command lists" />
+
+| Field | Purpose |
+| --- | --- |
+| `commands` | Stores up to 20 successful commands in execution order, oldest first. Editing past commands does not change these entries. |
+| `workingCommands` | Holds a working copy of the history. Temporary edits remain available until the next non-blank command submission, whether it succeeds or fails. |
+| `draft` | Preserves the input from before the user started browsing history. Moving Down past the newest entry restores it. It is separate from the lists because it has not been successfully executed. |
+| `position` | Identifies the selected entry in `workingCommands`, using a zero-based index. A value equal to the list size represents the draft. |
+
+In the diagram, `position = 2` selects `list`. With four history entries, position 4 represents the draft. Moving Down past `find Alice` restores `addclass m/CS2103 n/f`.
+
+#### Preserving temporary edits with two command lists
+
+`commands` preserves the successfully executed commands. `workingCommands` is a separate list that preserves temporary
+edits while browsing history. These partial object diagrams show only the two lists, with entries numbered from zero.
+
+**Step 1: Recall.** After executing `help`, `find Carol`, `list`, and `find Alice`, the user presses Up to recall `find Alice`.
+Both lists contain the same commands.
+
+<puml src="diagrams/CommandHistoryBeforeEdit.puml" alt="CommandHistory with identical original and working lists before editing a recalled command" />
+
+**Step 2: Edit and navigate away.** The user changes the input to `find Bob` without executing it, then presses Up to recall
+`list`. Before moving, `saveCurrentInput()` saves `find Bob` in `workingCommands`. The original list still contains `find Alice`.
+
+<puml src="diagrams/CommandHistoryAfterEdit.puml" alt="CommandHistory with a temporary edit in the working list while the original list remains unchanged" />
+
+Pressing Down now recalls **`find Bob`**, so the user can continue editing it. Using a single list would either overwrite
+the original history entry or lose the temporary edit. After a successful or failed submission, `resetNavigation()`
+rebuilds `workingCommands` from `commands`, discarding temporary browsing edits.
+
+A successful submission first adds the command to `commands` and clears the draft. A failed submission preserves the
+failed input as the draft without adding it to history. Both cases reset `position` to the draft position.
+
+### Adding an academic class
+
+#### Implementation
+
+The `addclass` command creates an empty `AcademicClass`, identified by its `ModuleCode` and `ClassName`. `AddressBook` stores academic classes in a `UniqueAcademicClassList`, which rejects duplicate module code and class name pairs.
+
+Given below is an example usage scenario for `addclass m/CS2103 c/F10-2`, assuming the class does not already exist.
+
+Step 1. The user enters `addclass m/CS2103 c/F10-2`. `LogicManager` passes this command text to `AddressBookParser`, which creates an `AddClassCommandParser`.
+
+Step 2. The command parser checks the arguments and uses `ParserUtil` to construct the `ModuleCode` and `ClassName`. It creates an empty `AcademicClass` and wraps it in an `AddClassCommand`.
+
+Step 3. `LogicManager` executes the command. The command calls `Model#hasAcademicClass()` to check for an existing class with the same identity, then calls `Model#addAcademicClass()` when the class is absent.
+
+The following sequence diagram shows how this operation goes through the `Logic` component. `commandText` is `"addclass m/CS2103 c/F10-2"`, `arguments` is `" m/CS2103 c/F10-2"`, and `a` is the class created by the command parser. The parsing helper calls, creation of `a`, and construction of the `CommandResult` are omitted for clarity.
+
+<puml src="diagrams/AddClassSequenceDiagram.puml" alt="Adding an academic class through the Logic component" />
+
+Step 4. `ModelManager` delegates the addition to `AddressBook`. `AddressBook` copies the current academic class list, appends the new class, and passes the updated list to `UniqueAcademicClassList#setAcademicClasses()`. It then registers the class as a student observer so its membership can track student updates.
+
+Similarly, the model sequence diagram below expands the `addAcademicClass(a)` call from the logic diagram:
+
+<puml src="diagrams/AddClassSequenceDiagram-Model.puml" alt="Adding an academic class through the Model component" />
+
+Step 5. The command returns a successful `CommandResult` with the message `New class added: CS2103-F10-2`. `LogicManager` saves the updated address book through `Storage` before returning the result to the UI. Storage calls are omitted from the logic diagram.
+
+<box type="info" seamless>
+
+**Note:** The logic diagram shows both successful addition and duplicate-class rejection. The model diagram expands only the successful addition. Invalid arguments cause a `ParseException` before the command is created. If `Model#hasAcademicClass()` returns `true`, the command throws a `CommandException` without adding the class. Neither failure reaches the save operation.
+</box>
+
+### Deleting an academic class
+
+The `deleteclass` command identifies an existing class by its one-based index in the currently displayed class list. `AddressBookParser` delegates argument validation to `DeleteClassCommandParser`, which uses `ParserUtil.parseIndex()` and creates a `DeleteClassCommand` containing an `Index`. At execution time, the command retrieves `Model#getFilteredAcademicClassList()`, checks the index against its size, and calls `Model#deleteAcademicClass()` with the selected stored class. This is the same observable list used by the class panel, so selection respects the current class filter and display order. Invalid indices are rejected without changing the model.
+
+The following diagram shows a successful run of `deleteclass 1`, assuming at least one class is displayed. The first displayed class is removed and the returned feedback identifies the deleted class. The existing model deletion path removes its assignments and attendance records while retaining student records. Remaining displayed classes are renumbered automatically. Parsing helpers and result construction are omitted for clarity; `LogicManager` saves the updated address book before returning the result to the UI. No storage schema or model interface change is required for index-based selection.
+
+<puml src="diagrams/DeleteClassSequenceDiagram-Logic.puml" alt="Deleting an academic class through the Logic component" />
+
+Invalid arguments cause a `ParseException` before command creation. If the class is absent, the command throws a `CommandException` without deleting anything. These error paths are omitted from the diagram.
+
+### Assigning and unassigning students
+
+`AssignCommand` and `UnassignCommand` change a student's membership in one academic class without
+adding or deleting student records or classes. `AssignCommand` and `UnassignCommand` accept student and class indices in their respective
+displayed lists, with the student index first. Hidden records cannot be selected.
+
+#### Assigning a student
+
+For example, `assign 1 2` assigns an existing student to an existing class.
+The following sequence diagram starts at `LogicManager#execute(commandText)` and shows successful
+parsing, command creation and execution. Here, `commandText` is the example above and `args` is
+the argument string after the command word. Constructor arguments are abbreviated as `...`;
+the parser passes the two validated displayed indices to the command.
+`m:ModelManager` is accessed through the `Model` interface. The `Assign membership (model)`
+reference frame is expanded in the next diagram.
+
+<puml src="diagrams/AssignSequenceDiagram.puml" alt="Successful execution of AssignCommand, resolving the displayed student and class through Model before assigning membership" />
+
+1. `LogicManager` asks `AddressBookParser` to parse the input. It creates an `AssignCommandParser`,
+   which validates the arguments and constructs an `AssignCommand`.
+2. `LogicManager` executes the returned command, which resolves the `Person` and `AcademicClass`
+   through `Model#findDisplayedPerson` and `Model#findDisplayedAcademicClass`. These lookups
+   encapsulate displayed-list access and bounds checks; the command reports invalid indices for empty results.
+3. The command calls `Model#assignStudentToClass(person, academicClass)`.
+4. On successful membership addition, the command returns a `CommandResult` to `LogicManager`,
+   which saves the address book before returning the result to its caller.
+
+The following model-level sequence expands the membership update. The return value is `true`
+for this scenario because the student was not already a member.
+
+<puml src="diagrams/AssignSequenceDiagram-Model.puml" alt="ModelManager delegates assignment to AddressBook and AcademicClass adds the student to its membership set" />
+
+`ModelManager` delegates to `AddressBook`, which checks the stored-object preconditions using
+assertions before calling `AcademicClass#assignStudent(person)`. The class uses a set to prevent
+duplicate membership. If the student is already assigned, the model returns `false` and
+`AssignCommand` throws a `CommandException` instead of returning success feedback.
+
+#### Unassigning a student
+
+For example, `unassign 2 1` removes the second displayed student from the first displayed class.
+The following sequence diagram starts at `LogicManager#execute(commandText)`, where `commandText`
+is the example above. It assumes that both records exist and the student belongs to the class.
+The parser validates exactly two positive indices using `ParserUtil#parseIndices`.
+The command resolves the student through `Model#getFilteredPersonList()` and the class through
+`Model#getFilteredAcademicClassList()`, checking each index against its displayed list size.
+Membership changes go through the `Model` interface.
+
+<puml src="diagrams/UnassignSequenceDiagram.puml" alt="Successful execution of UnassignCommand, resolving displayed student and class indices before requesting removal through Model" />
+
+1. `LogicManager` asks `AddressBookParser` to parse the input. It creates an `UnassignCommandParser`,
+   which validates the arguments and constructs an `UnassignCommand`.
+2. `LogicManager` executes the returned command, which validates both displayed indices and
+   resolves the selected student and class.
+3. The command calls `Model#unassignStudentFromClass(person, academicClass)` and checks whether
+   the model reports a successful removal.
+4. A successful removal produces a `CommandResult`, which `LogicManager` returns after saving
+   the address book.
+
+The `Unassign membership (model)` reference frame is expanded below. Only the selected class's
+student set changes; the student record and memberships in other classes remain intact.
+
+<puml src="diagrams/UnassignSequenceDiagram-Model.puml" alt="ModelManager delegates unassignment to AddressBook and AcademicClass removes the student from its membership set" />
+
+If the student is not assigned to the class, `AcademicClass#unassignStudent(person)` returns `false`
+without changing membership. This result propagates through the model to the command, which throws
+a `CommandException`. Successful removal refreshes membership-dependent
+student and class filters without resetting the active filters or ordering. Indices may shift as
+records disappear from filtered views. Attendance history is retained for correction or reassignment.
+
+#### Validation and failure paths
+
+The activity diagram below complements the successful-execution sequence diagrams. Assignment
+and unassignment both resolve displayed indices and validate the selected records before updating
+membership and saving.
+
+<puml src="diagrams/AssignUnassignActivityDiagram.puml" alt="Assign and Unassign workflow showing invalid input, missing student or class, unchanged membership, save failure and successful completion" />
+
+The guards distinguish successful and rejected paths. An unchanged membership means that the
+student is already assigned for `assign`, or is not assigned for `unassign`. In either case, the
+command reports an error before `LogicManager` reaches the saving step. A failure to save after
+a successful membership change is different: the in-memory change has already occurred.
+
+#### Validation, errors and persistence
+
+The sequence diagrams focus on successful execution and omit individual parser validation calls,
+assertion lookups, formatting helpers and exception construction to keep the interactions readable.
+
+* Both parsers reject anything other than exactly two positive integer indices, including prefixed input.
+  Both report `ParseException` before constructing the command.
+* Both commands report an invalid displayed student or class index with `CommandException`,
+  including when the relevant view is empty.
+  Both resolve the student before the class, before attempting a membership update.
+* A duplicate assignment or an absent membership is rejected without changing memberships.
+* On successful command execution, `LogicManager` saves the address book before returning the
+  result to its caller. Saving occurs outside the scope of these diagrams. If saving fails,
+  `LogicManager` reports a `CommandException`; the in-memory membership change is not rolled back.
 
 ### \[Proposed\] Undo/redo feature
 
@@ -270,71 +543,276 @@ _{Explain here how the data archiving feature will be implemented}_
 
 **Target user profile**:
 
-* has a need to manage a significant number of contacts
-* prefers desktop apps over other types of applications
+* is a Teaching Assistant (TA) managing multiple modules and tutorial or lab groups.
+* has a need to manage a significant number of student contacts, track assignment submissions, and record attendance.
 * can type fast
-* prefers typing to mouse interactions
-* is reasonably comfortable using CLI apps
+* needs to maintain clear boundaries between the different cohorts and modules they teach.
+* can type fast and prefers typing over mouse interactions to navigate the application.
+* is reasonably comfortable using Command Line Interface (CLI) apps and command shortcuts.
 
-**Value proposition**: Manage contacts faster than with a typical mouse-driven GUI application.
+**Value proposition**: helps Teaching Assistants organise all their modules, student contacts, and assignment details in a centralized application significantly faster than a typical mouse-driven GUI app.
 
 
 ### User stories
 
 Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unlikely to have) - `*`
 
-| Priority | As a …                                    | I want to …                 | So that I can…                                                        |
-|----------|--------------------------------------------|------------------------------|------------------------------------------------------------------------|
-| `* * *`  | new user                                   | see usage instructions       | refer to instructions when I forget how to use the App                 |
-| `* * *`  | user                                       | add a new person             |                                                                        |
-| `* * *`  | user                                       | delete a person              | remove entries that I no longer need                                   |
-| `* * *`  | user                                       | find a person by name        | locate details of persons without having to go through the entire list |
-| `* *`    | user                                       | hide private contact details | minimize chance of someone else seeing them by accident                |
-| `*`      | user with many persons in the address book | sort persons by name         | locate a person easily                                                 |
+| Priority | As a … | I want to … | So that I can… |
+|---|---|---|---|
+| `* * *` | TA | create student profiles with their contact information | maintain an up-to-date record of the students I teach |
+| `* * *` | TA | edit a student’s information | correct inaccurate or outdated records without recreating their profile |
+| `* * *` | TA | remove a student from a specific module without affecting their records in other modules | stop tracking students who have dropped that module |
+| `* * *` | TA | search for students by name across all modules or within a selected module | quickly locate the correct student during a class |
+| `* * *` | TA | filter students by module and tutorial or lab group identifier | quickly view the students in a particular class |
+| `* * *` | TA | create assignments with deadlines under a specific module | track the work expected from students in that module |
+| `* * *` | TA | record whether an individual student has submitted an assignment | distinguish submitted work from outstanding submissions |
+| `* * *` | TA | record whether each submission has been marked and view those still awaiting marking | resume grading where I left off |
+| `* * *` | TA | receive clear feedback when I enter an invalid command or perform an invalid action | understand the problem and correct it |
+| `* *` | new user | access an in-app guide explaining its features, commands and usage examples | understand its capabilities and learn to use it without external assistance |
+| `* *` | TA managing several modules | create modules and their tutorial or lab groups | organise the different classes I teach |
+| `* *` | TA managing several modules | assign students to their respective modules and tutorial or lab groups | keep different cohorts clearly organised |
+| `* *` | TA | assign custom tags to students | record relevant learning needs and tailor my teaching approach |
+| `* *` | TA | view a student’s communication handles, such as NUS email or Telegram | contact them without searching other platforms |
+| `* *` | TA | copy the email addresses of students in a selected module or class group to my clipboard | send announcements or lesson materials through my email client |
+| `* *` | TA | view a student’s assignment records alongside the relevant module information | review their progress within the correct module |
+| `* *` | TA | filter students within a selected module by their submission status for a specific assignment | identify students with outstanding submissions |
+| `* *` | TA | record grades for each student’s assignments | review their performance and identify areas where they may need additional support |
+| `* *` | TA | view upcoming assignment deadlines across my modules | remind students about approaching deadlines |
+| `* *` | TA | record each student’s attendance for weekly tutorial or lab sessions | maintain participation records for grading and follow-up |
+| `* *` | experienced user | define shortcuts for frequently used commands | perform repetitive tasks with less typing |
+| `* *` | TA | view and recall previously entered commands | reuse them without retyping them |
+| `* *` | returning TA | archive a completed module and its associated student and assignment records | keep my active workspace focused on the current semester while preserving historical records |
+| `*` | first-time user | explore sample student records and assignments across multiple modules and clear the sample data when ready | understand the application before entering real records |
+| `*` | TA | import a CSV student roster into a specified module and tutorial or lab group | populate my classes without entering each student individually |
+| `*` | TA | bulk-delete unwanted student records after confirmation | clear records efficiently without deleting students individually |
+| `*` | TA who is also a student | distinguish between modules I teach and modules I take | keep my teaching and learning contacts separate |
+| `*` | TA | view the contact details of the professor in charge of each module | conveniently raise teaching-related queries |
+| `*` | TA | batch-update an assignment’s submission status for an entire tutorial or lab group | perform routine submission checks efficiently |
+| `*` | TA | import assignment submission records from a CSV file into the relevant module and assignment | avoid updating every student’s status manually |
+| `*` | TA | export a selected module’s student grades and submission records as a CSV file | share them with the module coordinator without manually copying the data |
+| `*` | TA | receive an end-of-day notification listing students recorded as absent from my lab sessions | follow up with them about their absence |
+| `*` | TA arranging consultations | use my calendar to automatically share available consultation times with students | reduce scheduling conflicts and back-and-forth communication |
+| `*` | TA who prefers typing | navigate and operate the application using only the keyboard | complete tasks without switching to the mouse |
+| `*` | TA who frequently enters commands | use command autocompletion | enter commands more quickly and with fewer typing errors |
+| `*` | TA | switch between light and dark modes | use the application comfortably in different lighting conditions |                                         |
 
 *{More to be added}*
 
 ### Use cases
 
-(For all use cases below, the **System** is the `AddressBook` and the **Actor** is the `user`, unless specified otherwise)
+#### **Create Student**
 
-**Use case: Delete a person**
+**System:** TAssist  
+**Actor:** Teaching Assistant (TA)  
+**Guarantee:** If creation fails, existing data remains unchanged.  
+**Main Success Scenario (MSS):**
 
-**MSS**
+1. TA requests to create a student, providing the student number, name,
+   email address and, optionally, Telegram username.
+2. TAssist creates the student profile and confirms successful creation.
+3. TAssist displays the updated student list, including the newly created student.
 
-1.  User requests to list persons
-2.  AddressBook shows a list of persons
-3.  User requests to delete a specific person in the list
-4.  AddressBook deletes the person
+Use case ends.  
+**Extensions:**
 
-    Use case ends.
+- **1a. Required details are missing, or the supplied details are invalid.**
+  - 1a1. TAssist informs TA of the error and the expected input.
+  - Use case ends.
 
-**Extensions**
+- **1b. The student number, email address or supplied Telegram username matches an existing student's corresponding detail.**
+  - 1b1. TAssist informs TA of the duplicate detail and rejects the creation request.
+  - Use case ends.
 
-* 2a. The list is empty.
+- **1c. TAssist is unable to save the new student.**
+  - 1c1. TAssist informs TA that the student could not be saved and asks TA to try again.
+  - Use case ends.
 
-  Use case ends.
+#### **Create Class**
 
-* 3a. The given index is invalid.
+**System:** TAssist  
+**Actor:** Teaching Assistant (TA)  
+**Guarantee:** If creation fails, existing data remains unchanged.
 
-    * 3a1. AddressBook shows an error message.
+**Main Success Scenario (MSS):**
 
-      Use case resumes at step 2.
+1. TA requests to create a class, providing its module code and class name.
+2. TAssist creates the class and confirms successful creation.
+3. TAssist displays the updated class list, including the newly created class.
 
-*{More to be added}*
+Use case ends.
+
+**Extensions:**
+
+- **1a. Required details are missing, or the supplied details are invalid.**
+  - 1a1. TAssist informs TA of the error and the expected input.
+  - Use case ends.
+
+- **1b. A class with the same module code and class name already exists.**
+  - 1b1. TAssist informs TA that the class already exists and rejects the creation request.
+  - Use case ends.
+
+- **1c. TAssist is unable to save the new class.**
+  - 1c1. TAssist informs TA that the class could not be saved and asks TA to try again.
+  - Use case ends.
+
+#### **Search Student**
+
+**System:** TAssist  
+**Actor:** Teaching Assistant (TA)
+
+**Main Success Scenario (MSS):**
+
+1. TA requests to search for students by providing one or more name keywords.
+2. TAssist displays the matching students.
+
+Use case ends.
+
+**Extensions:**
+
+- **1a. The search keywords are missing or invalid.**
+  - 1a1. TAssist informs TA of the error and the expected input.
+  - Use case ends.
+
+- **1b. No students match the search keywords.**
+  - 1b1. TAssist displays an empty student list and informs TA that no students were found.
+  - Use case ends.
+
+#### **Assign Student to Class**
+
+**System:** TAssist  
+**Actor:** Teaching Assistant (TA)  
+**Guarantee:** A student is assigned to the same class at most once.
+
+**Main Success Scenario (MSS):**
+
+1. TA requests to assign a student to a class, providing the student index first and the class index second,
+   in their respective displayed lists.
+2. TAssist assigns the student to the specified class and automatically saves the assignment.
+3. TAssist returns a confirmation of the successful assignment, identifying the student and the class.
+
+Use case ends.
+
+**Extensions:**
+
+- **1a. The request does not contain exactly two positive integer indices, or includes prefixed or extra arguments.**
+  - 1a1. TAssist reports an invalid command format and the required student-index-first format, without changing any assignments.
+  - Use case ends.
+
+- **1b. The student index is outside the displayed student list.**
+  - 1b1. TAssist reports an invalid displayed student index.
+  - 1b2. TAssist rejects the request without changing any assignments.
+  - Use case ends.
+
+- **1c. The class index is outside the displayed class list.**
+  - 1c1. TAssist reports an invalid displayed class index.
+  - 1c2. TAssist rejects the request without changing any assignments.
+  - Use case ends.
+
+- **1d. The student is already assigned to the specified class.**
+  - 1d1. TAssist keeps the existing assignment without creating a duplicate.
+  - 1d2. TAssist informs TA that the student is already assigned, identifying the student number and class.
+  - Use case ends.
+
+#### **Unassign Student from Class**
+
+**System:** TAssist  
+**Actor:** Teaching Assistant (TA)  
+**Guarantee:** The student profile, class and all other class assignments remain unchanged.
+
+**Main Success Scenario (MSS):**
+
+1. TA requests to unassign a student from a class, providing the student index and class index
+   in their respective displayed lists.
+2. TAssist removes the student's assignment to the specified class and automatically saves the change.
+3. TAssist returns a confirmation that the student is no longer assigned to the class, identifying the student and the class.
+
+Use case ends.
+
+**Extensions:**
+
+- **1a. Required details are missing, or unrecognised or extra details are supplied.**
+  - 1a1. TAssist informs TA of the error and the required details, without changing any assignments.
+  - Use case ends.
+
+- **1b. The student index is outside the displayed student list.**
+  - 1b1. TAssist reports an invalid displayed student index.
+  - 1b2. TAssist rejects the request without changing any assignments.
+  - Use case ends.
+
+- **1c. The class index is outside the displayed class list.**
+  - 1c1. TAssist reports an invalid displayed class index.
+  - 1c2. TAssist rejects the request without changing any assignments.
+  - Use case ends.
+
+- **1d. The student is not assigned to the specified class.**
+  - 1d1. TAssist reports that the student is not assigned to the class without changing any data.
+  - Use case ends.
+
+- **2a. TAssist is unable to save the change.**
+  - 2a1. TAssist informs TA that the removal of the assignment could not be saved.
+  - Use case ends.
+
+#### **List Students by Class**
+
+**System:** TAssist  
+**Actor:** Teaching Assistant (TA)  
+**Guarantee:** Student profiles, classes and class assignments remain unchanged.
+
+**Main Success Scenario (MSS):**
+
+1. TA requests to list the students assigned to a class, providing its module code and class name.
+2. TAssist displays the names of all students assigned to the specified class in alphabetical order,
+   identifying the module code and class name.
+
+Use case ends.
+
+**Extensions:**
+
+- **1a. Required details are missing or blank, or the request is invalid.**
+  - 1a1. TAssist informs TA of the error and the required details.
+  - Use case ends.
+
+- **1b. No class matches the supplied module code and class name.**
+  - 1b1. TAssist informs TA that the class does not exist and asks TA to create the class or specify an existing class.
+  - Use case ends.
+
+- **1c. The specified class exists but has no assigned students.**
+  - 1c1. TAssist displays an empty student list for the specified module code and class name.
+  - Use case ends.
 
 ### Non-Functional Requirements
 
-1.  Should work on any _mainstream OS_ as long as it has Java `25` or above installed.
-2.  Should be able to hold up to 1000 persons without noticeable sluggishness in performance for typical usage.
-3.  A user with above average typing speed for regular English text (i.e. not code, not system admin commands) should be able to accomplish most of the tasks faster using commands than using the mouse.
-
-*{More to be added}*
+| ID | Category | Non-Functional Requirement |
+| --- | --- | --- |
+| NFR01 | Usability | TAssist should be optimised for users who are comfortable with typing, with typed commands as the primary means of interacting with the application. |
+| NFR02 | Performance | TAssist should respond to normal user commands within 2 seconds under typical usage conditions. |
+| NFR03 | Capacity | TAssist should support at least 500 students across 20 classes and 10 modules while maintaining normal command response times. |
+| NFR04 | Data Persistence | Every successful operation that modifies application data should be automatically saved to local storage so that the latest data remains available after the application is restarted. |
+| NFR05 | Data Integrity | A failed or invalid operation should not result in partially modified or inconsistent application data. Existing valid data should remain unchanged if the operation cannot be completed successfully. |
+| NFR06 | Error Handling | When an invalid command or input is entered, TAssist should provide a clear error message that identifies the problem and, where appropriate, indicates the expected command format. |
+| NFR07 | Single-User Operation | TAssist should operate as a single-user application and should not support multiple users accessing the same application data during normal operation. |
+| NFR08 | Data Storage | TAssist data should be stored locally in a human-editable text file and should not rely on a database management system. |
+| NFR09 | Platform Compatibility | TAssist should work on Windows, Linux, and macOS without relying on operating-system-specific functionality. |
+| NFR10 | Runtime Compatibility | TAssist should be compatible with Java 25. |
+| NFR11 | Portability | TAssist should run without requiring an installer and should be distributed as a single JAR file, or a single ZIP file if additional files are unavoidable. |
+| NFR12 | Offline Availability | Core TAssist functionality should not depend on the team's own remote server and should remain usable without an Internet connection. |
+| NFR13 | Display Compatibility | The GUI should work without resolution-related inconvenience at 1920×1080 or above at 100%/125% scaling, and all functionality should remain usable at 1280×720 or above at 150% scaling. |
 
 ### Glossary
 
-* **Mainstream OS**: Windows, Linux, Unix, or macOS
-* **Private contact detail**: A contact detail that is not meant to be shared with others
+| Term | Definition |
+| --- | --- |
+| TAssist | The application developed to help teaching assistants manage student contacts and information across the classes they teach. |
+| TA | Teaching Assistant. The primary target user of TAssist. |
+| Student | A person whose contact and class information is managed by a TA using TAssist. |
+| Student Number | The unique institutional identifier used by TAssist to identify a student. |
+| Module | An academic course taught by the TA, identified by its module code, such as `CS2103`. A module may contain one or more classes. |
+| Class | A tutorial or lab group belonging to a module, identified by a class name such as `F10-2`. A class is uniquely identified by its combination of module and class name. |
+| Student Profile | The information stored about a student, such as their student number, name, email address, Telegram username, and class associations. |
+| Communication Handle | Contact information used to communicate with a student, such as their email address or Telegram username. |
+| CLI | Command-Line Interface. The text-based interface through which the user enters commands in TAssist. |
+| Command | A textual instruction entered into TAssist to perform an operation, such as `addstudent`, `find`, or `assign`. |
+| Command Prefix | A prefix used to specify a parameter in a command, such as `sn/` for student number, `m/` for module, or `c/` for class. |
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -382,6 +860,127 @@ testers are expected to do more *exploratory* testing.
       Expected: Similar to previous.
 
 1. _{ more test cases … }_
+
+### Assigning a student to a class
+
+1. Successful assignment and live count updates
+
+   1. Prerequisites: In a fresh data folder, create Alice and Bob with `add`, then create a class with `addclass`.
+      Run `list` and `listclass`; check that Alice is student 1, Bob is student 2, and the class is class 1.
+   1. Test case: `assign 1 1`<br>
+      Expected: Success feedback identifies Alice and the class; its count becomes 1.
+   1. Test case: `find Bob`, then `assign 1 1`<br>
+      Expected: Bob is assigned using his displayed index; the count becomes 2 and the search stays active.
+
+1. Duplicate assignment and errors
+
+   1. Test case: `assign 1 1` again<br>
+      Expected: Already-assigned feedback; the count remains 2.
+   1. Test cases: `assign 999 1` and `assign 1 999`<br>
+      Expected: Invalid displayed student/class index feedback; memberships remain unchanged.
+   1. Incorrect commands: `assign`, `assign 1`, `assign 0 1`, `assign 1 -1`, `assign 1 1 extra`,
+      and `assign sn/A1111111H m/CS2103 c/F-10`.<br>
+      Expected: Invalid command format; memberships and counts remain unchanged.
+   1. Test case: `find Nobody`, then `assign 1 1`<br>
+      Expected: Invalid displayed student index. Run `list` to make students selectable again.
+
+1. Persistence
+
+   1. Close and reopen the app after successful assignments.<br>
+      Expected: The class still shows 2 students, and each student number occurs once in its `studentNumbers` JSON list.
+
+### Listing classes by student
+
+1. Add students and classes using unused identifiers:
+   `add sn/A0999801X n/AlphaDemoAlice e/alpha.demo.alice@example.com`,
+   `add sn/A0999802Y n/AlphaDemoBob e/alpha.demo.bob@example.com`,
+   `addclass m/CS2103 c/DEMO-T01`, and `addclass m/CS2100 c/DEMO-L01`.
+2. Run `list` and `listclass`. Check Alice's displayed student index and the two displayed class indices.
+   Assign her using `assign STUDENT_INDEX CLASS_INDEX` for each class.
+3. Run `find AlphaDemoAlice`, then `listbystudent 1`.
+   Expected: both classes appear in creation order; feedback reports two classes and Alice's identity.
+   The student search results remain unchanged.
+4. Run `listbystudent 0`, `listbystudent 1 extra`, and `listbystudent 2`.
+   Expected: invalid-command or invalid-index feedback; both views remain unchanged.
+5. Run `unassign 1 1`.
+   Expected: only CS2100 DEMO-L01 remains in the Classes panel.
+6. Run `find AlphaDemoBob`, then `listbystudent 1`.
+   Expected: zero matching classes and an empty Classes panel.
+7. Run `listclass` to restore all classes, and `list` to restore all students.
+   Restart the app and repeat Alice's lookup to verify that memberships persist while display filters reset.
+
+### Finding students by name
+
+1. Successful case-insensitive and multi-keyword search
+
+   1. Prerequisites: In a fresh data folder, add three students with distinct names, for example with
+      `add sn/A0999801X n/Alice Tan e/alice.tan@example.com`,
+      `add sn/A0999802Y n/Bob Tan e/bob.tan@example.com`, and
+      `add sn/A0999803Z n/Charlie Lim e/charlie.lim@example.com`. Run `list` so all students are displayed.
+   2. Test case: `find alice`<br>
+      Expected: Only Alice Tan is displayed, and the result count is 1. The match is case-insensitive.
+   3. Test case: `find Alice Bob`<br>
+      Expected: Alice Tan and Bob Tan are displayed. A student matching either keyword is included, and the results
+      remain in their original insertion order.
+   4. Test case: `find tan`<br>
+      Expected: Alice Tan and Bob Tan are displayed; Charlie Lim is not.
+
+1. Full-word matching and invalid input
+
+   1. Test case: `find ali`<br>
+      Expected: No student is displayed because `ali` is not a complete word in `Alice`.
+   2. Test case: `find alice@example.com` (or another value that appears only in a student's email)<br>
+      Expected: No student is displayed unless that value is also a word in a student's name; only names are
+      searched.
+   3. Test case: `find`<br>
+      Expected: Invalid-command feedback is shown and the current student list remains unchanged.
+   4. Test case: `find   Alice    Bob`<br>
+      Expected: The command behaves like `find Alice Bob`; extra whitespace does not add keywords.
+
+1. Reset and persistence
+
+   1. Test case: `list`<br>
+      Expected: All students are displayed again in insertion order. The class list is unchanged.
+   2. Close and reopen the app.<br>
+      Expected: Student records remain saved, but the previous `find` filter is not restored; the default student
+      view is shown.
+
+### Listing students by class
+
+1. Successful class selection
+
+   1. Prerequisites: In a fresh data folder, add Alice Tan, Bob Tan, and Charlie Lim, then add
+      `addclass m/CS2103 c/TEST-103` and `addclass m/CS2100 c/TEST-100`. Run `list` and `listclass` to confirm the
+      displayed indices.
+   2. Assign Alice and Bob to the first displayed class, and Charlie to the second displayed class using
+      `assign STUDENT_INDEX CLASS_INDEX`.
+   3. Test case: `listbyclass 1`<br>
+      Expected: Alice Tan and Bob Tan are displayed alphabetically. The result identifies `CS2103 (TEST-103)` and
+      reports two students. The class list and stored memberships are unchanged.
+   4. Test case: `listbyclass 2`<br>
+      Expected: Only Charlie Lim is displayed, with the result identifying `CS2100 (TEST-100)`.
+
+1. Attendance threshold
+
+   1. Prerequisites: With all students and classes displayed, record one attendance date for Alice in the first
+      class using `addattendance ALICE_INDEX FIRST_CLASS_INDEX d/2026-01-01`.
+   2. Test case: `listbyclass 1 t/1`<br>
+      Expected: Only Bob Tan is displayed because the command includes students with fewer than one recorded
+      attendance date. Students with zero attendance count as zero.
+   3. Test case: `listbyclass 1`<br>
+      Expected: Both Alice Tan and Bob Tan are displayed again; omitting `t/` clears the active threshold.
+   4. Record attendance for a student in a different class, then repeat the threshold test.<br>
+      Expected: Attendance in another class does not change the threshold result for the selected class.
+
+1. Invalid input and persistence
+
+   1. Test cases: `listbyclass`, `listbyclass 0`, `listbyclass 999`, `listbyclass 1 t/0`,
+      `listbyclass 1 t/-1`, and `listbyclass 1 t/1 t/2`.<br>
+      Expected: Invalid-command or invalid-index feedback is shown. The current student and class views remain
+      unchanged after each rejected command.
+   2. Test case: `listbyclass 1` followed by closing and reopening the app, then `listclass` and `listbyclass 1`.<br>
+      Expected: Class memberships and attendance dates are retained, and the class can be listed again. The filtered
+      student view itself is not restored automatically; use `list` to show all students.
 
 ### Saving data
 
