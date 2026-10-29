@@ -161,33 +161,6 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 
 This section describes some noteworthy details on how certain features are implemented.
 
-### Student name validation and slash input
-
-`Name` accepts ASCII letters, digits, spaces, hyphens, straight apostrophes, periods, commas,
-parentheses, and canonical forward slashes. A stored name must contain at least one ASCII letter or digit
-and must not begin with a space. Curly apostrophes, middle dots, accented letters, other scripts,
-and other punctuation are rejected. Existing digit-only names remain valid.
-
-This is the agreed scope of issue #208: support the selected US-keyboard punctuation while retaining
-ASCII-only names. The issue's accented-letter and other-script examples remain intentionally rejected;
-this change does not add Unicode name support.
-
-For `add` and `edit`, `ArgumentTokenizer` extracts the name field before `ParserUtil.parseName()`
-converts each input backslash (`\`) to a forward slash (`/`). Literal forward slashes in command name
-fields are rejected. Converting after field extraction prevents escaped text such as `n\Alias`
-from being mistaken for a field prefix. Display, comparison, and JSON storage use the canonical name;
-`JsonAdaptedPerson` validates and restores that name directly without command-input conversion.
-`Name.MESSAGE_CONSTRAINTS` describes canonical stored names, including `/`; the parser uses
-`ParserUtil.MESSAGE_NAME_CONSTRAINTS` to explain the command-input `\` convention instead.
-Test helpers that generate commands convert canonical `/` characters back to `\`, including when
-the resulting text resembles field prefixes.
-
-`FindCommandParser` applies the same backslash-to-slash conversion to search keywords. Both `S\O`
-and the displayed spelling `S/O` match the same stored word. The existing case-insensitive,
-whole-word search semantics are preserved; punctuation is not removed when comparing keywords.
-For example, `Tan,` and `(Alex)` match the corresponding words in `John Tan, Jr. (Alex)`, whereas
-`Tan` and `Alex` do not.
-
 ### Listing students by class
 
 The `listbyclass` command displays students assigned to the class at a one-based index in the currently displayed
@@ -836,64 +809,6 @@ testers are expected to do more *exploratory* testing.
        Expected: The most recent window size and location are retained.
 
 1. _{ more test cases … }_
-
-### Student names and punctuation
-
-Use a disposable copy of the JAR in an empty folder, with unused student numbers and email addresses.
-Enter these commands in TAssist's command box, not in the terminal. Each `\` below is one backslash.
-Run `clear` in this disposable copy to remove the sample data before starting.
-
-1. Accepted punctuation and slash display
-
-   1. Run `list`, then add these students:
-      ```text
-      add sn/A0800001X n/Anne-Marie Tan e/anne@example.com
-      add sn/A0800002X n/Sean O'Connor e/sean@example.com
-      add sn/A0800003X n/J. K. Tan e/jk@example.com
-      add sn/A0800004X n/John Tan, Jr. (Alex) e/john@example.com
-      add sn/A0800005X n/Ravi S\O Kumar e/ravi@example.com
-      ```
-      Expected: all five commands succeed. Names retain their punctuation; Ravi's name is displayed
-      as `Ravi S/O Kumar` in the student card and command feedback.
-
-1. Whole-word search and editing
-
-   1. Run each of `find Tan,` and `find (Alex)`.<br>
-      Expected: John is shown. Each of `find Alex` and `find Anne` shows no students.
-      `find Anne-Marie` shows Anne-Marie. Punctuation is part of a search word.
-   1. Run `find S\O`, then `find S/O`.<br>
-      Expected: both searches show Ravi.
-   1. With Ravi as the only search result, run `edit 1 n/Anne-Marie O'Connor, Jr. (Alex) S\O`.<br>
-      Expected: the new name appears with `/`, and the current `S/O` filter still shows that student.
-
-1. Rejected characters and error guidance
-
-   1. Try these commands independently:
-      ```text
-      add sn/A0800006X n/Sean O’Connor e/rejected@example.com
-      add sn/A0800006X n/José Tan e/rejected@example.com
-      add sn/A0800006X n/王明 e/rejected@example.com
-      add sn/A0800006X n/Alex·Tan e/rejected@example.com
-      add sn/A0800006X n/--- e/rejected@example.com
-      add sn/A0800006X n/Alex@Tan e/rejected@example.com
-      add sn/A0800006X n/Ravi S/O Kumar e/rejected@example.com
-      ```
-      Expected: every command is rejected. The message lists the allowed punctuation and explains
-      that command input uses `\` instead of `/`. No student is added.
-   1. Run `find S/O`, then try `edit 1 n/José Tan`, `edit 1 n/---`, and `edit 1 n/Ravi S/O Kumar`.<br>
-      Expected: each edit is rejected with the same name guidance; the student's name is unchanged.
-
-1. Restart and stored format
-
-   1. Close and reopen TAssist, then run `list`.<br>
-      Expected: all five added students remain, including the edited name with its punctuation and `/`.
-      `find S\O` and `find S/O` both find the edited student.
-   1. Close TAssist and inspect `data/addressbook.json` beside the JAR.<br>
-      Expected: the edited student's `name` contains `S/O`, not a backslash.
-   1. Back up the JSON file. Replace `S/O` in that student's name with `S\\O` (two backslashes in JSON,
-      representing one literal backslash). Reopen TAssist.<br>
-      Expected: loading fails; the log explains that stored names must use `/` rather than `\`.
-      Close the app without running commands, restore the backup, and reopen it to recover the test data.
 
 ### Deleting a person
 
