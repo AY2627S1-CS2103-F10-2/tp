@@ -620,7 +620,7 @@ Format: `exit`
 
 TAssist automatically saves data after every successful command. You do not need to save manually.
 
-Data is saved to `[JAR file location]/data/addressbook.json`. If TAssist cannot save the data, it displays an error such as `Could not save data due to the following error: ...` or `Could not save data to file ... due to insufficient permissions to write to the file or the folder.` In either case, your command is not applied, so TAssist's data stays unchanged.
+Data is saved to `[JAR file location]/data/addressbook.json`. If TAssist cannot save the data, it displays an error such as `Could not save data due to the following error: ...` or `Could not save data to file ... due to insufficient permissions to write to the file or the folder.` In either case, the command's changes are rolled back in TAssist, so the data you see is unchanged.
 
 The JAR file location means the **folder containing `TAssist.jar`**, not the terminal's current folder.
 For example, running `java -jar "C:\TAssist\TAssist.jar"` from another folder still uses `C:\TAssist\data\addressbook.json`.
