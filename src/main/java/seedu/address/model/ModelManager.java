@@ -196,19 +196,19 @@ public class ModelManager implements Model {
     public void setAcademicClass(AcademicClass target, AcademicClass editedClass) {
         requireAllNonNull(target, editedClass);
 
-        boolean isViewingTargetClass = personFilterClass != null
-                && personFilterClass.isSameClass(target);
+        boolean isViewingAffectedClass = personFilterClass != null
+                && (personFilterClass.isSameClass(target) || personFilterClass.isSameClass(editedClass));
         Optional<Integer> activeThreshold = personFilterThreshold;
-        boolean isDisplayingTargetClass = attendanceDisplayClass != null
-                && attendanceDisplayClass.isSameClass(target);
+        boolean isDisplayingAffectedClass = attendanceDisplayClass != null
+                && (attendanceDisplayClass.isSameClass(target) || attendanceDisplayClass.isSameClass(editedClass));
 
         addressBook.setAcademicClass(target, editedClass);
 
-        if (isViewingTargetClass && isDisplayingTargetClass) {
+        if (isViewingAffectedClass && isDisplayingAffectedClass) {
             filterPersonsByClassAndDisplayAttendance(editedClass, activeThreshold);
-        } else if (isViewingTargetClass) {
+        } else if (isViewingAffectedClass) {
             filterPersonsByClass(editedClass, activeThreshold);
-        } else if (isDisplayingTargetClass) {
+        } else if (isDisplayingAffectedClass) {
             setAttendanceDisplayClass(editedClass);
         }
 

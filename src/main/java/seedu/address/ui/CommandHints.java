@@ -10,12 +10,12 @@ final class CommandHints {
     // Keep guidance in sync with the command parsers; argument validation remains there.
     private static final List<String> SYNTAX = List.of(
             "add sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM] [t/TAG]...",
-            "edit STUDENT_INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]...",
-            "delete STUDENT_INDEX", "find NAME [MORE_NAMES]...", "list",
+            "edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]...",
+            "delete INDEX", "find KEYWORD [MORE_KEYWORDS]...", "list",
             "addclass m/MODULE_CODE c/CLASS_NAME",
-            "editclass CLASS_INDEX [m/MODULE_CODE] [c/CLASS_NAME]",
-            "deleteclass CLASS_INDEX", "listclass",
-            "listbyclass CLASS_INDEX [t/THRESHOLD]", "listbystudent STUDENT_INDEX",
+            "editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]",
+            "deleteclass INDEX", "listclass",
+            "listbyclass INDEX [t/THRESHOLD]", "listbystudent INDEX",
             "assign STUDENT_INDEX CLASS_INDEX",
             "unassign STUDENT_INDEX CLASS_INDEX",
             "addattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD",

@@ -11,8 +11,9 @@ import java.util.Locale;
  */
 public class ModuleCode {
 
-    public static final String MESSAGE_EMPTY = "Module code cannot be empty";
-    public static final String MESSAGE_CONSTRAINTS = "Module code must contain letters or digits";
+    public static final String MESSAGE_EMPTY = "Module code cannot be empty. Examples: CS2103T, ST2334.";
+    public static final String MESSAGE_CONSTRAINTS = "Module code must start with a letter (A-Z, a-z) "
+            + "and contain only letters and digits, with no spaces. Examples: CS2103T, ST2334.";
 
     /*
      * The first character of the module code must be an alphabet,

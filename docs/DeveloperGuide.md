@@ -676,24 +676,19 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 **Guarantee:** If creation fails, existing data remains unchanged.  
 **Main Success Scenario (MSS):**
 
-1. TA requests to create a student, providing the student number, name,
-   email address and, optionally, Telegram username.
-2. TAssist creates the student profile and confirms successful creation.
-3. TAssist displays the updated student list, including the newly created student.
+1. TA requests to create a student.
+2. TAssist creates the student profile.
+3. TAssist displays the updated student list based on current display filters.
 
 Use case ends.  
 **Extensions:**
 
-- **1a. Required details are missing, or the supplied details are invalid.**
+- **1a. TAssist detects an error in entered data.**
   - 1a1. TAssist informs TA of the error and the expected input.
   - Use case ends.
 
-- **1b. The student number, email address or supplied Telegram username matches an existing student's corresponding detail.**
-  - 1b1. TAssist informs TA of the duplicate detail and rejects the creation request.
-  - Use case ends.
-
-- **1c. TAssist is unable to save the new student.**
-  - 1c1. TAssist informs TA that the student could not be saved and asks TA to try again.
+- **2a. TAssist is unable to save the new student.**
+  - 2a1. TAssist informs TA that the student could not be saved.
   - Use case ends.
 
 #### **Create Class**
@@ -704,24 +699,20 @@ Use case ends.
 
 **Main Success Scenario (MSS):**
 
-1. TA requests to create a class, providing its module code and class name.
-2. TAssist creates the class and confirms successful creation.
-3. TAssist displays the updated class list, including the newly created class.
+1. TA requests to create a class.
+2. TAssist creates the class.
+3. TAssist displays the updated class list based on current display filters.
 
 Use case ends.
 
 **Extensions:**
 
-- **1a. Required details are missing, or the supplied details are invalid.**
+- **1a. Tassist detects an error in entered data.**
   - 1a1. TAssist informs TA of the error and the expected input.
   - Use case ends.
 
-- **1b. A class with the same module code and class name already exists.**
-  - 1b1. TAssist informs TA that the class already exists and rejects the creation request.
-  - Use case ends.
-
-- **1c. TAssist is unable to save the new class.**
-  - 1c1. TAssist informs TA that the class could not be saved and asks TA to try again.
+- **2a. TAssist is unable to save the new class.**
+  - 2a1. TAssist informs TA that the class could not be saved.
   - Use case ends.
 
 #### **Search Student**
@@ -731,8 +722,8 @@ Use case ends.
 
 **Main Success Scenario (MSS):**
 
-1. TA requests to search for students by providing one or more name keywords.
-2. TAssist displays the matching students.
+1. TA requests to search for students.
+2. TAssist displays the matching students and number of students found.
 
 Use case ends.
 
@@ -740,10 +731,6 @@ Use case ends.
 
 - **1a. The search keywords are missing or invalid.**
   - 1a1. TAssist informs TA of the error and the expected input.
-  - Use case ends.
-
-- **1b. No students match the search keywords.**
-  - 1b1. TAssist displays an empty student list and informs TA that no students were found.
   - Use case ends.
 
 #### **Assign Student to Class**
@@ -754,67 +741,46 @@ Use case ends.
 
 **Main Success Scenario (MSS):**
 
-1. TA requests to assign a student to a class, providing the student index first and the class index second,
-   in their respective displayed lists.
-2. TAssist assigns the student to the specified class and automatically saves the assignment.
+1. TA requests to assign a student to a class.
+2. TAssist assigns the student to the specified class.
 3. TAssist returns a confirmation of the successful assignment, identifying the student and the class.
 
 Use case ends.
 
 **Extensions:**
 
-- **1a. The request does not contain exactly two positive integer indices, or includes prefixed or extra arguments.**
-  - 1a1. TAssist reports an invalid command format and the required student-index-first format, without changing any assignments.
+- **1a. Tassist detects an error in entered data.**
+  - 1a1. TAssist informs TA of the error and the expected input.
   - Use case ends.
 
-- **1b. The student index is outside the displayed student list.**
-  - 1b1. TAssist reports an invalid displayed student index.
-  - 1b2. TAssist rejects the request without changing any assignments.
+- **1b. The student is already assigned to the specified class.**
+  - 1b1. TAssist informs TA that the student is already assigned, identifying the student number and class.
   - Use case ends.
-
-- **1c. The class index is outside the displayed class list.**
-  - 1c1. TAssist reports an invalid displayed class index.
-  - 1c2. TAssist rejects the request without changing any assignments.
+- **2a. TAssist is unable to save the change.**
+  - 2a1. TAssist informs TA that the assignment could not be saved.
   - Use case ends.
-
-- **1d. The student is already assigned to the specified class.**
-  - 1d1. TAssist keeps the existing assignment without creating a duplicate.
-  - 1d2. TAssist informs TA that the student is already assigned, identifying the student number and class.
-  - Use case ends.
-
+  
 #### **Unassign Student from Class**
 
 **System:** TAssist  
 **Actor:** Teaching Assistant (TA)  
-**Guarantee:** The student profile, class and all other class assignments remain unchanged.
 
 **Main Success Scenario (MSS):**
 
-1. TA requests to unassign a student from a class, providing the student index and class index
-   in their respective displayed lists.
-2. TAssist removes the student's assignment to the specified class and automatically saves the change.
+1. TA requests to unassign a student from a class.
+2. TAssist removes the student's assignment to the specified class.
 3. TAssist returns a confirmation that the student is no longer assigned to the class, identifying the student and the class.
 
 Use case ends.
 
 **Extensions:**
 
-- **1a. Required details are missing, or unrecognised or extra details are supplied.**
-  - 1a1. TAssist informs TA of the error and the required details, without changing any assignments.
+- **1a. Tassist detects an error in entered data.**
+  - 1a1. TAssist informs TA of the error and the expected input.
   - Use case ends.
 
-- **1b. The student index is outside the displayed student list.**
-  - 1b1. TAssist reports an invalid displayed student index.
-  - 1b2. TAssist rejects the request without changing any assignments.
-  - Use case ends.
-
-- **1c. The class index is outside the displayed class list.**
-  - 1c1. TAssist reports an invalid displayed class index.
-  - 1c2. TAssist rejects the request without changing any assignments.
-  - Use case ends.
-
-- **1d. The student is not assigned to the specified class.**
-  - 1d1. TAssist reports that the student is not assigned to the class without changing any data.
+- **1b. The student is not assigned to the specified class.**
+  - 1b1. TAssist reports that the student is not assigned.
   - Use case ends.
 
 - **2a. TAssist is unable to save the change.**
@@ -825,28 +791,36 @@ Use case ends.
 
 **System:** TAssist  
 **Actor:** Teaching Assistant (TA)  
-**Guarantee:** Student profiles, classes and class assignments remain unchanged.
 
 **Main Success Scenario (MSS):**
 
-1. TA requests to list the students assigned to a class, providing its module code and class name.
-2. TAssist displays the names of all students assigned to the specified class in alphabetical order,
-   identifying the module code and class name.
+1. TA requests to list the students assigned to a class.
+2. TAssist displays the students assigned to the specified class and the number of students found.
 
 Use case ends.
 
 **Extensions:**
 
-- **1a. Required details are missing or blank, or the request is invalid.**
-  - 1a1. TAssist informs TA of the error and the required details.
+- **1a. Tassist detects an error in entered data.**
+  - 1a1. TAssist informs TA of the error and the expected input.
   - Use case ends.
 
-- **1b. No class matches the supplied module code and class name.**
-  - 1b1. TAssist informs TA that the class does not exist and asks TA to create the class or specify an existing class.
-  - Use case ends.
+#### **List Classes of a Student**
 
-- **1c. The specified class exists but has no assigned students.**
-  - 1c1. TAssist displays an empty student list for the specified module code and class name.
+**System:** TAssist  
+**Actor:** Teaching Assistant (TA)  
+
+**Main Success Scenario (MSS):**
+
+1. TA requests to list the classes of a student.
+2. TAssist displays the classes the student is assigned to and the number of classes found.
+
+Use case ends.
+
+**Extensions:**
+
+- **1a. Tassist detects an error in entered data.**
+  - 1a1. TAssist informs TA of the error and the expected input.
   - Use case ends.
 
 ### Non-Functional Requirements

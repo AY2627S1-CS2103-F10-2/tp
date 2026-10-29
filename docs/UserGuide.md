@@ -76,6 +76,9 @@ Edits of past commands are kept while browsing and cleared when you submit a com
 * Words in `UPPER_CASE` are the parameters to be supplied by the user.<br>
   For example, in `add sn/STUDENT_NUMBER n/NAME`, replace `STUDENT_NUMBER` with a value such as `A0123456X` and `NAME` with a value such as `John Doe`.
 
+* `INDEX` refers to a student or class in the relevant displayed list. Commands taking both indices use
+  `STUDENT_INDEX CLASS_INDEX`, in that order. `KEYWORD` in `find` is a full word in a student's name.
+
 * Items in square brackets are optional.<br>
   For example, `n/NAME [t/TAG]` can be used as `n/John Doe t/friend` or as `n/John Doe`.
 
@@ -120,7 +123,14 @@ Format: `add sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM] [t/TAG]... `
 </box>
 
 * `STUDENT_NUMBER` must contain 5 to 20 letters or digits, with no spaces or special characters. It is stored and displayed in uppercase, and must be unique.
-* `NAME` must contain only letters, digits, and spaces, and must start with a letter or digit. Leading and trailing spaces are removed.
+* `NAME` must contain at least one ASCII letter (`A`–`Z`, `a`–`z`) or digit (`0`–`9`). Leading and trailing spaces are removed.
+  It accepts spaces, hyphens (`-`), straight apostrophes (`'`), periods (`.`), commas (`,`), and parentheses (`(` and `)`).
+  For example, `Anne-Marie Tan`, `Sean O'Connor`, `J. K. Tan`, `John Tan, Jr.`, and `Tan Wei Ming (Alex)` are valid names.
+* To include a forward slash in a name, type **one backslash** (`\`) in its place: `n/Ravi S\O Kumar` is stored and displayed as `Ravi S/O Kumar`.
+  Use this form in both `add` and `edit`; literal forward slashes (`/`) in name input are rejected.
+  Backslashes represent slashes and cannot be stored as literal backslashes in a name.
+* Curly apostrophes (`’`), middle dots (`·`), accented letters (such as `é`), other scripts, and unlisted punctuation are rejected.
+  Use a straight apostrophe (`'`) rather than a curly one. Blank names and names consisting only of punctuation are also rejected.
 * `EMAIL` must be in the format `local-part@domain`, with no spaces. Email comparisons are case-insensitive for duplicate checks.
 * `TELEGRAM`, if provided, may start with `@`. After removing `@`, it must contain 5 to 32 letters, digits, or underscores. It must be unique, ignoring case.
 * Parameters can be supplied in any order.
@@ -131,6 +141,8 @@ Examples:
 * `add sn/A0123456X n/Alice Tan e/alice@u.nus.edu tg/alice_tan`
 * `add sn/A0234567Y n/Benjamin Lim e/benjamin@u.nus.edu`
 * `add e/chloe@u.nus.edu sn/A0345678Z tg/@chloe_ng n/Chloe Ng`
+* `add sn/A0800001X n/Anne-Marie O'Connor e/anne@example.com`
+* `add sn/A0800002X n/Ravi S\O Kumar e/ravi@example.com` stores and displays the name as `Ravi S/O Kumar`.
 
 Expected output:
 * `New student added: Alice Tan; Student Number: A0123456X; Email: alice@u.nus.edu; Telegram: @alice_tan`
@@ -140,7 +152,12 @@ Common errors:
 * Duplicate email: `A student with this email already exists.`
 * Duplicate Telegram username: `A student with this Telegram username already exists.`
 * Invalid student number: `Invalid student number. Student numbers must contain 5–20 letters or digits with no spaces.`
-* Invalid name: `Names should only contain alphanumeric characters and spaces, and should not be blank`
+* Invalid name:
+  ```text
+  Names must contain at least one letter (A-Z, a-z) or digit (0-9). Spaces are allowed.
+  Allowed punctuation: hyphen (-), straight apostrophe ('), period (.), comma (,), parentheses ( ), and backslash (\).
+  Enter \ instead of /; it is stored and displayed as /. Non-ASCII characters and other punctuation are not allowed.
+  ```
 * Invalid Telegram username: `Invalid Telegram username. Usernames must contain 5–32 letters, digits, or underscores.`
 
 ### Listing all students: `list`
@@ -176,6 +193,8 @@ Format: `listbyclass INDEX [t/THRESHOLD]`
 * An existing class with no matching students shows an empty student list and a count of zero.
 * Deleting the class currently being displayed empties the student list without deleting student records.
   If you recreate the class, subsequent assignments update this view using the new class membership.
+  If you rename another class to the deleted class's module code and class name, the student list immediately
+  shows that class's members in alphabetical order, subject to any active attendance threshold.
 * Renaming the class currently being displayed with `editclass` preserves both the class view and any active `t/THRESHOLD` attendance filter.
 * This command changes only the displayed student list, not student records, class memberships, or the class list.
 * Use `list` to show all students again. `list` and `find` display results in their original insertion order.
@@ -318,9 +337,11 @@ Format: `addclass m/MODULE_CODE c/CLASS_NAME`
 * The `m/` and `c/` parameters can be supplied in any order.
 * Each class is uniquely identified by its module code and class name pair.
 * Duplicate classes with the same module code and class name are not allowed.
-* Module codes and class names are normalized before being saved.
+* Leading and trailing whitespace is removed from module codes and class names, and letters are stored in uppercase.
 * `MODULE_CODE` must begin with a letter and contain only letters or digits.
 * `CLASS_NAME` must contain at least one letter or digit, and may contain only letters, digits, or hyphens.
+  Examples include `F01`, `F10-2`, and `T24`; numeric class names such as `01` remain valid.
+  These examples do not impose a fixed module-code length or class-name prefix.
 
 Examples:
 * `addclass m/CS2103T c/F10-2`
@@ -336,8 +357,13 @@ Common errors:
 * Repeated class name: `Parameter c/ was specified more than once.`
 * Unknown parameter: `Unknown parameter: PREFIX`
 * Duplicate class: `A class with this name for this module already exists`
-* Invalid module code: `Module code must contain letters or digits`
-* Invalid class name: `Class names can only contain letters, digits, or '-'`
+* Empty module code: `Module code cannot be empty. Examples: CS2103T, ST2334.`
+* Invalid module code: `Module code must start with a letter (A-Z, a-z) and contain only letters and digits, with no spaces. Examples: CS2103T, ST2334.`
+* Empty class name: `Class name cannot be empty. Examples: F01, F10-2, T24.`
+* Invalid class name: `Class name must contain at least one letter (A-Z, a-z) or digit (0-9), and may contain only letters, digits, and hyphens (-), with no spaces. Examples: F01, F10-2, T24.`
+
+For example, `addclass m/123 c/F01` is rejected because the module code starts with a digit.
+`addclass m/CS2103 c/---` is rejected because the class name contains no letter or digit.
 
 ### Assigning a student to a class: `assign`
 
@@ -458,6 +484,7 @@ Format: `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]
 * To remove all of a student's tags, enter `t/` without a tag after it.
 * To remove a student's Telegram username, enter `tg/` without a username after it. Omitting `tg/` keeps the existing username.
 * Student number, email, and Telegram username must remain unique after editing.
+* Names follow the same character rules as [`add`](#adding-a-student-add). Use `\` for a displayed `/`, for example `edit 1 n/Ravi S\O Kumar`.
 * Editing keeps the current student filter, sorting, and attendance display. A student who no longer matches a `find` search disappears from its results; changing a name in a `listbyclass` view may change their alphabetical position.
 * Editing a student number preserves their class memberships and attendance history. Any active attendance threshold still applies.
 * Check the displayed indexes again before your next command, as an edit may change which students are shown and their indexes. Use `list` to show all students.
@@ -526,12 +553,15 @@ Rejected commands leave class details, memberships, and student counts unchanged
 
 Finds students whose names contain any of the given keywords.
 
-Format: `find KEYWORD [MORE_KEYWORDS]`
+Format: `find KEYWORD [MORE_KEYWORDS]...`
 
 * The search is case-insensitive; for example, `hans` matches `Hans`.
 * Keyword order does not matter; for example, `Hans Bo` matches `Bo Hans`.
 * The search considers only names.
 * Only full words match; for example, `Han` does not match `Hans`.
+* Punctuation remains part of a word: use `Anne-Marie` rather than `Anne` to match `Anne-Marie`, or `O'Connor` to match `O'Connor`.
+  For `John Tan, Jr. (Alex)`, search with `Tan,` or `(Alex)`; `Tan` and `Alex` do not match those words.
+* For a displayed slash, either input form works in searches: `find S\O` and `find S/O` both match the word `S/O`.
 * Students matching at least one keyword are returned (an `OR` search); for example, `Hans Bo` returns `Hans Gruber` and `Bo Yang`.
 
 Examples:
@@ -675,6 +705,11 @@ If the destination already contains data, choose which file to keep before repla
 
 TAssist data is saved automatically as a JSON file `[JAR file location]/data/addressbook.json`. Advanced users are welcome to update data directly by editing that data file.
 
+Close TAssist before editing the file. Student names in JSON use their displayed spelling, including
+forward slashes: for example, `"name": "Ravi S/O Kumar"`. The backslash convention applies only to
+command input; a literal backslash in a stored name is invalid, even if correctly escaped in JSON.
+The other [student name rules](#adding-a-student-add) still apply.
+
 <box type="warning" seamless>
 
 **Caution:**
@@ -725,7 +760,7 @@ Action     | Format, Examples
 **Delete Class** | `deleteclass INDEX`<br> e.g., `deleteclass 1`
 **Edit**   | `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
 **Edit Class** | `editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]`<br> e.g., `editclass 1 m/CS2103 c/F11`
-**Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
+**Find**   | `find KEYWORD [MORE_KEYWORDS]...`<br> e.g., `find James Jake`
 **List**   | `list`
 **List students by class** | `listbyclass INDEX [t/THRESHOLD]`<br> e.g., `listbyclass 1`, `listbyclass 1 t/5`
 **List classes by student** | `listbystudent INDEX`<br> e.g., `listbystudent 1`

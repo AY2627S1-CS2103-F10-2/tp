@@ -1,6 +1,6 @@
 # Command hints: manual testing
 
-Branch: `add-command-hints`.
+Branch: `standardize-command-guidance`.
 
 This guide checks the command hint strip only. Typing changes guidance;
 commands still run through the existing Enter action. Existing parser and
@@ -44,16 +44,16 @@ java -jar (Join-Path $hintsTestDir "TAssist.jar")
 | Command | Expected syntax |
 | --- | --- |
 | `add` | `add sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM] [t/TAG]...` |
-| `edit` | `edit STUDENT_INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]...` |
-| `delete` | `delete STUDENT_INDEX` |
-| `find` | `find NAME [MORE_NAMES]...` |
+| `edit` | `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]...` |
+| `delete` | `delete INDEX` |
+| `find` | `find KEYWORD [MORE_KEYWORDS]...` |
 | `list` | `list` |
 | `addclass` | `addclass m/MODULE_CODE c/CLASS_NAME` |
-| `editclass` | `editclass CLASS_INDEX [m/MODULE_CODE] [c/CLASS_NAME]` |
-| `deleteclass` | `deleteclass CLASS_INDEX` |
+| `editclass` | `editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]` |
+| `deleteclass` | `deleteclass INDEX` |
 | `listclass` | `listclass` |
-| `listbyclass` | `listbyclass CLASS_INDEX [t/THRESHOLD]` |
-| `listbystudent` | `listbystudent STUDENT_INDEX` |
+| `listbyclass` | `listbyclass INDEX [t/THRESHOLD]` |
+| `listbystudent` | `listbystudent INDEX` |
 | `assign` | `assign STUDENT_INDEX CLASS_INDEX` |
 | `unassign` | `unassign STUDENT_INDEX CLASS_INDEX` |
 | `addattendance` | `addattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD` |
@@ -67,7 +67,9 @@ java -jar (Join-Path $hintsTestDir "TAssist.jar")
 4. Check that contextual hints include `Press Enter to run.`
    For `deleteclass`, the index refers to the current displayed class list.
    For `assign`, the student index comes first, followed by the class index
-   from their respective displayed lists. Student deletion remains `delete STUDENT_INDEX`.
+   from their respective displayed lists. Student deletion uses `delete INDEX`.
+   Compare `find` and the six single-index hints with the User Guide and command usage;
+   their parameter names must agree.
 5. Type `del`: check for `Matching commands: delete  |  deleteclass  |  deleteattendance`.
    Command names should use brighter monospace text, with the reminder on
    a separate, quieter line. Type `li` to check the matching list commands.

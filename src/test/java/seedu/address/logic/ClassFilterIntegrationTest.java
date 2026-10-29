@@ -113,6 +113,24 @@ public class ClassFilterIntegrationTest {
     }
 
     @Test
+    public void execute_renameToDeletedViewedClass_refreshesExistingView() throws Exception {
+        var displayed = model.getFilteredPersonList();
+        execute("addclass m/CS2100 c/F11-2");
+        execute("assign 1 2");
+        execute("deleteclass 1");
+        assertEquals(List.of(), displayed);
+
+        execute("editclass 1 m/CS2103 c/F10-2");
+
+        assertEquals(List.of(BENSON), displayed);
+        assertEquals(List.of(DANIEL, BENSON, ALICE), model.getAddressBook().getPersonList());
+        execute("editclass 1 c/F12-2");
+        assertEquals(List.of(BENSON), displayed);
+        execute("unassign 1 1");
+        assertEquals(List.of(), displayed);
+    }
+
+    @Test
     public void execute_deleteClassAfterFind_preservesSearchAndInsertionOrder() throws Exception {
         execute("find Meier");
         execute("deleteclass 1");
