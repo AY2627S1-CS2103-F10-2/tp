@@ -199,17 +199,7 @@ public class AddCommandTest {
         }
 
         @Override
-        public ReadOnlyAddressBook deepCopyAddressBook() {
-            throw new AssertionError("This method should not be called.");
-        }
-
-        @Override
-        public ViewState captureViewState() {
-            throw new AssertionError("This method should not be called.");
-        }
-
-        @Override
-        public void restoreAddressBook(ReadOnlyAddressBook addressBook, ViewState viewState) {
+        public Rollback createRollback() {
             throw new AssertionError("This method should not be called.");
         }
 

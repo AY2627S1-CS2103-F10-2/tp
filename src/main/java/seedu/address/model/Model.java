@@ -69,25 +69,20 @@ public interface Model {
     ReadOnlyAddressBook getAddressBook();
 
     /**
-     * Returns a copy of the address book that shares no mutable state with it, so later changes to either
-     * (e.g. class memberships or attendance dates) do not affect the other.
+     * Restores the address book data and the student and class list display (filters, sorting and the
+     * attendance display) captured by {@link #createRollback()}.
      */
-    ReadOnlyAddressBook deepCopyAddressBook();
+    @FunctionalInterface
+    interface Rollback {
+        void restore();
+    }
 
     /**
-     * Opaque snapshot of what the student and class lists currently display (filters, sorting and the
-     * attendance display), as opposed to the underlying address book data.
+     * Captures the current address book data and list display. Calling {@link Rollback#restore()} on the result
+     * returns the model to this state, so index-based commands keep resolving against the same lists.
+     * Used to undo a failed command.
      */
-    interface ViewState {}
-
-    /** Returns a snapshot of the current student and class list display. */
-    ViewState captureViewState();
-
-    /**
-     * Replaces address book data with {@code addressBook} and restores the display captured in {@code viewState},
-     * so index-based commands keep resolving against the same lists. Used to roll back a failed command.
-     */
-    void restoreAddressBook(ReadOnlyAddressBook addressBook, ViewState viewState);
+    Rollback createRollback();
 
     /** Returns saved successful commands, oldest first, as an unmodifiable list. */
     List<String> getCommandHistory();

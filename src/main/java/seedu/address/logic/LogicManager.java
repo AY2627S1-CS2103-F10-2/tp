@@ -16,7 +16,6 @@ import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.AddressBookParser;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.Model;
-import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.attendance.Attendance;
 import seedu.address.model.person.Person;
@@ -57,8 +56,7 @@ public class LogicManager implements Logic {
         Command command = addressBookParser.parseCommand(commandText);
         List<String> previousHistory = model.getCommandHistory();
         // Snapshot so a failed save can undo the command's changes, keeping memory consistent with the saved file.
-        ReadOnlyAddressBook previousData = model.deepCopyAddressBook();
-        Model.ViewState previousView = model.captureViewState();
+        Model.Rollback rollback = model.createRollback();
         commandResult = command.execute(model);
 
         List<String> updatedHistory = new ArrayList<>(previousHistory);
@@ -69,10 +67,10 @@ public class LogicManager implements Logic {
         try {
             storage.saveAddressBook(model.getAddressBook());
         } catch (AccessDeniedException e) {
-            model.restoreAddressBook(previousData, previousView);
+            rollback.restore();
             throw new CommandException(String.format(FILE_OPS_PERMISSION_ERROR_FORMAT, e.getMessage()), e);
         } catch (IOException ioe) {
-            model.restoreAddressBook(previousData, previousView);
+            rollback.restore();
             throw new CommandException(String.format(FILE_OPS_ERROR_FORMAT, ioe.getMessage()), ioe);
         }
 

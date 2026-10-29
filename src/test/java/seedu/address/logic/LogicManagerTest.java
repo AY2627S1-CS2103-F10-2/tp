@@ -27,6 +27,7 @@ import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyAddressBook;
@@ -297,7 +298,7 @@ public class LogicManagerTest {
     public void execute_storageFailsAfterAssign_rollsBackClassMembership() throws Exception {
         logic.execute("add sn/A0123456X n/Alice e/alice@example.com");
         logic.execute("addclass m/CS2103 c/F10-2");
-        ReadOnlyAddressBook before = model.deepCopyAddressBook();
+        ReadOnlyAddressBook before = ((AddressBook) model.getAddressBook()).deepCopy();
 
         logic = new LogicManager(model, new StorageManager(new JsonAddressBookStorage(
                 temporaryFolder.resolve("failing.json")) {

@@ -139,28 +139,22 @@ public class ModelManager implements Model {
         return addressBook;
     }
 
-    @Override
-    public ReadOnlyAddressBook deepCopyAddressBook() {
-        return addressBook.deepCopy();
-    }
-
     private record DisplayState(Predicate<Person> personFilter, AcademicClass personFilterClass,
             Optional<Integer> personFilterThreshold, Comparator<? super Person> comparator,
             AcademicClass attendanceDisplayClass, Predicate<AcademicClass> academicClassFilter,
-            StudentNumber classFilterStudentNumber) implements ViewState {}
+            StudentNumber classFilterStudentNumber) {}
 
     @Override
-    public ViewState captureViewState() {
-        return new DisplayState(personFilter, personFilterClass, personFilterThreshold,
+    public Rollback createRollback() {
+        ReadOnlyAddressBook savedData = addressBook.deepCopy();
+        DisplayState savedDisplay = new DisplayState(personFilter, personFilterClass, personFilterThreshold,
                 sortedPersons.getComparator(), attendanceDisplayClass, academicClassFilter,
                 classFilterStudentNumber);
+        return () -> restore(savedData, savedDisplay);
     }
 
-    @Override
-    public void restoreAddressBook(ReadOnlyAddressBook addressBook, ViewState viewState) {
-        requireAllNonNull(addressBook, viewState);
-        DisplayState state = (DisplayState) viewState;
-        this.addressBook.resetData(addressBook);
+    private void restore(ReadOnlyAddressBook savedData, DisplayState state) {
+        this.addressBook.resetData(savedData);
         // resetData replaces class objects, so look the saved classes up again by identity.
         personFilterClass = findStoredClass(state.personFilterClass());
         attendanceDisplayClass = findStoredClass(state.attendanceDisplayClass());
