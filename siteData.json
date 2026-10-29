@@ -87,6 +87,8 @@
         "assigning-a-student-to-a-class": "Assigning a student to a class",
         "list-panel-feedback-and-student-card-layout": "List-panel feedback and student-card layout",
         "listing-classes-by-student": "Listing classes by student",
+        "listing-students-by-class-and-recording-attendance": "Listing students by class and recording attendance",
+        "preserving-student-filters-after-changes": "Preserving student filters after changes",
         "saving-data": "Saving data"
       },
       "headingKeywords": {}
