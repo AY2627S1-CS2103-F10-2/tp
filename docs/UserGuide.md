@@ -734,6 +734,9 @@ Furthermore, certain edits can cause TAssist to behave in unexpected ways (e.g.,
 
 ## Known issues
 
+* **macOS fullscreen mode:** Mac users using fullscreen mode for secondary dialogs, such as the Help window,
+  may encounter unexpected behaviour.
+
 * **Write-protected application folder or data file:** TAssist may fail to launch if it cannot create or access
   `tassist.lock` beside the JAR. If the data file cannot be written, commands may report a save-permission error.
   Close TAssist and move it to a folder you can write to, such as a dedicated folder in your user directory.
