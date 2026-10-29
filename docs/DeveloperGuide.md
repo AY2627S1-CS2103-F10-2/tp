@@ -171,6 +171,30 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 
 This section describes some noteworthy details on how certain features are implemented.
 
+### Finding students by name
+
+The `find` command applies a name predicate to the current student list. It is a view-only operation: it does not
+modify student records, class memberships, attendance, or the class list.
+
+1. `LogicManager` passes `commandText` to `AddressBookParser`, which creates a `FindCommandParser` and calls
+   `parse(args)`. The parser trims the arguments, rejects an empty argument string, splits the remaining text on
+   whitespace, and creates a `NameContainsKeywordsPredicate` containing the resulting keywords.
+2. `LogicManager` calls `execute(model)` on the resulting `FindCommand`. The command passes the predicate to
+   `Model#updateFilteredPersonList(predicate)`.
+3. `ModelManager` installs the predicate on its `FilteredList<Person>`. The predicate tests only `Person#getName()`
+   and returns true when **any** keyword matches a complete name word, ignoring case. This gives the command
+   `OR` semantics: a student is shown when at least one keyword matches. `StringUtil#containsWordIgnoreCase` splits
+   the name into whitespace-delimited words, so a partial word such as `Ali` does not match `Alice`.
+4. Updating the person filter clears any class-specific attendance display, threshold, and class-membership filter.
+   The student comparator is also cleared, so `find` results retain the stored insertion order. The command counts
+   the filtered students and returns a message such as `1 person(s) listed!`.
+5. `LogicManager` saves the address book and command history before returning the result. The name predicate and
+   filtered view are not persisted, so the next launch starts with the default student view.
+
+**Other outcomes:** `find` with no keyword is rejected by `FindCommandParser` before command creation. Multiple
+spaces between keywords are ignored. A valid search with no matches succeeds and displays an empty student list.
+Names, rather than email addresses, student numbers, Telegram handles, or tags, are searched.
+
 ### Listing students by class
 
 The `listbyclass` command displays students assigned to the class at a one-based index in the currently displayed
