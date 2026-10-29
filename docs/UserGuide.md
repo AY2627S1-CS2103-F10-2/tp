@@ -717,20 +717,6 @@ If your changes make the data file invalid, TAssist starts with an empty address
 Furthermore, certain edits can cause TAssist to behave in unexpected ways (e.g., if a value entered is outside of the acceptable range). Therefore, edit the data file only if you are confident that you can update it correctly.
 </box>
 
-### Archiving data files `[coming in v2.0]`
-
-_Details coming soon ..._
-
-### Features not yet available in this build
-
-The following MVP commands are planned or specified, but are not currently accepted by this build:
-
-* `addstudent sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM]`: use `add sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM]` instead.
-* `deletestudent sn/STUDENT_NUMBER`: use `delete INDEX` instead.
-* `liststudent`: use `list` instead.
-
-If any of these command words are entered, TAssist displays `Unknown command.`
-
 --------------------------------------------------------------------------------------------------------------------
 
 ## FAQ
@@ -741,8 +727,6 @@ If any of these command words are entered, TAssist displays `Unknown command.`
 --------------------------------------------------------------------------------------------------------------------
 
 ## Known issues
-
-1. **When using multiple screens**, if you move the application to a secondary screen, and later switch to using only the primary screen, the GUI will open off-screen. The remedy is to delete the `preferences.json` file created by the application before running the application again.
 
 --------------------------------------------------------------------------------------------------------------------
 
