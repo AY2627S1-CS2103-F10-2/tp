@@ -1,7 +1,7 @@
 COMMAND HINTS: MANUAL TESTING
 Branch: standardize-command-guidance
 
-These checks cover syntax guidance, actionable errors, wrapping and Enter-only execution.
+These checks cover syntax guidance, wrapping and Enter-only execution.
 Counts, sizing, class scrolling and attendance presentation are outside
 this change. The companion guide is CommandHintsTesting.md.
 
@@ -44,9 +44,8 @@ exit
 
 deleteclass uses the current displayed class index. assign uses the student
 index first, then the class index from their respective displayed lists.
-Student deletion uses delete INDEX. Compare find and all six single-index
-hints with the User Guide and the usage shown after submitting the command
-without required arguments; parameter names must agree.
+Student deletion uses delete INDEX. Compare find and the six single-index
+hints with the User Guide and command usage; their parameter names must agree.
 
 PARTIAL AND UNKNOWN WORDS
 Type del: Matching commands: delete  |  deleteclass  |  deleteattendance
@@ -96,18 +95,8 @@ Input, strip, output and lists must not overlap.
 Widen and narrow again: text should reflow and height should recover.
 Clear the input: the shorter default strip returns.
 
-SHARED COMMAND ERRORS
-Follow the Shared command errors section in CommandHintsTesting.md for
-copyable commands covering missing/unsupported fields, index ranges and
-empty views, thresholds, email, tags, no-field edits, and unknown commands.
-Check that errors wrap and that rejected commands leave data and history
-unchanged. Module/class examples are in the Developer Guide's Class
-validation feedback section. A single empty t/ in edit must still clear tags.
-
 AUTOMATED CHECKS
 ./gradlew check coverage shadowJar
 Windows: .\gradlew.bat check coverage shadowJar
 Headless Linux: xvfb-run ./gradlew check coverage shadowJar
-Focused suites: CommandHintsTest, CommandBoxTest, WorkspaceTest,
-CommandGuidanceIntegrationTest, LogicManagerTest, AddClassCommandParserTest,
-EmailTest, TagTest.
+Focused suites: CommandHintsTest, CommandBoxTest, WorkspaceTest.

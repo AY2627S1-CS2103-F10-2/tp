@@ -29,13 +29,6 @@ deactivate AddClassCommandParser
 AddressBookParser -> AddClassCommandParser : parse(arguments)
 activate AddClassCommandParser
 
-note right of AddClassCommandParser
-Reject unsupported prefixes; only m/ and c/ are accepted.
-Require both fields and reject duplicate prefixes.
-Validate module code and class name.
-Invalid arguments throw ParseException before command creation.
-end note
-
 create AddClassCommand
 AddClassCommandParser -> AddClassCommand : AddClassCommand(a)
 activate AddClassCommand

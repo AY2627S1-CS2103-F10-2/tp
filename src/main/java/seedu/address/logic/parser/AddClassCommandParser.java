@@ -3,6 +3,10 @@ package seedu.address.logic.parser;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_CLASS_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_MODULE_CODE;
 
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.AddClassCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
@@ -17,8 +21,12 @@ public class AddClassCommandParser implements Parser<AddClassCommand> {
 
     public static final String MESSAGE_MISSING_MODULE_CODE = "Missing required parameter: m/MODULE_CODE";
     public static final String MESSAGE_MISSING_CLASS_NAME = "Missing required parameter: c/CLASS_NAME";
-    public static final String MESSAGE_UNKNOWN_PARAMETER = "Unknown parameter: %1$s. Supported parameters: m/, c/.";
+    public static final String MESSAGE_UNKNOWN_PARAMETER = "Unknown parameter: %1$s";
     public static final String MESSAGE_DUPLICATE_PARAMETER = "Parameter %1$s was specified more than once.";
+
+    private static final Set<String> VALID_PREFIXES = Set.of(PREFIX_MODULE_CODE.toString(),
+            PREFIX_CLASS_NAME.toString());
+    private static final Pattern PREFIX_PATTERN = Pattern.compile("(?<=\\s)([^\\s/]+/)");
 
     /**
      * Parses the given {@code String} of arguments in the context of the AddClassCommand
@@ -27,7 +35,7 @@ public class AddClassCommandParser implements Parser<AddClassCommand> {
      * @throws ParseException if the user input does not conform to the expected format
      */
     public AddClassCommand parse(String args) throws ParseException {
-        ParserUtil.rejectUnknownPrefixes(args, PREFIX_MODULE_CODE, PREFIX_CLASS_NAME);
+        rejectUnknownPrefixes(args);
 
         ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(args, PREFIX_MODULE_CODE, PREFIX_CLASS_NAME);
 
@@ -49,6 +57,16 @@ public class AddClassCommandParser implements Parser<AddClassCommand> {
         AcademicClass academicClass = new AcademicClass(moduleCode, className);
 
         return new AddClassCommand(academicClass);
+    }
+
+    private void rejectUnknownPrefixes(String args) throws ParseException {
+        Matcher matcher = PREFIX_PATTERN.matcher(" " + args);
+        while (matcher.find()) {
+            String prefix = matcher.group(1);
+            if (!VALID_PREFIXES.contains(prefix)) {
+                throw new ParseException(String.format(MESSAGE_UNKNOWN_PARAMETER, prefix));
+            }
+        }
     }
 
     private void rejectDuplicatePrefix(ArgumentMultimap argMultimap, Prefix prefix) throws ParseException {

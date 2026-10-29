@@ -97,16 +97,14 @@ public class AddAttendanceCommandTest {
     public void execute_missingStudent_rejectsWithoutMutation() {
         Index missing = Index.fromOneBased(3);
         assertFailureWithoutMutation(new AddAttendanceCommand(missing, Index.fromOneBased(1), DATE),
-                Messages.getInvalidStudentIndexMessage(
-                        missing, model.getFilteredPersonList().size()));
+                Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
     }
 
     @Test
     public void execute_missingClass_rejectsWithoutMutation() {
         Index missing = Index.fromOneBased(2);
         assertFailureWithoutMutation(new AddAttendanceCommand(Index.fromOneBased(2), missing, DATE),
-                Messages.getInvalidClassIndexMessage(
-                        missing, model.getFilteredAcademicClassList().size()));
+                Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX);
     }
 
     @Test

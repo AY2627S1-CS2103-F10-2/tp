@@ -31,8 +31,6 @@ public class EditCommandParser implements Parser<EditCommand> {
      */
     public EditCommand parse(String args) throws ParseException {
         requireNonNull(args);
-        ParserUtil.rejectUnknownPrefixes(args,
-                PREFIX_STUDENT_NUMBER, PREFIX_NAME, PREFIX_EMAIL, PREFIX_TELEGRAM, PREFIX_TAG);
         ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(args,
                 PREFIX_STUDENT_NUMBER, PREFIX_NAME, PREFIX_EMAIL, PREFIX_TELEGRAM, PREFIX_TAG);
 

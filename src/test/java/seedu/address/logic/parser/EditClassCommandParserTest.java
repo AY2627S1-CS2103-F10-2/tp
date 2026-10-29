@@ -89,8 +89,7 @@ public class EditClassCommandParserTest {
 
     @Test
     public void parse_unknownPrefixAfterValue_failure() {
-        assertParseFailure(parser, "1 c/OB5 x/extra",
-                "Unknown parameter: x/. Supported parameters: m/, c/.");
+        assertParseFailure(parser, "1 c/OB5 x/extra", ClassName.MESSAGE_CONSTRAINTS);
     }
 
     @Test

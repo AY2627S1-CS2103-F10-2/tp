@@ -22,7 +22,6 @@ public class ListByClassCommandParser implements Parser<ListByClassCommand> {
     @Override
     public ListByClassCommand parse(String args) throws ParseException {
         requireNonNull(args);
-        ParserUtil.rejectUnknownPrefixes(args, PREFIX_THRESHOLD);
         ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(args, PREFIX_THRESHOLD);
 
         Index index;

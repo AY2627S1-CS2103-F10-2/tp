@@ -66,8 +66,7 @@ public class DeleteAttendanceCommandParserTest {
     @Test
     public void parseCommand_unknownPrefixes_rejectsInput() {
         for (String parameter : List.of("x/value", "t/friend", "D/2024-02-29")) {
-            assertThrows(ParseException.class, "Unknown parameter: " + parameter.split("/")[0]
-                    + "/. Supported parameters: d/.", () ->
+            assertThrows(ParseException.class, "Unknown parameter: " + parameter.split("/")[0] + "/", () ->
                     parser.parseCommand(VALID_COMMAND + " " + parameter));
         }
     }

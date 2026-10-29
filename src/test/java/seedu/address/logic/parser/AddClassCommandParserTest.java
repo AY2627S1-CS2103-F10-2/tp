@@ -63,7 +63,7 @@ public class AddClassCommandParserTest {
         assertParseFailure(parser, " m/ c/F10-2", ModuleCode.MESSAGE_EMPTY);
 
         // invalid module codes
-        assertParseFailure(parser, " m/2103 c/F10-2", ModuleCode.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, " m/123 c/F01", ModuleCode.MESSAGE_CONSTRAINTS);
         assertParseFailure(parser, " m/CS 2103 c/F10-2", ModuleCode.MESSAGE_CONSTRAINTS);
         assertParseFailure(parser, " m/CS-2103 c/F10-2", ModuleCode.MESSAGE_CONSTRAINTS);
 

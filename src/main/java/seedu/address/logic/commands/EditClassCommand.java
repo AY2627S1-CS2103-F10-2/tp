@@ -31,7 +31,7 @@ public class EditClassCommand extends Command {
             + "by the index number used in the displayed class list. "
             + "Existing values will be overwritten by the input values. "
             + "Student memberships will be preserved.\n"
-            + "Parameters: INDEX (whole number from 1 to 2147483647) "
+            + "Parameters: INDEX (must be a positive integer) "
             + "[" + PREFIX_MODULE_CODE + "MODULE_CODE] "
             + "[" + PREFIX_CLASS_NAME + "CLASS_NAME]\n"
             + "At least one field must be provided.\n"
@@ -41,8 +41,7 @@ public class EditClassCommand extends Command {
 
     public static final String MESSAGE_EDIT_CLASS_SUCCESS = "Edited class: %1$s";
     public static final String MESSAGE_DUPLICATE_CLASS = "A class with these details already exists!";
-    public static final String MESSAGE_NOT_EDITED = "Provide at least one field to edit: "
-            + "m/MODULE_CODE or c/CLASS_NAME. Example: editclass 1 c/F01.";
+    public static final String MESSAGE_NOT_EDITED = "At least one field to edit must be provided.";
 
     private static final Logger logger = LogsCenter.getLogger(EditClassCommand.class);
 
@@ -67,8 +66,7 @@ public class EditClassCommand extends Command {
         List<AcademicClass> lastShownList = model.getFilteredAcademicClassList();
 
         if (index.getZeroBased() >= lastShownList.size()) {
-            throw new CommandException(Messages.getInvalidClassIndexMessage(
-                    index, model.getFilteredAcademicClassList().size()));
+            throw new CommandException(Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX);
         }
 
         AcademicClass classToEdit = lastShownList.get(index.getZeroBased());

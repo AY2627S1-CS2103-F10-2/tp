@@ -208,8 +208,7 @@ public class ListByClassCommandTest {
         recordAttendances(model, BENSON, targetClass, 5);
         new ListByClassCommand(Index.fromOneBased(1), Optional.of(5)).execute(model);
 
-        assertThrows(CommandException.class, "Class index 2 is invalid for the current Classes list. "
-                + "Choose an index from 1 to 1, or use listclass to show all classes.", () ->
+        assertThrows(CommandException.class, "The class index provided is invalid.", () ->
                 new ListByClassCommand(Index.fromOneBased(2), Optional.of(3)).execute(model));
 
         assertEquals(List.of(ALICE), model.getFilteredPersonList());
@@ -220,8 +219,7 @@ public class ListByClassCommandTest {
     public void execute_sameModuleDifferentClass_throwsCommandException() {
         model.addAcademicClass(createClassWithMembers("CS2103", "F11-2", Set.of(ALICE)));
 
-        assertThrows(CommandException.class, "Class index 2 is invalid for the current Classes list. "
-                + "Choose an index from 1 to 1, or use listclass to show all classes.", () ->
+        assertThrows(CommandException.class, "The class index provided is invalid.", () ->
                 new ListByClassCommand(Index.fromOneBased(2)).execute(model));
 
         assertEquals(List.of(BENSON, ALICE, DANIEL), model.getFilteredPersonList());

@@ -22,7 +22,7 @@ public class DeleteClassCommand extends Command {
 
     public static final String MESSAGE_USAGE = COMMAND_WORD
             + ": Deletes the academic class identified by the index number used in the displayed class list.\n"
-            + "Parameters: INDEX (whole number from 1 to 2147483647)\n"
+            + "Parameters: INDEX (must be a positive integer)\n"
             + "Example: " + COMMAND_WORD + " 1";
 
     public static final String MESSAGE_DELETE_CLASS_SUCCESS = "Deleted class: %1$s";
@@ -45,8 +45,7 @@ public class DeleteClassCommand extends Command {
 
         if (targetIndex.getZeroBased() >= lastShownList.size()) {
             logger.fine("Class deletion rejected: displayed index is invalid.");
-            throw new CommandException(Messages.getInvalidClassIndexMessage(
-                    targetIndex, model.getFilteredAcademicClassList().size()));
+            throw new CommandException(Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX);
         }
 
         AcademicClass classToDelete = lastShownList.get(targetIndex.getZeroBased());

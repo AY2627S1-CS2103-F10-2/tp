@@ -27,7 +27,6 @@ public class ListByClassCommand extends Command {
             + "specified index alphabetically, optionally filtered to those with fewer than THRESHOLD recorded "
             + "attendance dates.\n"
             + "Parameters: INDEX [" + PREFIX_THRESHOLD + "THRESHOLD]\n"
-            + "INDEX and THRESHOLD must be whole numbers from 1 to 2147483647.\n"
             + "Example: " + COMMAND_WORD + " 1 " + PREFIX_THRESHOLD + "5";
     public static final String MESSAGE_SUCCESS = "Listed %1$d students taking %2$s (%3$s).";
     public static final String MESSAGE_SUCCESS_WITH_THRESHOLD =
@@ -64,8 +63,7 @@ public class ListByClassCommand extends Command {
         List<AcademicClass> lastShownList = model.getFilteredAcademicClassList();
         if (index.getZeroBased() >= lastShownList.size()) {
             logger.warning("List-by-class rejected: invalid displayed class index " + index.getOneBased());
-            throw new CommandException(Messages.getInvalidClassIndexMessage(
-                    index, model.getFilteredAcademicClassList().size()));
+            throw new CommandException(Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX);
         }
         AcademicClass academicClass = lastShownList.get(index.getZeroBased());
         model.filterPersonsByClassAndDisplayAttendance(academicClass, threshold);

@@ -37,7 +37,7 @@ public class EditCommand extends Command {
     public static final String MESSAGE_USAGE = COMMAND_WORD + ": Edits the details of the person identified "
             + "by the index number used in the displayed person list. "
             + "Existing values will be overwritten by the input values.\n"
-            + "Parameters: INDEX (whole number from 1 to 2147483647) "
+            + "Parameters: INDEX (must be a positive integer) "
             + "[" + PREFIX_STUDENT_NUMBER + "STUDENT_NUMBER] "
             + "[" + PREFIX_NAME + "NAME] "
             + "[" + PREFIX_EMAIL + "EMAIL] "
@@ -49,8 +49,7 @@ public class EditCommand extends Command {
             + PREFIX_EMAIL + "johndoe@example.com";
 
     public static final String MESSAGE_EDIT_PERSON_SUCCESS = "Edited person: %1$s";
-    public static final String MESSAGE_NOT_EDITED = "Provide at least one field to edit: "
-            + "sn/STUDENT_NUMBER, n/NAME, e/EMAIL, tg/TELEGRAM, or t/TAG. Example: edit 1 n/Alice Tan.";
+    public static final String MESSAGE_NOT_EDITED = "At least one field to edit must be provided.";
 
     private final Index index;
     private final EditPersonDescriptor editPersonDescriptor;
@@ -73,8 +72,7 @@ public class EditCommand extends Command {
         List<Person> lastShownList = model.getFilteredPersonList();
 
         if (index.getZeroBased() >= lastShownList.size()) {
-            throw new CommandException(Messages.getInvalidStudentIndexMessage(
-                    index, model.getFilteredPersonList().size()));
+            throw new CommandException(Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
         }
 
         Person personToEdit = lastShownList.get(index.getZeroBased());

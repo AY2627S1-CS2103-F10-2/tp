@@ -1,6 +1,7 @@
 package seedu.address.logic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static seedu.address.logic.Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
 import static seedu.address.logic.commands.CommandTestUtil.EMAIL_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.NAME_DESC_AMY;
@@ -21,7 +22,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import seedu.address.commons.core.index.Index;
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.ListCommand;
@@ -100,37 +100,13 @@ public class LogicManagerTest {
     @Test
     public void execute_invalidCommandFormat_throwsParseException() {
         String invalidCommand = "uicfhmowqewca";
-        assertParseException(invalidCommand, String.format(MESSAGE_UNKNOWN_COMMAND, invalidCommand));
-    }
-
-    @Test
-    public void execute_invalidClassDetails_explainsRulesWithoutChangingData() throws Exception {
-        logic.execute("addclass m/CS2103T c/F10-2");
-        Path savedFile = temporaryFolder.resolve("addressBook.json");
-        String savedContents = Files.readString(savedFile);
-        ReadOnlyAddressBook savedData = new JsonAddressBookStorage(savedFile).readAddressBook().orElseThrow();
-        String moduleMessage = "Module code must start with a letter (A-Z, a-z) "
-                + "and contain only letters and digits, with no spaces. Examples: CS2103T, ST2334.";
-        String classMessage = "Class name must contain at least one letter (A-Z, a-z) or digit (0-9), "
-                + "and may contain only letters, digits, and hyphens (-), with no spaces. "
-                + "Examples: F01, F10-2, T24.";
-
-        for (String command : List.of("addclass m/123 c/F01", "editclass 1 m/123")) {
-            assertThrows(ParseException.class, moduleMessage, () -> logic.execute(command));
-        }
-        for (String command : List.of("addclass m/CS2103 c/---", "editclass 1 c/---")) {
-            assertThrows(ParseException.class, classMessage, () -> logic.execute(command));
-        }
-        assertEquals(savedData, model.getAddressBook());
-        assertEquals(savedContents, Files.readString(savedFile));
-        assertEquals(savedData.getCommandHistory(), logic.getCommandHistory());
+        assertParseException(invalidCommand, MESSAGE_UNKNOWN_COMMAND);
     }
 
     @Test
     public void execute_commandExecutionError_throwsCommandException() {
         String deleteCommand = "delete 9";
-        assertCommandException(deleteCommand, Messages.getInvalidStudentIndexMessage(
-                Index.fromOneBased(9), model.getFilteredPersonList().size()));
+        assertCommandException(deleteCommand, MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
     }
 
     @Test

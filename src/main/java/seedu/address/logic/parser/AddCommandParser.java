@@ -8,6 +8,7 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_TAG;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TELEGRAM;
 
 import java.util.Set;
+import java.util.stream.Stream;
 
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
@@ -29,18 +30,13 @@ public class AddCommandParser implements Parser<AddCommand> {
      * @throws ParseException if the user input does not conform to the expected format
      */
     public AddCommand parse(String args) throws ParseException {
-        ParserUtil.rejectUnknownPrefixes(args,
-                PREFIX_STUDENT_NUMBER, PREFIX_NAME, PREFIX_EMAIL, PREFIX_TELEGRAM, PREFIX_TAG);
         ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(args,
                 PREFIX_STUDENT_NUMBER, PREFIX_NAME, PREFIX_EMAIL, PREFIX_TELEGRAM, PREFIX_TAG);
 
-        if (!argMultimap.getPreamble().isEmpty()) {
+        if (!arePrefixesPresent(argMultimap, PREFIX_STUDENT_NUMBER, PREFIX_NAME, PREFIX_EMAIL)
+                || !argMultimap.getPreamble().isEmpty()) {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, AddCommand.MESSAGE_USAGE));
         }
-
-        ParserUtil.requirePrefix(argMultimap, PREFIX_STUDENT_NUMBER, "STUDENT_NUMBER");
-        ParserUtil.requirePrefix(argMultimap, PREFIX_NAME, "NAME");
-        ParserUtil.requirePrefix(argMultimap, PREFIX_EMAIL, "EMAIL");
 
         argMultimap.verifyNoDuplicatePrefixesFor(PREFIX_STUDENT_NUMBER, PREFIX_NAME, PREFIX_EMAIL, PREFIX_TELEGRAM);
         StudentNumber studentNumber = ParserUtil.parseStudentNumber(argMultimap.getValue(PREFIX_STUDENT_NUMBER).get());
@@ -55,6 +51,14 @@ public class AddCommandParser implements Parser<AddCommand> {
         Person person = new Person(studentNumber, name, email, telegram, tagList);
 
         return new AddCommand(person);
+    }
+
+    /**
+     * Returns true if none of the prefixes contains empty {@code Optional} values in the given
+     * {@code ArgumentMultimap}.
+     */
+    private static boolean arePrefixesPresent(ArgumentMultimap argumentMultimap, Prefix... prefixes) {
+        return Stream.of(prefixes).allMatch(prefix -> argumentMultimap.getValue(prefix).isPresent());
     }
 
 }

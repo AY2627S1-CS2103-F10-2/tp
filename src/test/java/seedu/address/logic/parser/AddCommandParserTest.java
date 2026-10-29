@@ -168,18 +168,16 @@ public class AddCommandParserTest {
         assertParseFailure(parser, VALID_STUDENT_NUMBER_BOB + NAME_DESC_BOB + EMAIL_DESC_BOB, expectedMessage);
 
         // missing name prefix
-        assertParseFailure(parser, STUDENT_NUMBER_DESC_BOB + VALID_NAME_BOB + EMAIL_DESC_BOB,
-                "Missing required parameter: n/NAME");
+        assertParseFailure(parser, STUDENT_NUMBER_DESC_BOB + VALID_NAME_BOB + EMAIL_DESC_BOB, expectedMessage);
 
         // missing email prefix
-        assertParseFailure(parser, STUDENT_NUMBER_DESC_BOB + NAME_DESC_BOB + VALID_EMAIL_BOB,
-                "Missing required parameter: e/EMAIL");
+        assertParseFailure(parser, STUDENT_NUMBER_DESC_BOB + NAME_DESC_BOB + VALID_EMAIL_BOB, expectedMessage);
 
         // all prefixes missing
         assertParseFailure(parser, VALID_STUDENT_NUMBER_BOB + VALID_NAME_BOB + VALID_EMAIL_BOB, expectedMessage);
 
         // optional field present but compulsory fields missing
-        assertParseFailure(parser, TELEGRAM_DESC_BOB, "Missing required parameter: sn/STUDENT_NUMBER");
+        assertParseFailure(parser, TELEGRAM_DESC_BOB, expectedMessage);
     }
 
     @Test

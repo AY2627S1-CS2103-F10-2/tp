@@ -14,7 +14,7 @@ public class AddAttendanceCommandParser implements Parser<AddAttendanceCommand> 
 
     @Override
     public AddAttendanceCommand parse(String args) throws ParseException {
-        ArgumentMultimap arguments = AttendanceParserUtil.parseArguments(args);
+        ArgumentMultimap arguments = AttendanceParserUtil.parseArguments(args, AddAttendanceCommand.MESSAGE_USAGE);
         Index[] indices = ParserUtil.parseIndices(arguments.getPreamble(), AddAttendanceCommand.MESSAGE_USAGE);
         LocalDate date = ParserUtil.parseAttendanceDate(arguments.getValue(PREFIX_DATE).orElseThrow());
         return new AddAttendanceCommand(indices[0], indices[1], date);

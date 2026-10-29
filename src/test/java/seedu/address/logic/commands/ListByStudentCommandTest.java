@@ -108,8 +108,7 @@ public class ListByStudentCommandTest {
         CommandException exception = assertThrows(CommandException.class, ()
                 -> new ListByStudentCommand(INDEX_SECOND_PERSON).execute(model));
 
-        assertEquals(Messages.getInvalidStudentIndexMessage(
-                        INDEX_SECOND_PERSON, model.getFilteredPersonList().size()), exception.getMessage());
+        assertEquals(Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX, exception.getMessage());
         assertEquals(List.of(first, third), model.getFilteredAcademicClassList());
         assertEquals(List.of(ALICE), model.getFilteredPersonList());
     }

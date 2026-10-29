@@ -80,8 +80,7 @@ public class DeleteClassCommandTest {
     @Test
     public void execute_emptyClassList_throwsCommandException() {
         assertCommandFailure(new DeleteClassCommand(Index.fromOneBased(1)), model,
-                Messages.getInvalidClassIndexMessage(
-                        Index.fromOneBased(1), model.getFilteredAcademicClassList().size()));
+                Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX);
     }
 
     @Test
@@ -90,8 +89,7 @@ public class DeleteClassCommandTest {
         model.addPerson(ALICE);
 
         assertCommandFailure(new DeleteClassCommand(Index.fromOneBased(2)), model,
-                Messages.getInvalidClassIndexMessage(
-                        Index.fromOneBased(2), model.getFilteredAcademicClassList().size()));
+                Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX);
     }
 
     @Test
@@ -102,8 +100,7 @@ public class DeleteClassCommandTest {
 
         assertTrue(model.getAcademicClassList().isEmpty());
         assertCommandFailure(command, model,
-                Messages.getInvalidClassIndexMessage(
-                        Index.fromOneBased(1), model.getFilteredAcademicClassList().size()));
+                Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX);
     }
 
     @Test
@@ -115,8 +112,7 @@ public class DeleteClassCommandTest {
         var displayed = model.getFilteredAcademicClassList();
 
         assertCommandFailure(new DeleteClassCommand(Index.fromOneBased(3)), model,
-                Messages.getInvalidClassIndexMessage(
-                        Index.fromOneBased(3), model.getFilteredAcademicClassList().size()));
+                Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX);
         new DeleteClassCommand(Index.fromOneBased(1)).execute(model);
         assertEquals(List.of(CS2103_F10, CS2101_F10), model.getAcademicClassList());
         assertEquals(List.of(CS2101_F10), displayed);
@@ -124,8 +120,7 @@ public class DeleteClassCommandTest {
         assertEquals(List.of(CS2103_F10), model.getAcademicClassList());
         assertTrue(displayed.isEmpty());
         assertCommandFailure(new DeleteClassCommand(Index.fromOneBased(1)), model,
-                Messages.getInvalidClassIndexMessage(
-                        Index.fromOneBased(1), model.getFilteredAcademicClassList().size()));
+                Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX);
     }
 
     @Test

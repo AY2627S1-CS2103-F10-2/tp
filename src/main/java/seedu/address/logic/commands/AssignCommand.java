@@ -15,8 +15,7 @@ import seedu.address.model.person.Person;
 public class AssignCommand extends Command {
     public static final String COMMAND_WORD = "assign";
     public static final String MESSAGE_USAGE = COMMAND_WORD + ": Assigns a student to a class.\n"
-            + "Parameters: STUDENT_INDEX CLASS_INDEX "
-            + "(whole numbers from 1 to 2147483647 in their respective displayed lists)\n"
+            + "Parameters: STUDENT_INDEX CLASS_INDEX (non-zero positive integers in their respective displayed lists)\n"
             + "Example: assign 1 2";
     public static final String MESSAGE_SUCCESS = "Student (%1$s) has been assigned to %2$s.";
     public static final String MESSAGE_ALREADY_ASSIGNED = "Student (%1$s) is already assigned to class %2$s.";
@@ -35,11 +34,9 @@ public class AssignCommand extends Command {
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
         Person person = model.findDisplayedPerson(studentIndex)
-                .orElseThrow(() -> new CommandException(Messages.getInvalidStudentIndexMessage(
-                    studentIndex, model.getFilteredPersonList().size())));
+                .orElseThrow(() -> new CommandException(Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX));
         AcademicClass academicClass = model.findDisplayedAcademicClass(classIndex)
-                .orElseThrow(() -> new CommandException(Messages.getInvalidClassIndexMessage(
-                    classIndex, model.getFilteredAcademicClassList().size())));
+                .orElseThrow(() -> new CommandException(Messages.MESSAGE_INVALID_CLASS_DISPLAYED_INDEX));
         if (!model.assignStudentToClass(person, academicClass)) {
             throw new CommandException(String.format(MESSAGE_ALREADY_ASSIGNED,
                     person.getStudentNumber(), academicClass));
