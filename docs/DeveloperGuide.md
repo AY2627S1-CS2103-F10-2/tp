@@ -134,7 +134,7 @@ How the parsing works:
 
 The `Model` component,
 
-* stores the address book data i.e., all `Person` objects (which are contained in a `UniquePersonList` object).
+* stores the address book data i.e., all `Person` objects (which are contained in a `UniquePersonList` object). A `Person` is uniquely identified by its `StudentNumber`: two persons are the same (`Person#isSamePerson()`) if they share a student number. In addition, each `Email` and (if provided) `Telegram` username must be unique across all persons.
 * stores all `AcademicClass` objects in a `UniqueAcademicClassList`. Each class is identified by its `ModuleCode` and `ClassName` and references its assigned students as `Person` objects. Students can belong to multiple classes.
 * stores the `Person` objects selected by the current filter, such as search results, in a separate _filtered_ list. It exposes this list as an unmodifiable `ObservableList<Person>` that the UI can observe and bind to, so the UI updates when the list changes.
 * exposes the academic classes selected by the current filter as an unmodifiable `ObservableList<AcademicClass>` for the UI to observe.
