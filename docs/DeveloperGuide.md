@@ -654,7 +654,7 @@ Use case ends.
   - 1b1. TAssist informs TA that the student is already assigned, identifying the student number and class.
   - Use case ends.
 - **2a. TAssist is unable to save the change.**
-  - 2a1. TAssist informs TA that the removal of the assignment could not be saved.
+  - 2a1. TAssist informs TA that the assignment could not be saved.
   - Use case ends.
   
 #### **Unassign Student from Class**
