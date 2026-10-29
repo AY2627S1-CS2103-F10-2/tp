@@ -39,7 +39,7 @@ public class ModelManager implements Model {
     private final ObservableList<Person> displayedPersons;
     // Filter predicates are restored as-is on rollback, so they must capture
     // immutable values only.
-    private Predicate<Person> personFilter =PREDICATE_SHOW_ALL_PERSONS;
+    private Predicate<Person> personFilter = PREDICATE_SHOW_ALL_PERSONS;
     private AcademicClass personFilterClass;
     private Optional<Integer> personFilterThreshold = Optional.empty();
     private Map<StudentNumber, Integer> personFilterAttendanceCounts = Map.of();
@@ -48,7 +48,7 @@ public class ModelManager implements Model {
     private AcademicClass attendanceDisplayClass;
     // Filter predicates are restored as-is on rollback, so they must capture
     // immutable values only.
-    private Predicate<AcademicClass> academicClassFilter =PREDICATE_SHOW_ALL_ACADEMIC_CLASSES;
+    private Predicate<AcademicClass> academicClassFilter = PREDICATE_SHOW_ALL_ACADEMIC_CLASSES;
     // Tracks the selected student's identity independently of changes to the displayed student index.
     private StudentNumber classFilterStudentNumber;
 
