@@ -9,6 +9,7 @@ import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.BENSON;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -97,6 +98,32 @@ public class ModelManagerClassFilterTest {
         model.addAcademicClass(recreated);
         model.assignStudentToClass(BENSON, recreated);
         assertEquals(List.of(BENSON), model.getFilteredPersonList());
+    }
+
+    @Test
+    public void deleteAcademicClass_displayedClass_clearsAttendanceDisplayContext() {
+        model.filterPersonsByClassAndDisplayAttendance(first, Optional.empty());
+        assertEquals(Optional.of(first), model.getAttendanceDisplayClass());
+
+        AcademicClass equivalent = new AcademicClass(first.getModuleCode(), first.getClassName());
+        model.deleteAcademicClass(equivalent);
+
+        assertTrue(model.getAttendanceDisplayClass().isEmpty());
+        assertTrue(model.getFilteredPersonList().isEmpty());
+
+        AcademicClass recreated = new AcademicClass(first.getModuleCode(), first.getClassName());
+        model.addAcademicClass(recreated);
+        model.assignStudentToClass(BENSON, recreated);
+        assertTrue(model.getAttendanceDisplayClass().isEmpty());
+    }
+
+    @Test
+    public void deleteAcademicClass_otherClass_preservesAttendanceDisplayContext() {
+        model.filterPersonsByClassAndDisplayAttendance(first, Optional.empty());
+
+        model.deleteAcademicClass(second);
+
+        assertEquals(Optional.of(first), model.getAttendanceDisplayClass());
     }
 
     @Test
