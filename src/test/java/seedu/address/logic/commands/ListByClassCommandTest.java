@@ -124,7 +124,7 @@ public class ListByClassCommandTest {
         CommandResult result = new ListByClassCommand(Index.fromOneBased(1), Optional.of(5)).execute(model);
 
         assertEquals(List.of(ALICE), model.getFilteredPersonList());
-        assertEquals("Listed 1 students taking CS2103 (F10-2) with fewer than 5 recorded attendance dates.",
+        assertEquals("Listed 1 student taking CS2103 (F10-2) with fewer than 5 recorded attendance dates.",
                 result.getFeedbackToUser());
     }
 

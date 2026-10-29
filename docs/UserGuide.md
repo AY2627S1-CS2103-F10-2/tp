@@ -205,7 +205,7 @@ Examples:
 
 The result message includes the student count and class (and the threshold when specified), for example:
 * `Listed 2 students taking CS2103 (F10-2).`
-* `Listed 1 students taking CS2103 (F10-2) with fewer than 5 recorded attendance dates.`
+* `Listed 1 student taking CS2103 (F10-2) with fewer than 5 recorded attendance dates.`
 
 Classes created with `addclass` start empty. Use `assign STUDENT_INDEX CLASS_INDEX`
 to assign an existing student before listing the class. Memberships are saved across restarts.
