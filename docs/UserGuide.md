@@ -85,8 +85,11 @@ Edits of past commands are kept while browsing and cleared when you submit a com
 * Items followed by `...` can appear zero or more times.<br>
   For example, `[t/TAG]... ` may be omitted, or written as `t/friend` or `t/friend t/family`.
 
-* Parameters can be in any order.<br>
+* Prefixed parameters can be in any order.<br>
   For example, if the command specifies `sn/STUDENT_NUMBER n/NAME e/EMAIL`, `e/EMAIL sn/STUDENT_NUMBER n/NAME` is also acceptable.
+
+* Index-based parameters (e.g. `STUDENT_INDEX`, `CLASS_INDEX`) cannot be reordered and must stay in the position the command specifies.<br>
+  For example, if the command specifies `assign STUDENT_INDEX CLASS_INDEX`, `assign CLASS_INDEX STUDENT_INDEX` will be interpreted incorrectly, with the first number treated as the student and the second as the class.
 
 * Prefixes identify the kind of information you are providing.<br>
   For example, `n/` is used for student names, `m/` for module codes, and `c/` for class names.
@@ -205,7 +208,7 @@ Examples:
 
 The result message includes the student count and class (and the threshold when specified), for example:
 * `Listed 2 students taking CS2103 (F10-2).`
-* `Listed 1 students taking CS2103 (F10-2) with fewer than 5 recorded attendance dates.`
+* `Listed 1 student taking CS2103 (F10-2) with fewer than 5 recorded attendance dates.`
 
 Classes created with `addclass` start empty. Use `assign STUDENT_INDEX CLASS_INDEX`
 to assign an existing student before listing the class. Memberships are saved across restarts.
@@ -672,7 +675,7 @@ Format: `exit`
 
 TAssist automatically saves data after every successful command. You do not need to save manually.
 
-Data is saved to `[JAR file location]/data/addressbook.json`. If TAssist cannot save the data, it displays an error such as `Could not save data due to the following error: ...` or `Could not save data to file ... due to insufficient permissions to write to the file or the folder.`
+Data is saved to `[JAR file location]/data/addressbook.json`. If TAssist cannot save the data, it displays an error such as `Could not save data due to the following error: ...` or `Could not save data to file ... due to insufficient permissions to write to the file or the folder.` In either case, the command's changes are rolled back in TAssist, so the data you see is unchanged.
 
 The JAR file location means the **folder containing `TAssist.jar`**, not the terminal's current folder.
 For example, running `java -jar "C:\TAssist\TAssist.jar"` from another folder still uses `C:\TAssist\data\addressbook.json`.
@@ -717,20 +720,6 @@ If your changes make the data file invalid, TAssist starts with an empty address
 Furthermore, certain edits can cause TAssist to behave in unexpected ways (e.g., if a value entered is outside of the acceptable range). Therefore, edit the data file only if you are confident that you can update it correctly.
 </box>
 
-### Archiving data files `[coming in v2.0]`
-
-_Details coming soon ..._
-
-### Features not yet available in this build
-
-The following MVP commands are planned or specified, but are not currently accepted by this build:
-
-* `addstudent sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM]`: use `add sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM]` instead.
-* `deletestudent sn/STUDENT_NUMBER`: use `delete INDEX` instead.
-* `liststudent`: use `list` instead.
-
-If any of these command words are entered, TAssist displays `Unknown command.`
-
 --------------------------------------------------------------------------------------------------------------------
 
 ## FAQ
@@ -741,8 +730,6 @@ If any of these command words are entered, TAssist displays `Unknown command.`
 --------------------------------------------------------------------------------------------------------------------
 
 ## Known issues
-
-1. **When using multiple screens**, if you move the application to a secondary screen, and later switch to using only the primary screen, the GUI will open off-screen. The remedy is to delete the `preferences.json` file created by the application before running the application again.
 
 --------------------------------------------------------------------------------------------------------------------
 

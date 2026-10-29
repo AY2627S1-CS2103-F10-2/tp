@@ -53,6 +53,19 @@ public class AddressBook implements ReadOnlyAddressBook {
         resetData(toBeCopied);
     }
 
+    /**
+     * Returns a copy sharing no persons, classes, attendance records or their
+     * fields with this address book.
+     */
+    public AddressBook deepCopy() {
+        AddressBook copy = new AddressBook();
+        copy.setAcademicClasses(academicClasses.deepCopy());
+        copy.setPersons(persons.deepCopy());
+        copy.setAttendance(getAttendanceList());
+        copy.setCommandHistory(commandHistory);
+        return copy;
+    }
+
     @Override
     public List<String> getCommandHistory() {
         return List.copyOf(commandHistory);
@@ -129,7 +142,6 @@ public class AddressBook implements ReadOnlyAddressBook {
     /**
      * Removes the given observer so it no longer receives student change notifications.
      *
-     * TODO: When implementing DeleteClassCommand, ensure the model's class deletion method
      * calls this method with the deleted class's stored instance after successful removal.
      *
      * @throws NullPointerException if {@code studentObserver} is null

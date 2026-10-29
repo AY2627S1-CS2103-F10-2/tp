@@ -163,8 +163,9 @@ public class PersonListLayoutTest {
             Label attendance = (Label) card.lookup("#attendance");
             assertTrue(attendance.isManaged());
             assertTrue(attendance.isVisible());
-            List<String> dates = records.get(index).getAttendedDates().stream().map(Object::toString).toList();
-            assertEquals(dates.isEmpty() ? "No attendance recorded" : String.join(", ", dates), attendance.getText());
+            int attendanceCount = records.get(index).getAttendanceCount();
+            assertEquals("Attendance · " + attendanceCount + " "
+                    + (attendanceCount == 1 ? "day" : "days"), attendance.getText());
             Node tags = card.lookup("#tags");
             Node previousGroup = tags.isManaged() ? tags : card.lookup("#details");
             String context = person.getStudentNumber().value + " at width " + cell.getWidth();

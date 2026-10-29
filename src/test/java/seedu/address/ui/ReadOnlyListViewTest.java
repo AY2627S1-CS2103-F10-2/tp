@@ -146,6 +146,50 @@ public class ReadOnlyListViewTest {
     }
 
     @Test
+    public void arrowScrolling_afterAppendingRowAtBottom_reachesNewBottom() throws Exception {
+        runOnFxThreadAndWait(() -> {
+            ReadOnlyListView<Integer> list = new ReadOnlyListView<>();
+            list.getItems().setAll(IntStream.range(0, 7).boxed().toList());
+            list.setCellFactory(view -> new ListCell<>() {
+                @Override
+                protected void updateItem(Integer item, boolean empty) {
+                    super.updateItem(item, empty);
+                    setText(empty ? null : "Row " + item);
+                    setPrefHeight(empty ? 24 : 37.25 + item % 5 * 17.5);
+                }
+            });
+            StackPane container = new StackPane(list);
+            new Scene(container, 320, 119);
+            container.applyCss();
+            container.layout();
+            try {
+                VirtualFlow<?> flow = (VirtualFlow<?>) list.lookup(".virtual-flow");
+                press(list, KeyCode.HOME);
+                container.layout();
+                for (int i = 0; i < 12; i++) {
+                    press(list, KeyCode.DOWN);
+                }
+                container.layout();
+                assertEquals(6, flow.getLastVisibleCell().getIndex());
+
+                list.getItems().add(7);
+                container.layout();
+
+                for (int i = 0; i < 12; i++) {
+                    press(list, KeyCode.DOWN);
+                }
+                container.layout();
+
+                assertEquals(7, flow.getLastVisibleCell().getIndex());
+                assertTrue(flow.getLastVisibleCell().getBoundsInParent().getMaxY()
+                        <= flow.getHeight() + 1);
+            } finally {
+                list.setSkin(null);
+            }
+        });
+    }
+
+    @Test
     public void replaceSkin_detachesOldKeyboardHandlerAndRestoresScrolling() throws Exception {
         runOnFxThreadAndWait(() -> {
             ReadOnlyListView<String> list = createList();

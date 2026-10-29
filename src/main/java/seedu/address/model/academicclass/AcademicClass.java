@@ -51,6 +51,11 @@ public class AcademicClass implements StudentObserver {
     }
 
 
+    /** Returns a class with a copy of this class's identity and an independent copy of its memberships. */
+    public AcademicClass copy() {
+        return new AcademicClass(new ModuleCode(moduleCode.value), new ClassName(className.value), this);
+    }
+
     public ModuleCode getModuleCode() {
         return moduleCode;
     }

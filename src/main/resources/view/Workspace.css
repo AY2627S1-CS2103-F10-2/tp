@@ -61,6 +61,18 @@
     -fx-padding: 0 8 0 0;
 }
 .workspace-bottom .cell_small_label { -fx-font-size: 12px; -fx-text-fill: #b9c6d5; }
+.workspace-bottom .attendance-section { -fx-padding: 2 0 0 0; }
+.workspace-bottom .attendance-summary { -fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #e7edf5; }
+.workspace-bottom .attendance-month { -fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #d3deea; }
+.workspace-bottom .attendance-empty { -fx-font-size: 11px; -fx-text-fill: #aab7c7; }
+.workspace-bottom .attendance-dates { -fx-hgap: 5; -fx-vgap: 4; }
+.workspace-bottom .attendance-date {
+    -fx-background-color: #1d232b;
+    -fx-background-radius: 5;
+    -fx-text-fill: #e7edf5;
+    -fx-padding: 3 6;
+    -fx-font-size: 11px;
+}
 .workspace-bottom .student-identifier { -fx-text-fill: #ccd9e7; }
 .workspace-bottom #tags { -fx-hgap: 5; -fx-vgap: 4; }
 .workspace-bottom #tags .label {

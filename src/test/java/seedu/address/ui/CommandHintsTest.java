@@ -71,6 +71,12 @@ public class CommandHintsTest {
     }
 
     @Test
+    public void unicodeSpacesBetweenTokens_treatedAsOrdinarySpaces() {
+        assertEquals(CommandHints.forInput("assign 1 1"), CommandHints.forInput("assign 1 1"));
+        assertEquals(CommandHints.forInput("assign"), CommandHints.forInput(" assign 1 1"));
+    }
+
+    @Test
     public void partialAndUnknownWords_offerGuidanceWithoutValidation() {
         assertEquals("Matching commands: list  |  listclass  |  listbyclass  |  listbystudent\n"
                 + "Complete a command, then press Enter to run it.", CommandHints.forInput("li"));

@@ -71,6 +71,13 @@ public class UniqueAcademicClassList implements Iterable<AcademicClass> {
     }
 
     /**
+     * Returns copies of all academic classes in this list, in the same order.
+     */
+    public List<AcademicClass> deepCopy() {
+        return internalList.stream().map(AcademicClass::copy).toList();
+    }
+
+    /**
      * Returns the backing list as an unmodifiable {@code ObservableList}.
      */
     public ObservableList<AcademicClass> asUnmodifiableObservableList() {

@@ -18,6 +18,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import seedu.address.model.academicclass.AcademicClass;
 import seedu.address.model.academicclass.ClassName;
@@ -120,11 +121,18 @@ public class PersonCardTest {
             PersonCard card = new PersonCard(person, 1, academicClass, List.of(attendance));
 
             Label attendanceLabel = getLabel(card, "attendance");
-            assertEquals("2020-01-01, 2020-01-02", attendanceLabel.getText());
+            assertEquals("Attendance · 2 days", attendanceLabel.getText());
             assertTrue(attendanceLabel.getStyleClass().contains("cell_small_label"));
             assertTrue(attendanceLabel.isWrapText());
             assertTrue(attendanceLabel.isVisible());
             assertTrue(attendanceLabel.isManaged());
+            VBox attendanceMonths = (VBox) card.getRoot().lookup("#attendanceMonths");
+            assertEquals(1, attendanceMonths.getChildren().size());
+            assertEquals("Jan 2020", ((Label) attendanceMonths.getChildren().getFirst()
+                    .lookup(".attendance-month")).getText());
+            assertEquals(List.of("01", "02"), attendanceMonths.getChildren().getFirst()
+                    .lookupAll(".attendance-date").stream()
+                    .map(node -> ((Label) node).getText()).toList());
         });
     }
 
@@ -136,7 +144,9 @@ public class PersonCardTest {
         runOnFxThreadAndWait(() -> {
             PersonCard card = new PersonCard(person, 1, academicClass, List.of());
 
-            assertEquals("No attendance recorded", getLabel(card, "attendance").getText());
+            assertEquals("Attendance · 0 days", getLabel(card, "attendance").getText());
+            VBox attendanceMonths = (VBox) card.getRoot().lookup("#attendanceMonths");
+            assertEquals("No dates recorded", ((Label) attendanceMonths.getChildren().getFirst()).getText());
         });
     }
 
@@ -157,7 +167,7 @@ public class PersonCardTest {
             PersonCard card = new PersonCard(person, 1, academicClass,
                     List.of(differentStudentAttendance, differentClassAttendance));
 
-            assertEquals("No attendance recorded", getLabel(card, "attendance").getText());
+            assertEquals("Attendance · 0 days", getLabel(card, "attendance").getText());
         });
     }
 
