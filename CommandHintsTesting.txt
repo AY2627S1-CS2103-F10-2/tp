@@ -1,5 +1,5 @@
 COMMAND HINTS: MANUAL TESTING
-Branch: add-command-hints
+Branch: standardize-command-guidance
 
 These checks cover syntax guidance, wrapping and Enter-only execution.
 Counts, sizing, class scrolling and attendance presentation are outside
@@ -24,16 +24,16 @@ Commands without arguments say none are needed.
 Each contextual hint includes an Enter-to-run reminder.
 
 add sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM] [t/TAG]...
-edit STUDENT_INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]...
-delete STUDENT_INDEX
-find NAME [MORE_NAMES]...
+edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]...
+delete INDEX
+find KEYWORD [MORE_KEYWORDS]...
 list
 addclass m/MODULE_CODE c/CLASS_NAME
-editclass CLASS_INDEX [m/MODULE_CODE] [c/CLASS_NAME]
-deleteclass CLASS_INDEX
+editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]
+deleteclass INDEX
 listclass
-listbyclass CLASS_INDEX [t/THRESHOLD]
-listbystudent STUDENT_INDEX
+listbyclass INDEX [t/THRESHOLD]
+listbystudent INDEX
 assign STUDENT_INDEX CLASS_INDEX
 unassign STUDENT_INDEX CLASS_INDEX
 addattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD
@@ -44,7 +44,8 @@ exit
 
 deleteclass uses the current displayed class index. assign uses the student
 index first, then the class index from their respective displayed lists.
-Student deletion remains delete STUDENT_INDEX.
+Student deletion uses delete INDEX. Compare find and the six single-index
+hints with the User Guide and command usage; their parameter names must agree.
 
 PARTIAL AND UNKNOWN WORDS
 Type del: Matching commands: delete  |  deleteclass  |  deleteattendance
