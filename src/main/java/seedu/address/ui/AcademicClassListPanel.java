@@ -33,6 +33,11 @@ public class AcademicClassListPanel extends UiPart<Region> {
         academicClassListView.setPlaceholder(emptyMessage);
     }
 
+    /** Gives keyboard focus to the list without selecting a class. */
+    public void requestFocus() {
+        academicClassListView.requestFocus();
+    }
+
     /** Reveals a displayed class without selecting its row. */
     public void scrollToClass(int displayedIndex) {
         if (displayedIndex >= 0 && displayedIndex < academicClassListView.getItems().size()) {

@@ -82,6 +82,16 @@ The `UI` component,
 * keeps a reference to the `Logic` component, because the `UI` relies on the `Logic` to execute commands.
 * depends on some classes in the `Model` component because it displays `Person` objects from the model.
 
+Student cards use `WrappingFlowPane` for contact details and tags. It calculates each child's
+wrapped height using the proposed available width, and uses the same row calculation for layout.
+This avoids sizing a newly created or recycled list cell using its previous width. Optional
+Telegram details and empty tag groups remain unmanaged, so they do not reserve layout space.
+
+`MainWindow` forwards primary mouse presses on each outer list panel, including its heading
+and padding, to that panel's list through `requestFocus()`. The outer containers do not add
+extra Tab stops. `ReadOnlyListView` handles arrow, page and Home/End scrolling independently
+of row selection; normal Tab and Shift+Tab traversal remains available.
+
 ### Logic component
 
 **API** : [`Logic.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/logic/Logic.java)
@@ -465,6 +475,16 @@ The guards distinguish successful and rejected paths. An unchanged membership me
 student is already assigned for `assign`, or is not assigned for `unassign`. In either case, the
 command reports an error before `LogicManager` reaches the saving step. A failure to save after
 a successful membership change is different: the in-memory change has already occurred.
+
+#### Revealing affected records
+
+Before calling `Logic#execute`, `MainWindow` captures the displayed student for `assign` and
+`unassign`, and the stored class position. After successful execution, it locates each target
+in its updated displayed list and calls `PersonListPanel#scrollToStudent` and
+`AcademicClassListPanel#scrollToClass`. Both methods ignore out-of-range indices, including
+`-1` for a target that has disappeared from a membership-dependent filter. This preserves
+filters and ordering without revealing a replacement row. Typing and rejected commands do not
+scroll either panel; the reveal methods do not change keyboard focus or selection.
 
 #### Validation, errors and persistence
 
@@ -1010,6 +1030,47 @@ addattendance 2 2 d/2020-01-02
 
    1. Close and reopen the app after successful assignments.<br>
       Expected: The class still shows 2 students, and each student number occurs once in its `studentNumbers` JSON list.
+
+### List-panel feedback and student-card layout
+
+Use a disposable application folder for these checks.
+
+#### Revealing records after assignment and unassignment
+
+1. Prepare at least 30 students and 25 classes. Run `list` and `listclass`. Check that
+   student 30 has no class memberships and class 25 has no students.
+2. Scroll both panels to the top so student 30 and class 25 are off-screen. Run `assign 30 25`.
+   Expected: both targets come into view, class 25 shows one student, and the command box keeps focus.
+3. Scroll both panels back to the top, then run `unassign 30 25`.
+   Expected: both targets come into view and class 25 shows zero students.
+4. Scroll back to the top and repeat `unassign 30 25`.
+   Expected: a not-assigned error, unchanged membership, and no command-triggered scrolling.
+   Typing `assign 30 25` without submitting it must also leave both panels in place.
+5. Submit `assign 30 25`, then run `listbyclass 25`, `listbystudent 1`, and `unassign 1 1`.
+   Expected: both filtered panels become empty. Neither filter resets or reveals an unrelated record.
+   Run `list` and `listclass` to restore the full lists.
+
+#### Repeated scrolling with changing card heights
+
+1. Prepare enough students to scroll through several screens. Include short and long names,
+   emails and tags, students with and without Telegram usernames, and students with no tags.
+   Use distinct Telegram usernames so misplaced details can be identified.
+2. Make the Students panel narrow, scroll repeatedly from the top to the middle and bottom,
+   then widen the panel and repeat. Also resize while positioned in the middle.
+   Expected: each card retains its own details; contact details, tags and adjacent cards do not overlap.
+3. Find one student using a unique name keyword. Run `edit 1 tg/ t/`, then `list` and scroll away
+   and back. Expected: the edited student's Telegram username and tags disappear without leaving
+   an empty tag row or showing another student's details.
+4. Find the same student again. Restore optional fields using an unused valid username, for example
+   `edit 1 tg/layout_probe_unique t/tutorial t/ThisIsAVeryLongTagThatMustWrapInsideTheStudentCard`.
+   Run `list` and repeat scrolling and resizing. Expected: the username and tags reappear and wrap
+   within that student's card.
+5. Repeat the scrolling checks after `listbyclass CLASS_INDEX`, replacing `CLASS_INDEX` with a
+   displayed class containing enough assigned students to scroll. Include students with no
+   attendance dates and students with enough dates to wrap over several lines.
+   Expected: attendance remains below the contact details and tags, inside the correct card.
+6. Click a panel heading or background, or use Tab/Shift+Tab to focus its list, then press Up/Down.
+   Expected: only the focused list scrolls; records remain unselected and unchanged.
 
 ### Listing classes by student
 

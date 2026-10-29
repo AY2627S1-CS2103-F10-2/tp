@@ -53,6 +53,16 @@ TAssist is a **desktop application for NUS Teaching Assistants who need to manag
 
 ## Features
 
+### Navigating the Students and Classes panels
+
+Click a panel's heading, a card, or the surrounding panel space to focus its list. A blue
+outline marks the focused list. Press **Up/Down** to scroll, **Page Up/Page Down** to move
+by a page, or **Home/End** to reach the beginning or end.
+
+From the command box, **Tab** moves through the result display, Students list, Classes list,
+and back to the command box. **Shift+Tab** moves in reverse. Scrolling does not select or
+change student or class records. Up/Down in the command box continues to browse command history.
+
 ### Recalling previous commands
 
 In the command box, press **Up/Down** arrows to browse the latest **20 successful commands** across app sessions. History is saved automatically in the address book data file.
@@ -341,6 +351,7 @@ Format: `assign STUDENT_INDEX CLASS_INDEX`
 * The student and class must already exist and be visible. Use `list` and `listclass` to restore the complete lists if needed.
 * Check the displayed indices after filtering, editing records, changing memberships, or recalling a previous command.
 * Assignment preserves active filters. Membership-based views and class student counts update automatically.
+* After a successful assignment, both panels scroll to the affected student and class, provided they remain in the displayed results. Keyboard focus stays in the command box.
 * A student may belong to multiple classes. Repeating an assignment reports that the student is already assigned and leaves the membership unchanged.
 
 Example:
@@ -589,6 +600,7 @@ Format: `unassign STUDENT_INDEX CLASS_INDEX`
 * After `find`, `listbyclass`, or `listbystudent`, use the indices in the current results. Run `list` to restore all students or `listclass` to restore all classes if the target is hidden.
 * Only membership in the selected class is removed. Student and class records, other memberships, and recorded attendance history are retained.
 * Active filters and ordering are preserved. Membership-dependent views refresh, so a student or class may disappear and remaining indices may shift.
+* After a successful unassignment, both panels scroll to the affected student and class if they remain displayed. A record removed by an active filter stays hidden; the panel does not scroll to a different record in its place. Keyboard focus stays in the command box.
 * Check both panels before repeating a command. Reusing the same indices after a view changes can target a different student or class.
 
 Example: suppose student `A1111111H` is displayed at student index `2` and `CS2103-F10` is displayed at class index `1`:
