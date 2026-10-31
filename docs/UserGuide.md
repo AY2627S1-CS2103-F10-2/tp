@@ -67,12 +67,6 @@ From the command box, **Tab** moves through the result display, Students list, C
 and back to the command box. **Shift+Tab** moves in reverse. Scrolling does not select or
 change student or class records. Up/Down in the command box continues to browse command history.
 
-### Recalling previous commands
-
-In the command box, press **Up/Down** arrows to browse the latest **20 successful commands** across app sessions. History is saved automatically in the address book data file.
-
-Edits of past commands are kept while browsing and cleared when you submit a command. Failed input remains as your draft.
-
 <box type="info" seamless>
 
 **Notes about the command format:**<br>
@@ -167,6 +161,53 @@ Common errors:
   ```
 * Invalid Telegram username: `Invalid Telegram username. Usernames must contain 5–32 letters, digits, or underscores.`
 
+### Editing a student: `edit`
+
+Edits an existing student in TAssist.
+
+Format: `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]... `
+
+* Edits the student at the specified `INDEX`. The index refers to the index number shown in the displayed student list. The index **must be a positive integer** 1, 2, 3, ...
+* At least one of the optional fields must be provided.
+* Existing values will be updated to the input values.
+* When editing tags, all of the student's existing tags are removed; adding tags is not cumulative.
+* To remove all of a student's tags, enter `t/` without a tag after it.
+* To remove a student's Telegram username, enter `tg/` without a username after it. Omitting `tg/` keeps the existing username.
+* Student number, email, and Telegram username must remain unique after editing.
+* Names follow the same character rules as [`add`](#adding-a-student-add). Use `\` for a displayed `/`, for example `edit 1 n/Ravi S\O Kumar`.
+* Editing keeps the current student filter, sorting, and attendance display. A student who no longer matches a `find` search disappears from its results; changing a name in a `listbyclass` view may change their alphabetical position.
+* Editing a student number preserves their class memberships and attendance history. Any active attendance threshold still applies.
+* Check the displayed indexes again before your next command, as an edit may change which students are shown and their indexes. Use `list` to show all students.
+
+Examples:
+*  `edit 1 tg/john_doe e/johndoe@example.com` edits the Telegram username and email address of the 1st student.
+*  `edit 1 tg/` removes the Telegram username of the 1st student.
+*  `edit 2 sn/A0234567Y n/Benjamin Lim t/` edits the student number and name of the 2nd student, and clears all existing tags.
+
+### Deleting a student: `delete`
+
+Deletes the specified student from TAssist.
+
+Format: `delete INDEX`
+
+* Deletes the student at the specified `INDEX`.
+* The index refers to the index number shown in the displayed student list.
+* The index **must be a positive integer** 1, 2, 3, ...
+* Deleting keeps the current student filter, sorting, and attendance display. If no remaining students match, the student list stays empty instead of showing unrelated students.
+* Check the displayed indexes again before deleting another student, as the remaining students are renumbered. Use `list` to show all students.
+
+Examples:
+* `list` followed by `delete 2` deletes the 2nd student in TAssist.
+* `find Betsy` followed by `delete 1` deletes the 1st student in the results of the `find` command.
+
+Expected output:
+* `Deleted student: Alice Tan; Student Number: A0123456X; Email: alice@u.nus.edu; Telegram: @alice_tan`
+
+<box type="warning" seamless>
+
+The current build deletes students by displayed list index, not by student number. The MVP command `deletestudent sn/STUDENT_NUMBER` is not available in this build.
+</box>
+
 ### Listing all students: `list`
 
 Shows a list of all students in TAssist.
@@ -177,6 +218,26 @@ Expected output: `Listed all students.`
 
 The student list displays each student's name, student number, email, optional Telegram username, and tags.
 This command leaves the current class filter unchanged. Use `listclass` to restore all classes as well.
+
+### Locating students by name: `find`
+
+Finds students whose names contain any of the given keywords.
+
+Format: `find KEYWORD [MORE_KEYWORDS]...`
+
+* The search is case-insensitive; for example, `hans` matches `Hans`.
+* Keyword order does not matter; for example, `Hans Bo` matches `Bo Hans`.
+* The search considers only names.
+* Only full words match; for example, `Han` does not match `Hans`.
+* Punctuation remains part of a word: use `Anne-Marie` rather than `Anne` to match `Anne-Marie`, or `O'Connor` to match `O'Connor`.
+  For `John Tan, Jr. (Alex)`, search with `Tan,` or `(Alex)`; `Tan` and `Alex` do not match those words.
+* For a displayed slash, either input form works in searches: `find S\O` and `find S/O` both match the word `S/O`.
+* Students matching at least one keyword are returned (an `OR` search); for example, `Hans Bo` returns `Hans Gruber` and `Bo Yang`.
+
+Examples:
+* `find John` returns `john` and `John Doe`
+* `find alex david` returns `Alex Yeoh`, `David Li`<br>
+  ![result for 'find alex david'](images/findAlexDavidResult.png)
 
 ### Listing students by class: `listbyclass`
 
@@ -360,29 +421,6 @@ Example (after recording attendance for student index `1` in class index `2` in 
 TAssist displays a confirmation message when the date is removed. Trying to remove the same date for the same
 student and class again reports that the date is not recorded. Check the current indices before repeating the command.
 
-### Editing a student: `edit`
-
-Edits an existing student in TAssist.
-
-Format: `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]... `
-
-* Edits the student at the specified `INDEX`. The index refers to the index number shown in the displayed student list. The index **must be a positive integer** 1, 2, 3, ...
-* At least one of the optional fields must be provided.
-* Existing values will be updated to the input values.
-* When editing tags, all of the student's existing tags are removed; adding tags is not cumulative.
-* To remove all of a student's tags, enter `t/` without a tag after it.
-* To remove a student's Telegram username, enter `tg/` without a username after it. Omitting `tg/` keeps the existing username.
-* Student number, email, and Telegram username must remain unique after editing.
-* Names follow the same character rules as [`add`](#adding-a-student-add). Use `\` for a displayed `/`, for example `edit 1 n/Ravi S\O Kumar`.
-* Editing keeps the current student filter, sorting, and attendance display. A student who no longer matches a `find` search disappears from its results; changing a name in a `listbyclass` view may change their alphabetical position.
-* Editing a student number preserves their class memberships and attendance history. Any active attendance threshold still applies.
-* Check the displayed indexes again before your next command, as an edit may change which students are shown and their indexes. Use `list` to show all students.
-
-Examples:
-*  `edit 1 tg/john_doe e/johndoe@example.com` edits the Telegram username and email address of the 1st student.
-*  `edit 1 tg/` removes the Telegram username of the 1st student.
-*  `edit 2 sn/A0234567Y n/Benjamin Lim t/` edits the student number and name of the 2nd student, and clears all existing tags.
-
 ### Editing a class: `editclass`
 
 Changes an academic class's module code or class name. Use this when a class's details change but its existing student memberships should be kept.
@@ -438,26 +476,6 @@ Common errors:
 
 Rejected commands leave class details, memberships, and student counts unchanged.
 
-### Locating students by name: `find`
-
-Finds students whose names contain any of the given keywords.
-
-Format: `find KEYWORD [MORE_KEYWORDS]...`
-
-* The search is case-insensitive; for example, `hans` matches `Hans`.
-* Keyword order does not matter; for example, `Hans Bo` matches `Bo Hans`.
-* The search considers only names.
-* Only full words match; for example, `Han` does not match `Hans`.
-* Punctuation remains part of a word: use `Anne-Marie` rather than `Anne` to match `Anne-Marie`, or `O'Connor` to match `O'Connor`.
-  For `John Tan, Jr. (Alex)`, search with `Tan,` or `(Alex)`; `Tan` and `Alex` do not match those words.
-* For a displayed slash, either input form works in searches: `find S\O` and `find S/O` both match the word `S/O`.
-* Students matching at least one keyword are returned (an `OR` search); for example, `Hans Bo` returns `Hans Gruber` and `Bo Yang`.
-
-Examples:
-* `find John` returns `john` and `John Doe`
-* `find alex david` returns `Alex Yeoh`, `David Li`<br>
-  ![result for 'find alex david'](images/findAlexDavidResult.png)
-
 ### Creating a class: `addclass`
 
 Creates an academic class. Created classes appear in the class list section of the UI.
@@ -502,30 +520,6 @@ Common errors:
 
 For example, `addclass m/123 c/F01` is rejected because the module code starts with a digit.
 `addclass m/CS2103 c/---` is rejected because the class name contains no letter or digit.
-
-### Deleting a student: `delete`
-
-Deletes the specified student from TAssist.
-
-Format: `delete INDEX`
-
-* Deletes the student at the specified `INDEX`.
-* The index refers to the index number shown in the displayed student list.
-* The index **must be a positive integer** 1, 2, 3, ...
-* Deleting keeps the current student filter, sorting, and attendance display. If no remaining students match, the student list stays empty instead of showing unrelated students.
-* Check the displayed indexes again before deleting another student, as the remaining students are renumbered. Use `list` to show all students.
-
-Examples:
-* `list` followed by `delete 2` deletes the 2nd student in TAssist.
-* `find Betsy` followed by `delete 1` deletes the 1st student in the results of the `find` command.
-
-Expected output:
-* `Deleted student: Alice Tan; Student Number: A0123456X; Email: alice@u.nus.edu; Telegram: @alice_tan`
-
-<box type="warning" seamless>
-
-The current build deletes students by displayed list index, not by student number. The MVP command `deletestudent sn/STUDENT_NUMBER` is not available in this build.
-</box>
 
 ### Deleting a class: `deleteclass`
 
@@ -673,6 +667,12 @@ To restore the assignment, run `listclass`, check the index of `CS2106 DEMO-BOB`
 | `listbystudent 2` when only one student is displayed | `The student index provided is invalid.` Use an index visible in the Students panel. |
 
 Rejected commands preserve both displayed lists. Selecting a valid student with no classes is a successful operation.
+
+### Recalling previous commands
+
+In the command box, press **Up/Down** arrows to browse the latest **20 successful commands** across app sessions. History is saved automatically in the address book data file.
+
+Edits of past commands are kept while browsing and cleared when you submit a command. Failed input remains as your draft.
 
 ### Clearing all entries: `clear`
 
