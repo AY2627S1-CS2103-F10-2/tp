@@ -712,6 +712,15 @@ incomplete. Follow the recovery instructions in [Known issues](#known-issues) be
 Separate JAR folders use separate data and preferences; copying only the JAR does not copy your records.
 When running from an IDE or with Gradle, files remain relative to the working directory.
 
+#### What happens when saving fails
+
+If saving fails, TAssist reports `Your command was not applied.` and automatically restores your data
+and displayed lists to how they were before the command. For example, if `delete 1` cannot be saved,
+the student remains in TAssist. The failed command is not added to command history.
+
+The saved file may still be damaged if saving stopped partway through. Keep TAssist open and follow
+the recovery steps in [Known issues](#known-issues) before retrying.
+
 #### Moving existing data to the JAR folder
 
 Older builds may have saved files in the folder from which you ran the terminal command.
@@ -724,6 +733,14 @@ TAssist does not automatically find, move or merge those files.
 1. Reopen TAssist and confirm that your students and classes are present.
 
 If the destination already contains data, choose which file to keep before replacing it; TAssist does not merge the records.
+
+### Preventing simultaneous launches
+
+Only one copy of TAssist can run from the same folder at a time. This protects your saved data.
+If a second launch does not open a window, close the existing TAssist window before trying again.
+When launched from a terminal, TAssist displays a message asking you to close the other copy first.
+
+TAssist creates a `tassist.lock` file to prevent simultaneous launches from the same folder.
 
 ### Editing the data file
 
@@ -783,6 +800,12 @@ Furthermore, certain edits can cause TAssist to behave in unexpected ways (e.g.,
    If TAssist has already closed, do not rely on `list` to recover the previous session's data. Restore a
    known-good backup before launching again. If the app has restarted with missing or empty records, close it
    without entering commands, then restore the backup; saving that empty state could overwrite the damaged file.
+
+4. **Other applications can still change the data file:** TAssist prevents multiple TAssist windows from
+   opening from the same folder at the same time. However, this does not stop other applications,
+   including malicious software with write access, from changing or deleting `data/addressbook.json`.
+   Such changes may cause data loss or be overwritten when TAssist next saves. Keep backups and close
+   TAssist before editing the file yourself.
 
 --------------------------------------------------------------------------------------------------------------------
 
