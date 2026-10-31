@@ -67,12 +67,6 @@ From the command box, **Tab** moves through the result display, Students list, C
 and back to the command box. **Shift+Tab** moves in reverse. Scrolling does not select or
 change student or class records. Up/Down in the command box continues to browse command history.
 
-### Recalling previous commands
-
-In the command box, press **Up/Down** arrows to browse the latest **20 successful commands** across app sessions. History is saved automatically in the address book data file.
-
-Edits of past commands are kept while browsing and cleared when you submit a command. Failed input remains as your draft.
-
 <box type="info" seamless>
 
 **Notes about the command format:**<br>
@@ -167,6 +161,53 @@ Common errors:
   ```
 * Invalid Telegram username: `Invalid Telegram username. Usernames must contain 5–32 letters, digits, or underscores.`
 
+### Editing a student: `edit`
+
+Edits an existing student in TAssist.
+
+Format: `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]... `
+
+* Edits the student at the specified `INDEX`. The index refers to the index number shown in the displayed student list. The index **must be a positive integer** 1, 2, 3, ...
+* At least one of the optional fields must be provided.
+* Existing values will be updated to the input values.
+* When editing tags, all of the student's existing tags are removed; adding tags is not cumulative.
+* To remove all of a student's tags, enter `t/` without a tag after it.
+* To remove a student's Telegram username, enter `tg/` without a username after it. Omitting `tg/` keeps the existing username.
+* Student number, email, and Telegram username must remain unique after editing.
+* Names follow the same character rules as [`add`](#adding-a-student-add). Use `\` for a displayed `/`, for example `edit 1 n/Ravi S\O Kumar`.
+* Editing keeps the current student filter, sorting, and attendance display. A student who no longer matches a `find` search disappears from its results; changing a name in a `listbyclass` view may change their alphabetical position.
+* Editing a student number preserves their class memberships and attendance history. Any active attendance threshold still applies.
+* Check the displayed indexes again before your next command, as an edit may change which students are shown and their indexes. Use `list` to show all students.
+
+Examples:
+*  `edit 1 tg/john_doe e/johndoe@example.com` edits the Telegram username and email address of the 1st student.
+*  `edit 1 tg/` removes the Telegram username of the 1st student.
+*  `edit 2 sn/A0234567Y n/Benjamin Lim t/` edits the student number and name of the 2nd student, and clears all existing tags.
+
+### Deleting a student: `delete`
+
+Deletes the specified student from TAssist.
+
+Format: `delete INDEX`
+
+* Deletes the student at the specified `INDEX`.
+* The index refers to the index number shown in the displayed student list.
+* The index **must be a positive integer** 1, 2, 3, ...
+* Deleting keeps the current student filter, sorting, and attendance display. If no remaining students match, the student list stays empty instead of showing unrelated students.
+* Check the displayed indexes again before deleting another student, as the remaining students are renumbered. Use `list` to show all students.
+
+Examples:
+* `list` followed by `delete 2` deletes the 2nd student in TAssist.
+* `find Betsy` followed by `delete 1` deletes the 1st student in the results of the `find` command.
+
+Expected output:
+* `Deleted student: Alice Tan; Student Number: A0123456X; Email: alice@u.nus.edu; Telegram: @alice_tan`
+
+<box type="warning" seamless>
+
+The current build deletes students by displayed list index, not by student number. The MVP command `deletestudent sn/STUDENT_NUMBER` is not available in this build.
+</box>
+
 ### Listing all students: `list`
 
 Shows a list of all students in TAssist.
@@ -177,6 +218,26 @@ Expected output: `Listed all students.`
 
 The student list displays each student's name, student number, email, optional Telegram username, and tags.
 This command leaves the current class filter unchanged. Use `listclass` to restore all classes as well.
+
+### Locating students by name: `find`
+
+Finds students whose names contain any of the given keywords.
+
+Format: `find KEYWORD [MORE_KEYWORDS]...`
+
+* The search is case-insensitive; for example, `hans` matches `Hans`.
+* Keyword order does not matter; for example, `Hans Bo` matches `Bo Hans`.
+* The search considers only names.
+* Only full words match; for example, `Han` does not match `Hans`.
+* Punctuation remains part of a word: use `Anne-Marie` rather than `Anne` to match `Anne-Marie`, or `O'Connor` to match `O'Connor`.
+  For `John Tan, Jr. (Alex)`, search with `Tan,` or `(Alex)`; `Tan` and `Alex` do not match those words.
+* For a displayed slash, either input form works in searches: `find S\O` and `find S/O` both match the word `S/O`.
+* Students matching at least one keyword are returned (an `OR` search); for example, `Hans Bo` returns `Hans Gruber` and `Bo Yang`.
+
+Examples:
+* `find John` returns `john` and `John Doe`
+* `find alex david` returns `Alex Yeoh`, `David Li`<br>
+  ![result for 'find alex david'](images/findAlexDavidResult.png)
 
 ### Listing students by class: `listbyclass`
 
@@ -283,6 +344,8 @@ Common errors:
 
 Rejected commands leave memberships and student counts unchanged.
 
+![Screenshot highlighting student assignment to class](images/assign-result.png)
+
 ### Recording attendance: `addattendance`
 
 Records one attended date for a student in a particular module and class.
@@ -360,29 +423,6 @@ Example (after recording attendance for student index `1` in class index `2` in 
 TAssist displays a confirmation message when the date is removed. Trying to remove the same date for the same
 student and class again reports that the date is not recorded. Check the current indices before repeating the command.
 
-### Editing a student: `edit`
-
-Edits an existing student in TAssist.
-
-Format: `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]... `
-
-* Edits the student at the specified `INDEX`. The index refers to the index number shown in the displayed student list. The index **must be a positive integer** 1, 2, 3, ...
-* At least one of the optional fields must be provided.
-* Existing values will be updated to the input values.
-* When editing tags, all of the student's existing tags are removed; adding tags is not cumulative.
-* To remove all of a student's tags, enter `t/` without a tag after it.
-* To remove a student's Telegram username, enter `tg/` without a username after it. Omitting `tg/` keeps the existing username.
-* Student number, email, and Telegram username must remain unique after editing.
-* Names follow the same character rules as [`add`](#adding-a-student-add). Use `\` for a displayed `/`, for example `edit 1 n/Ravi S\O Kumar`.
-* Editing keeps the current student filter, sorting, and attendance display. A student who no longer matches a `find` search disappears from its results; changing a name in a `listbyclass` view may change their alphabetical position.
-* Editing a student number preserves their class memberships and attendance history. Any active attendance threshold still applies.
-* Check the displayed indexes again before your next command, as an edit may change which students are shown and their indexes. Use `list` to show all students.
-
-Examples:
-*  `edit 1 tg/john_doe e/johndoe@example.com` edits the Telegram username and email address of the 1st student.
-*  `edit 1 tg/` removes the Telegram username of the 1st student.
-*  `edit 2 sn/A0234567Y n/Benjamin Lim t/` edits the student number and name of the 2nd student, and clears all existing tags.
-
 ### Editing a class: `editclass`
 
 Changes an academic class's module code or class name. Use this when a class's details change but its existing student memberships should be kept.
@@ -438,26 +478,6 @@ Common errors:
 
 Rejected commands leave class details, memberships, and student counts unchanged.
 
-### Locating students by name: `find`
-
-Finds students whose names contain any of the given keywords.
-
-Format: `find KEYWORD [MORE_KEYWORDS]...`
-
-* The search is case-insensitive; for example, `hans` matches `Hans`.
-* Keyword order does not matter; for example, `Hans Bo` matches `Bo Hans`.
-* The search considers only names.
-* Only full words match; for example, `Han` does not match `Hans`.
-* Punctuation remains part of a word: use `Anne-Marie` rather than `Anne` to match `Anne-Marie`, or `O'Connor` to match `O'Connor`.
-  For `John Tan, Jr. (Alex)`, search with `Tan,` or `(Alex)`; `Tan` and `Alex` do not match those words.
-* For a displayed slash, either input form works in searches: `find S\O` and `find S/O` both match the word `S/O`.
-* Students matching at least one keyword are returned (an `OR` search); for example, `Hans Bo` returns `Hans Gruber` and `Bo Yang`.
-
-Examples:
-* `find John` returns `john` and `John Doe`
-* `find alex david` returns `Alex Yeoh`, `David Li`<br>
-  ![result for 'find alex david'](images/findAlexDavidResult.png)
-
 ### Creating a class: `addclass`
 
 Creates an academic class. Created classes appear in the class list section of the UI.
@@ -502,30 +522,6 @@ Common errors:
 
 For example, `addclass m/123 c/F01` is rejected because the module code starts with a digit.
 `addclass m/CS2103 c/---` is rejected because the class name contains no letter or digit.
-
-### Deleting a student: `delete`
-
-Deletes the specified student from TAssist.
-
-Format: `delete INDEX`
-
-* Deletes the student at the specified `INDEX`.
-* The index refers to the index number shown in the displayed student list.
-* The index **must be a positive integer** 1, 2, 3, ...
-* Deleting keeps the current student filter, sorting, and attendance display. If no remaining students match, the student list stays empty instead of showing unrelated students.
-* Check the displayed indexes again before deleting another student, as the remaining students are renumbered. Use `list` to show all students.
-
-Examples:
-* `list` followed by `delete 2` deletes the 2nd student in TAssist.
-* `find Betsy` followed by `delete 1` deletes the 1st student in the results of the `find` command.
-
-Expected output:
-* `Deleted student: Alice Tan; Student Number: A0123456X; Email: alice@u.nus.edu; Telegram: @alice_tan`
-
-<box type="warning" seamless>
-
-The current build deletes students by displayed list index, not by student number. The MVP command `deletestudent sn/STUDENT_NUMBER` is not available in this build.
-</box>
 
 ### Deleting a class: `deleteclass`
 
@@ -674,6 +670,12 @@ To restore the assignment, run `listclass`, check the index of `CS2106 DEMO-BOB`
 
 Rejected commands preserve both displayed lists. Selecting a valid student with no classes is a successful operation.
 
+### Recalling previous commands
+
+In the command box, press **Up/Down** arrows to browse the latest **20 successful commands** across app sessions. History is saved automatically in the address book data file.
+
+Edits of past commands are kept while browsing and cleared when you submit a command. Failed input remains as your draft.
+
 ### Clearing all entries: `clear`
 
 Clears all students and classes from TAssist.
@@ -710,6 +712,15 @@ incomplete. Follow the recovery instructions in [Known issues](#known-issues) be
 Separate JAR folders use separate data and preferences; copying only the JAR does not copy your records.
 When running from an IDE or with Gradle, files remain relative to the working directory.
 
+#### What happens when saving fails
+
+If saving fails, TAssist reports `Your command was not applied.` and automatically restores your data
+and displayed lists to how they were before the command. For example, if `delete 1` cannot be saved,
+the student remains in TAssist. The failed command is not added to command history.
+
+The saved file may still be damaged if saving stopped partway through. Keep TAssist open and follow
+the recovery steps in [Known issues](#known-issues) before retrying.
+
 #### Moving existing data to the JAR folder
 
 Older builds may have saved files in the folder from which you ran the terminal command.
@@ -722,6 +733,14 @@ TAssist does not automatically find, move or merge those files.
 1. Reopen TAssist and confirm that your students and classes are present.
 
 If the destination already contains data, choose which file to keep before replacing it; TAssist does not merge the records.
+
+### Preventing simultaneous launches
+
+Only one copy of TAssist can run from the same folder at a time. This protects your saved data.
+If a second launch does not open a window, close the existing TAssist window before trying again.
+When launched from a terminal, TAssist displays a message asking you to close the other copy first.
+
+TAssist creates a `tassist.lock` file to prevent simultaneous launches from the same folder.
 
 ### Editing the data file
 
@@ -782,6 +801,12 @@ Furthermore, certain edits can cause TAssist to behave in unexpected ways (e.g.,
    known-good backup before launching again. If the app has restarted with missing or empty records, close it
    without entering commands, then restore the backup; saving that empty state could overwrite the damaged file.
 
+4. **Other applications can still change the data file:** TAssist prevents multiple TAssist windows from
+   opening from the same folder at the same time. However, this does not stop other applications,
+   including malicious software with write access, from changing or deleting `data/addressbook.json`.
+   Such changes may cause data loss or be overwritten when TAssist next saves. Keep backups and close
+   TAssist before editing the file yourself.
+
 --------------------------------------------------------------------------------------------------------------------
 
 ## Command summary
@@ -789,20 +814,20 @@ Furthermore, certain edits can cause TAssist to behave in unexpected ways (e.g.,
 Action     | Format, Examples
 -----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 **Add**    | `add sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM] [t/TAG]... ` <br> e.g., `add sn/A0123456X n/James Ho e/jamesho@example.com tg/james_ho t/CS2103`
-**Assign** | `assign STUDENT_INDEX CLASS_INDEX` <br> e.g., `assign 1 2`
-**Clear**  | `clear`
-**Add attendance** | `addattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD`<br> e.g., `addattendance 1 2 d/2024-02-29`
-**Delete** | `delete INDEX`<br> e.g., `delete 3`
-**Delete attendance** | `deleteattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD`<br> e.g., `deleteattendance 1 2 d/2024-02-29`
-**Delete Class** | `deleteclass INDEX`<br> e.g., `deleteclass 1`
 **Edit**   | `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
-**Edit Class** | `editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]`<br> e.g., `editclass 1 m/CS2103 c/F11`
+**Delete** | `delete INDEX`<br> e.g., `delete 3`
+**List**   | `list`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]...`<br> e.g., `find James Jake`
 **Add Class** | `addclass m/MODULE_CODE c/CLASS_NAME` <br> e.g., `addclass m/CS2103T c/F10-2`
-**List**   | `list`
-**List students by class** | `listbyclass INDEX [t/THRESHOLD]`<br> e.g., `listbyclass 1`, `listbyclass 1 t/5`
+**Edit Class** | `editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]`<br> e.g., `editclass 1 m/CS2103 c/F11`
+**Delete Class** | `deleteclass INDEX`<br> e.g., `deleteclass 1`
 **List all classes** | `listclass`
+**Assign** | `assign STUDENT_INDEX CLASS_INDEX` <br> e.g., `assign 1 2`
 **Unassign** | `unassign STUDENT_INDEX CLASS_INDEX`<br> e.g., `unassign 2 1`
+**Add attendance** | `addattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD`<br> e.g., `addattendance 1 2 d/2024-02-29`
+**Delete attendance** | `deleteattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD`<br> e.g., `deleteattendance 1 2 d/2024-02-29`
+**List students by class** | `listbyclass INDEX [t/THRESHOLD]`<br> e.g., `listbyclass 1`, `listbyclass 1 t/5`
 **List classes by student** | `listbystudent INDEX`<br> e.g., `listbystudent 1`
 **Help**   | `help`
+**Clear**  | `clear`
 **Exit**   | `exit`

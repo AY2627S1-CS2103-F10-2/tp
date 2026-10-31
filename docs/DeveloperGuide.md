@@ -463,6 +463,36 @@ a `CommandException`. Successful removal refreshes membership-dependent
 student and class filters without resetting the active filters or ordering. Indices may shift as
 records disappear from filtered views. Attendance history is retained for correction or reassignment.
 
+### Preventing simultaneous launches
+
+Before launching JavaFX, `Main#launchWithLock(...)` calls `ApplicationLock#tryAcquire(...)` to obtain
+an operating-system lock on `tassist.lock` in the application folder. This uses `FileChannel#tryLock()`
+to reject another TAssist launch from the same folder. If the lock is already held or cannot be accessed,
+`Main` prints an error and does not launch the application.
+
+The lock is held while TAssist runs and released when the application exits.
+
+Other applications can still modify `data/addressbook.json`. This is a [known issue documented in the User Guide](UserGuide.md#known-issues)
+and should be addressed in future iterations.
+
+### What happens when saving fails
+
+Before executing a parsed command, `LogicManager#execute(...)` calls `Model#createRollback()` to capture
+the current data and displayed lists. After execution, it updates command history and saves the data.
+The command result is returned only after saving succeeds.
+
+If saving throws an `IOException`, including `AccessDeniedException`, `LogicManager` restores the snapshot
+and throws a `CommandException` with the save error. `ModelManager` restores students, classes, memberships,
+attendance and command history, along with the previous filters, student sort order and attendance display.
+The command box retains the failed input without adding it to successful command history.
+
+Snapshots are single-use, and filter predicates must avoid capturing mutable model objects because restoration
+replaces them.
+
+The current rollback implementation handles complete save failures, where no data is written, but does not
+handle recovery of partially saved files. This is [noted in the User Guide](UserGuide.md#known-issues)
+and should be addressed in future iterations.
+
 #### Validation and failure paths
 
 The activity diagram below complements the successful-execution sequence diagrams. Assignment
@@ -1045,3 +1075,8 @@ before editing files, except in the permission-failure check, which needs the sa
 1. **Write-protected launch folder:** In another folder containing only the JAR, deny file creation but retain
    read/execute access. Launch from a terminal: expect no app window and an application-lock error. Restore
    permissions afterward. A folder's read-only checkbox alone may not deny writes.
+1. **Single-instance locking:** Keep TAssist open, then launch the same JAR from a second terminal, using
+   a different terminal working directory. Expect no second window and the already-running message.
+   Close the first instance and relaunch without deleting `tassist.lock`; expect a normal launch.
+   Copy only the JAR to another writable folder and launch it while the first is open; expect both instances
+   to run with independent data. Close both after checking.
