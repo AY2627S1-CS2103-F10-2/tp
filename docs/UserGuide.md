@@ -236,85 +236,6 @@ memberships alphabetically. The filtered view itself is not saved. Run `list` to
 Editing a student updates their existing class memberships. Deleting a student removes their memberships
 while retaining the classes and other students.
 
-### Listing classes by student: `listbystudent`
-
-Shows the classes assigned to the student at the specified index in the displayed student list.
-Matching classes appear in the **Classes** panel. The feedback message reports their count and the selected student's
-name and student number.
-
-Format: `listbystudent INDEX`
-
-* `INDEX` must be a positive integer shown beside a student in the current Students panel.
-  After `find` or `listbyclass`, use the index in those results, not the student's original index.
-* The Classes panel shows all of that student's classes, in class creation order, even if classes were previously filtered.
-  Classes assigned only to other students and classes with no students are excluded.
-* A student with no assigned classes produces an empty Classes panel and a count of zero.
-* The displayed student list, student records, and memberships are unchanged.
-* The class view updates after assignments, unassignments, and edits to the selected student's number.
-  Deleting the selected student empties this view without deleting classes.
-* Changing the student search with `find` does not change the selected student's class view.
-  Run `listbystudent` again to select a student from the new search results.
-* Use `listclass` to show all classes again. `list` restores the student list only.
-* The filter is not saved across restarts; memberships are saved.
-
-Examples:
-
-* `listbystudent 1` shows classes for the first student in the current student list.
-* `find AlphaDemoAlice`, followed by `listbystudent 1`, shows classes for the first student in that search result.
-
-**Example walkthrough**
-
-Use a fresh data folder with no existing records for this walkthrough so the indices below match. Enter each command separately.
-
-```text
-add sn/A0999801X n/AlphaDemoAlice e/alpha.demo.alice@example.com
-add sn/A0999802Y n/AlphaDemoBob e/alpha.demo.bob@example.com
-addclass m/CS2103 c/DEMO-T01
-addclass m/CS2100 c/DEMO-L01
-addclass m/CS2106 c/DEMO-BOB
-addclass m/CS2103 c/DEMO-EMPTY
-assign 1 1
-assign 1 2
-assign 2 3
-find AlphaDemoAlice
-listbystudent 1
-```
-
-Expected feedback: `Listed 2 classes for AlphaDemoAlice (A0999801X).`
-The Classes panel shows `CS2103 DEMO-T01` followed by `CS2100 DEMO-L01`.
-Bob's `CS2106 DEMO-BOB` class and the empty `CS2103 DEMO-EMPTY` class are hidden.
-The Students panel still shows Alice's search result.
-
-To select Bob instead, run:
-
-```text
-find AlphaDemoBob
-listbystudent 1
-```
-
-Only `CS2106 DEMO-BOB` appears. Bob is index `1` in the search results, regardless of his index before searching.
-
-To check a student with no memberships and see the view update automatically, run:
-
-```text
-unassign 1 1
-listbystudent 1
-```
-
-The Classes panel becomes empty after unassignment. The listing command reports:
-`Listed 0 classes for AlphaDemoBob (A0999802Y).`
-To restore the assignment, run `listclass`, check the index of `CS2106 DEMO-BOB` (here `3`), then run `assign 1 3`. Bob is still student index `1` in the search results. Run `listbystudent 1` again to show only his classes.
-
-**Common errors**
-
-| Input | Expected result |
-| --- | --- |
-| `listbystudent`, `listbystudent 0`, `listbystudent -1`, or `listbystudent abc` | Invalid command format, followed by the usage and an example. Supply one positive integer. |
-| `listbystudent 1 extra` | Invalid command format. Extra arguments are rejected. |
-| `listbystudent 2` when only one student is displayed | `The student index provided is invalid.` Use an index visible in the Students panel. |
-
-Rejected commands preserve both displayed lists. Selecting a valid student with no classes is a successful operation.
-
 ### Listing all classes: `listclass`
 
 Shows all academic classes in creation order and clears the class filter set by `listbystudent`.
@@ -332,45 +253,6 @@ The student and class filters can be reset independently:
 | `listclass` | Keeps the current student filter | Shows all classes, including empty classes |
 
 Run `list` followed by `listclass` to restore both complete lists.
-
-### Creating a class: `addclass`
-
-Creates an academic class. Created classes appear in the class list section of the UI.
-
-Format: `addclass m/MODULE_CODE c/CLASS_NAME`
-
-* `MODULE_CODE` is the module that the class belongs to.
-* `CLASS_NAME` is the class name for that module.
-* The `m/` and `c/` parameters can be supplied in any order.
-* Each class is uniquely identified by its module code and class name pair.
-* Duplicate classes with the same module code and class name are not allowed.
-* Leading and trailing whitespace is removed from module codes and class names, and letters are stored in uppercase.
-* `MODULE_CODE` must begin with a letter and contain only letters or digits.
-* `CLASS_NAME` must contain at least one letter or digit, and may contain only letters, digits, or hyphens.
-  Examples include `F01`, `F10-2`, and `T24`; numeric class names such as `01` remain valid.
-  These examples do not impose a fixed module-code length or class-name prefix.
-
-Examples:
-* `addclass m/CS2103T c/F10-2`
-* `addclass c/T24 m/ST2334`
-
-Expected output:
-* `New class added: CS2103T-F10-2`
-
-Common errors:
-* Missing module code: `Missing required parameter: m/MODULE_CODE`
-* Missing class name: `Missing required parameter: c/CLASS_NAME`
-* Repeated module code: `Parameter m/ was specified more than once.`
-* Repeated class name: `Parameter c/ was specified more than once.`
-* Unknown parameter: `Unknown parameter: PREFIX`
-* Duplicate class: `A class with this name for this module already exists`
-* Empty module code: `Module code cannot be empty. Examples: CS2103T, ST2334.`
-* Invalid module code: `Module code must start with a letter (A-Z, a-z) and contain only letters and digits, with no spaces. Examples: CS2103T, ST2334.`
-* Empty class name: `Class name cannot be empty. Examples: F01, F10-2, T24.`
-* Invalid class name: `Class name must contain at least one letter (A-Z, a-z) or digit (0-9), and may contain only letters, digits, and hyphens (-), with no spaces. Examples: F01, F10-2, T24.`
-
-For example, `addclass m/123 c/F01` is rejected because the module code starts with a digit.
-`addclass m/CS2103 c/---` is rejected because the class name contains no letter or digit.
 
 ### Assigning a student to a class: `assign`
 
@@ -576,6 +458,51 @@ Examples:
 * `find alex david` returns `Alex Yeoh`, `David Li`<br>
   ![result for 'find alex david'](images/findAlexDavidResult.png)
 
+### Creating a class: `addclass`
+
+Creates an academic class. Created classes appear in the class list section of the UI.
+
+Format: `addclass m/MODULE_CODE c/CLASS_NAME`
+
+For example, running `addclass m/ST2334 c/T24` adds a third class to the Classes panel.
+
+| Before | After |
+| :---: | :---: |
+| ![Before adding ST2334 T24: two classes are displayed](images/addclass-result-before.png) | ![After adding ST2334 T24: three classes and the success message are displayed](images/addclass-result-after.png) |
+
+* `MODULE_CODE` is the module that the class belongs to.
+* `CLASS_NAME` is the class name for that module.
+* The `m/` and `c/` parameters can be supplied in any order.
+* Each class is uniquely identified by its module code and class name pair.
+* Duplicate classes with the same module code and class name are not allowed.
+* Leading and trailing whitespace is removed from module codes and class names, and letters are stored in uppercase.
+* `MODULE_CODE` must begin with a letter and contain only letters or digits.
+* `CLASS_NAME` must contain at least one letter or digit, and may contain only letters, digits, or hyphens.
+  Examples include `F01`, `F10-2`, and `T24`; numeric class names such as `01` remain valid.
+  These examples do not impose a fixed module-code length or class-name prefix.
+
+Examples:
+* `addclass m/CS2103T c/F10-2`
+* `addclass c/T24 m/ST2334`
+
+Expected output:
+* `New class added: CS2103T-F10-2`
+
+Common errors:
+* Missing module code: `Missing required parameter: m/MODULE_CODE`
+* Missing class name: `Missing required parameter: c/CLASS_NAME`
+* Repeated module code: `Parameter m/ was specified more than once.`
+* Repeated class name: `Parameter c/ was specified more than once.`
+* Unknown parameter: `Unknown parameter: PREFIX`
+* Duplicate class: `A class with this name for this module already exists`
+* Empty module code: `Module code cannot be empty. Examples: CS2103T, ST2334.`
+* Invalid module code: `Module code must start with a letter (A-Z, a-z) and contain only letters and digits, with no spaces. Examples: CS2103T, ST2334.`
+* Empty class name: `Class name cannot be empty. Examples: F01, F10-2, T24.`
+* Invalid class name: `Class name must contain at least one letter (A-Z, a-z) or digit (0-9), and may contain only letters, digits, and hyphens (-), with no spaces. Examples: F01, F10-2, T24.`
+
+For example, `addclass m/123 c/F01` is rejected because the module code starts with a digit.
+`addclass m/CS2103 c/---` is rejected because the class name contains no letter or digit.
+
 ### Deleting a student: `delete`
 
 Deletes the specified student from TAssist.
@@ -660,6 +587,92 @@ Common errors:
 * Student not assigned to the selected class: `Student (A1234567H) is not assigned to class CS2101-L1.` Repeating an unassignment produces this error only if the indices still identify the same student and class.
 
 Rejected commands leave memberships and student counts unchanged.
+
+### Listing classes by student: `listbystudent`
+
+Shows the classes assigned to the student at the specified index in the displayed student list.
+Matching classes appear in the **Classes** panel. The feedback message reports their count and the selected student's
+name and student number.
+
+Format: `listbystudent INDEX`
+
+For example, after finding Alice Tan, `listbystudent 1` shows only her two assigned classes.
+The Students panel stays unchanged while the Classes panel changes from four classes to two.
+
+| Before | After |
+| :---: | :---: |
+| ![Before listing Alice Tan's classes: all four classes are displayed](images/listbystudent-result-before.png) | ![After listing Alice Tan's classes: only CS2103T F01 and CS2100 T01 are displayed](images/listbystudent-result-after.png) |
+
+* `INDEX` must be a positive integer shown beside a student in the current Students panel.
+  After `find` or `listbyclass`, use the index in those results, not the student's original index.
+* The Classes panel shows all of that student's classes, in class creation order, even if classes were previously filtered.
+  Classes assigned only to other students and classes with no students are excluded.
+* A student with no assigned classes produces an empty Classes panel and a count of zero.
+* The displayed student list, student records, and memberships are unchanged.
+* The class view updates after assignments, unassignments, and edits to the selected student's number.
+  Deleting the selected student empties this view without deleting classes.
+* Changing the student search with `find` does not change the selected student's class view.
+  Run `listbystudent` again to select a student from the new search results.
+* Use `listclass` to show all classes again. `list` restores the student list only.
+* The filter is not saved across restarts; memberships are saved.
+
+Examples:
+
+* `listbystudent 1` shows classes for the first student in the current student list.
+* `find AlphaDemoAlice`, followed by `listbystudent 1`, shows classes for the first student in that search result.
+
+**Example walkthrough**
+
+Use a fresh data folder with no existing records for this walkthrough so the indices below match. Enter each command separately.
+
+```text
+add sn/A0999801X n/AlphaDemoAlice e/alpha.demo.alice@example.com
+add sn/A0999802Y n/AlphaDemoBob e/alpha.demo.bob@example.com
+addclass m/CS2103 c/DEMO-T01
+addclass m/CS2100 c/DEMO-L01
+addclass m/CS2106 c/DEMO-BOB
+addclass m/CS2103 c/DEMO-EMPTY
+assign 1 1
+assign 1 2
+assign 2 3
+find AlphaDemoAlice
+listbystudent 1
+```
+
+Expected feedback: `Listed 2 classes for AlphaDemoAlice (A0999801X).`
+The Classes panel shows `CS2103 DEMO-T01` followed by `CS2100 DEMO-L01`.
+Bob's `CS2106 DEMO-BOB` class and the empty `CS2103 DEMO-EMPTY` class are hidden.
+The Students panel still shows Alice's search result.
+
+To select Bob instead, run:
+
+```text
+find AlphaDemoBob
+listbystudent 1
+```
+
+Only `CS2106 DEMO-BOB` appears. Bob is index `1` in the search results, regardless of his index before searching.
+
+To check a student with no memberships and see the view update automatically, run:
+
+```text
+unassign 1 1
+listbystudent 1
+```
+
+The Classes panel becomes empty after unassignment. The listing command reports:
+`Listed 0 classes for AlphaDemoBob (A0999802Y).`
+To restore the assignment, run `listclass`, check the index of `CS2106 DEMO-BOB` (here `3`), then run `assign 1 3`. Bob is still student index `1` in the search results. Run `listbystudent 1` again to show only his classes.
+
+**Common errors**
+
+| Input | Expected result |
+| --- | --- |
+| `listbystudent`, `listbystudent 0`, `listbystudent -1`, or `listbystudent abc` | Invalid command format, followed by the usage and an example. Supply one positive integer. |
+| `listbystudent 1 extra` | Invalid command format. Extra arguments are rejected. |
+| `listbystudent 2` when only one student is displayed | `The student index provided is invalid.` Use an index visible in the Students panel. |
+
+Rejected commands preserve both displayed lists. Selecting a valid student with no classes is a successful operation.
 
 ### Clearing all entries: `clear`
 
@@ -776,7 +789,6 @@ Furthermore, certain edits can cause TAssist to behave in unexpected ways (e.g.,
 Action     | Format, Examples
 -----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 **Add**    | `add sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM] [t/TAG]... ` <br> e.g., `add sn/A0123456X n/James Ho e/jamesho@example.com tg/james_ho t/CS2103`
-**Add Class** | `addclass m/MODULE_CODE c/CLASS_NAME` <br> e.g., `addclass m/CS2103T c/F10-2`
 **Assign** | `assign STUDENT_INDEX CLASS_INDEX` <br> e.g., `assign 1 2`
 **Clear**  | `clear`
 **Add attendance** | `addattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD`<br> e.g., `addattendance 1 2 d/2024-02-29`
@@ -786,10 +798,11 @@ Action     | Format, Examples
 **Edit**   | `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
 **Edit Class** | `editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]`<br> e.g., `editclass 1 m/CS2103 c/F11`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]...`<br> e.g., `find James Jake`
+**Add Class** | `addclass m/MODULE_CODE c/CLASS_NAME` <br> e.g., `addclass m/CS2103T c/F10-2`
 **List**   | `list`
 **List students by class** | `listbyclass INDEX [t/THRESHOLD]`<br> e.g., `listbyclass 1`, `listbyclass 1 t/5`
-**List classes by student** | `listbystudent INDEX`<br> e.g., `listbystudent 1`
 **List all classes** | `listclass`
 **Unassign** | `unassign STUDENT_INDEX CLASS_INDEX`<br> e.g., `unassign 2 1`
+**List classes by student** | `listbystudent INDEX`<br> e.g., `listbystudent 1`
 **Help**   | `help`
 **Exit**   | `exit`
