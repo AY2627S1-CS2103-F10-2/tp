@@ -344,6 +344,8 @@ Common errors:
 
 Rejected commands leave memberships and student counts unchanged.
 
+![Screenshot highlighting student assignment to class](images/assign-result.png)
+
 ### Recording attendance: `addattendance`
 
 Records one attended date for a student in a particular module and class.
