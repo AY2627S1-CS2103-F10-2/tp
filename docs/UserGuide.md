@@ -789,20 +789,20 @@ Furthermore, certain edits can cause TAssist to behave in unexpected ways (e.g.,
 Action     | Format, Examples
 -----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 **Add**    | `add sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM] [t/TAG]... ` <br> e.g., `add sn/A0123456X n/James Ho e/jamesho@example.com tg/james_ho t/CS2103`
-**Assign** | `assign STUDENT_INDEX CLASS_INDEX` <br> e.g., `assign 1 2`
-**Clear**  | `clear`
-**Add attendance** | `addattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD`<br> e.g., `addattendance 1 2 d/2024-02-29`
-**Delete** | `delete INDEX`<br> e.g., `delete 3`
-**Delete attendance** | `deleteattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD`<br> e.g., `deleteattendance 1 2 d/2024-02-29`
-**Delete Class** | `deleteclass INDEX`<br> e.g., `deleteclass 1`
 **Edit**   | `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
-**Edit Class** | `editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]`<br> e.g., `editclass 1 m/CS2103 c/F11`
+**Delete** | `delete INDEX`<br> e.g., `delete 3`
+**List**   | `list`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]...`<br> e.g., `find James Jake`
 **Add Class** | `addclass m/MODULE_CODE c/CLASS_NAME` <br> e.g., `addclass m/CS2103T c/F10-2`
-**List**   | `list`
-**List students by class** | `listbyclass INDEX [t/THRESHOLD]`<br> e.g., `listbyclass 1`, `listbyclass 1 t/5`
+**Edit Class** | `editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]`<br> e.g., `editclass 1 m/CS2103 c/F11`
+**Delete Class** | `deleteclass INDEX`<br> e.g., `deleteclass 1`
 **List all classes** | `listclass`
+**Assign** | `assign STUDENT_INDEX CLASS_INDEX` <br> e.g., `assign 1 2`
 **Unassign** | `unassign STUDENT_INDEX CLASS_INDEX`<br> e.g., `unassign 2 1`
+**Add attendance** | `addattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD`<br> e.g., `addattendance 1 2 d/2024-02-29`
+**Delete attendance** | `deleteattendance STUDENT_INDEX CLASS_INDEX d/YYYY-MM-DD`<br> e.g., `deleteattendance 1 2 d/2024-02-29`
+**List students by class** | `listbyclass INDEX [t/THRESHOLD]`<br> e.g., `listbyclass 1`, `listbyclass 1 t/5`
 **List classes by student** | `listbystudent INDEX`<br> e.g., `listbystudent 1`
 **Help**   | `help`
+**Clear**  | `clear`
 **Exit**   | `exit`
