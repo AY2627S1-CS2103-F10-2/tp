@@ -31,3 +31,5 @@ CLAUDE.md
 _temp/
 docs/_markbind/logs/
 /bin/
+
+/tassist.lock
