@@ -113,7 +113,7 @@ Format: `add sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM] [t/TAG]... `
   Backslashes represent slashes and cannot be stored as literal backslashes in a name.
 * Curly apostrophes (`’`), middle dots (`·`), accented letters (such as `é`), other scripts, and unlisted punctuation are rejected.
   Use a straight apostrophe (`'`) rather than a curly one. Blank names and names consisting only of punctuation are also rejected.
-* `EMAIL` must be in the format `local-part@domain`, with no spaces. Email comparisons are case-insensitive for duplicate checks.
+* `EMAIL` must be in the format `local-part@domain`, with no spaces, and be at most **200 characters** long (including `@` and the domain). Email comparisons are case-insensitive for duplicate checks.
 * `TELEGRAM`, if provided, may start with `@`. After removing `@`, it must contain 5 to 32 letters, digits, or underscores. It must be unique, ignoring case.
 * Parameters can be supplied in any order.
 * Adding a student keeps the current student filter and display order. The new student appears only if they match the filter.
@@ -132,6 +132,7 @@ Expected output:
 Common errors:
 * Duplicate student number: `A student with this student number already exists.`
 * Duplicate email: `A student with this email already exists.`
+* Invalid email format or an email longer than 200 characters: TAssist displays the email requirements and does not add the student.
 * Duplicate Telegram username: `A student with this Telegram username already exists.`
 * Invalid student number: `Invalid student number. Student numbers must contain 5–20 letters or digits with no spaces.`
 * Invalid name:
@@ -155,6 +156,7 @@ Format: `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]
 * To remove all of a student's tags, enter `t/` without a tag after it.
 * To remove a student's Telegram username, enter `tg/` without a username after it. Omitting `tg/` keeps the existing username.
 * Student number, email, and Telegram username must remain unique after editing.
+* Emails follow the same format and 200-character limit as [`add`](#adding-a-student-add). Invalid emails are rejected without changing the student.
 * Names follow the same character rules as [`add`](#adding-a-student-add). Use `\` for a displayed `/`, for example `edit 1 n/Ravi S\O Kumar`.
 * Editing keeps the current student filter, sorting, and attendance display. A student who no longer matches a `find` search disappears from its results; changing a name in a `listbyclass` view may change their alphabetical position.
 * Editing a student number preserves their class memberships and attendance history. Any active attendance threshold still applies.
