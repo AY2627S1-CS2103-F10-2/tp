@@ -469,7 +469,6 @@ Format: `editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]`
 * Attendance history is preserved, including records for students who are no longer assigned to the class.
   Check the class's displayed index before using subsequent attendance commands.
 * If the current student view lists members of the edited class, it follows the renamed class and remains alphabetical. Other student filters and their displayed order remain unchanged.
-* Subsequent commands that identify the class by module code and class name must use its updated details.
 
 Examples
 
@@ -869,7 +868,7 @@ Furthermore, certain edits can cause TAssist to behave in unexpected ways (e.g.,
 
 6. Pasting an extremely large amount of text, such as one million characters, may make the application slow or temporarily unresponsive, even before the command is submitted. Avoid pasting excessively long text into the command box.
 
-7. Directly editing the JSON data file may introduce invalid values or inconsistent records that prevent TAssist from starting. Certain extremely long email values can also cause a startup failure. Use the application’s commands to modify data and back up the data file before editing it manually.
+7. Directly editing the JSON data file may introduce invalid values or inconsistent records that prevent TAssist from starting. Use the application’s commands to modify data and back up the data file before editing it manually.
 
 8. Console errors when clicking list entries, clicking student or class cards may produce a `NullPointerException` in the console. This has been observed on Windows. The application may remain open, but the click is not processed normally. 
 
