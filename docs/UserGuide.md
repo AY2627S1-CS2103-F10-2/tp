@@ -28,7 +28,7 @@ TAssist is a **desktop application for NUS Teaching Assistants who need to manag
    If double-clicking does not launch TAssist, use the terminal command above so you can see any error messages.
    Run `java -version` to check that the terminal uses Java `25` or later.<br>
    A GUI similar to the one below should appear in a few seconds. The app shows students and classes in separate sections.<br>
-   ![Ui](images/Ui.png)
+   ![Ui](images/Ui-startup.png)
 
 1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the help window.<br>
 
@@ -324,8 +324,6 @@ Common errors:
 * Class index outside the displayed list: `The class index provided is invalid.`
 * Student already assigned: `Student (A1234567H) is already assigned to class CS2101-L1.`
 
-Rejected commands leave memberships and student counts unchanged.
-
 ![Screenshot highlighting student assignment to class](images/assign-result.png)
 
 ### Unassigning a student from an academic class: `unassign`
@@ -371,14 +369,14 @@ Expected feedback: `Student (A0999801X) has been unassigned from CS2103-DEMO-T01
 The class remains in the Classes panel with `Students: 0`. The Students panel becomes empty because
 the active view only shows members of that class. Run `list` to see Alice again; her student record has not been deleted.
 
+If the command fails, class memberships and student counts remain unchanged.
+
 Common errors:
 
 * Missing, extra, or invalid indices (including zero, negative numbers, decimals, and the old prefixes): `Invalid command format!` followed by the command usage.
 * Student index outside the displayed list: `The student index provided is invalid.`
 * Class index outside the displayed list: `The class index provided is invalid.`
 * Student not assigned to the selected class: `Student (A1234567H) is not assigned to class CS2101-L1.` Repeating an unassignment produces this error only if the indices still identify the same student and class.
-
-Rejected commands leave memberships and student counts unchanged.
 
 ![Screenshot highlighting student unassignment from class](images/unassign-result.png)
 
