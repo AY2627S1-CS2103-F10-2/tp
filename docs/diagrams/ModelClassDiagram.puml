@@ -53,9 +53,9 @@ AcademicClass *--> "1" ModuleCode
 AcademicClass *--> "1" ClassName
 AcademicClass "*" -right-> "*" Person : students
 
-AddressBook "1" *--> "0..*" Attendance : attendanceRecords
-Attendance "0..*" --> "1" Person : student
-Attendance "0..*" --> "1" AcademicClass : academicClass
+AddressBook "1" *--> "*" Attendance : attendanceRecords
+Attendance "*" --> "1" Person : student
+Attendance "*" --> "1" AcademicClass : academicClass
 
 UniqueAcademicClassList -[hidden]right-> UniquePersonList
 
