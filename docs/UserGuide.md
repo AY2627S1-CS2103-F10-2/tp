@@ -858,11 +858,20 @@ Furthermore, certain edits can cause TAssist to behave in unexpected ways (e.g.,
    opening from the same folder at the same time. However, this does not stop other applications,
    including malicious software with write access, from changing or deleting `data/addressbook.json`.
    Such changes may cause data loss or be overwritten when TAssist next saves. Keep backups and close
-   TAssist before editing the file yourself. This will be fixed in future iterations.
-5. If another process locks the data file or prevents access to it, TAssist may be unable to save changes or open. This will be fixed in future iterations.
-6. Pasting an extremely large amount of text, such as one million characters, may make the application slow or temporarily unresponsive, even before the command is submitted. Avoid pasting excessively long text into the command box. This will be fixed in future iterations.
-7. Directly editing the JSON data file may introduce invalid values or inconsistent records that prevent TAssist from starting. Certain extremely long email values can also cause a startup failure. Use the application’s commands to modify data and back up the data file before editing it manually. This will be fixed in future iterations.
-8. Console errors when clicking list entries, clicking student or class cards may produce a `NullPointerException` in the console. This has been observed on Windows. The application may remain open, but the click is not processed normally. This will be fixed in future iterations.
+   TAssist before editing the file yourself. 
+This will be fixed in future iterations.
+
+5. If another process locks the data file or prevents access to it, TAssist may be unable to save changes or open. 
+This will be fixed in future iterations.
+
+6. Pasting an extremely large amount of text, such as one million characters, may make the application slow or temporarily unresponsive, even before the command is submitted. Avoid pasting excessively long text into the command box. 
+This will be fixed in future iterations.
+
+7. Directly editing the JSON data file may introduce invalid values or inconsistent records that prevent TAssist from starting. Certain extremely long email values can also cause a startup failure. Use the application’s commands to modify data and back up the data file before editing it manually. 
+This will be fixed in future iterations.
+
+8. Console errors when clicking list entries, clicking student or class cards may produce a `NullPointerException` in the console. This has been observed on Windows. The application may remain open, but the click is not processed normally. 
+This will be fixed in future iterations.
 
 --------------------------------------------------------------------------------------------------------------------
 
