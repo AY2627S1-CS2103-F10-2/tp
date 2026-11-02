@@ -28,6 +28,7 @@ TAssist is a **desktop application for NUS Teaching Assistants who need to manag
    If double-clicking does not launch TAssist, use the terminal command above so you can see any error messages.
    Run `java -version` to check that the terminal uses Java `25` or later.<br>
    A GUI similar to the one below should appear in a few seconds. The app shows students and classes in separate sections.<br>
+   When no saved data file exists, TAssist starts with six sample students and no classes.<br>
    ![Ui](images/Ui.png)
 
 1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the help window.<br>
@@ -35,7 +36,8 @@ TAssist is a **desktop application for NUS Teaching Assistants who need to manag
 
    * `list` : Lists all students.
 
-   * `add sn/A0123456X n/John Doe e/johnd@example.com tg/john_doe` : Adds a student named `John Doe`.
+   * `add sn/A0999001X n/John Doe e/johnd@example.com tg/john_doe` : Adds a student named `John Doe`.<br>
+     Expected feedback: `New student added: John Doe; Student Number: A0999001X; Email: johnd@example.com; Telegram: @john_doe`
 
    * `addclass m/CS2103T c/F10-2` : Creates a class named `F10-2` for module `CS2103T`.
 
@@ -72,7 +74,7 @@ change student or class records. Up/Down in the command box continues to browse 
 **Notes about the command format:**<br>
 
 * Words in `UPPER_CASE` are the parameters to be supplied by the user.<br>
-  For example, in `add sn/STUDENT_NUMBER n/NAME`, replace `STUDENT_NUMBER` with a value such as `A0123456X` and `NAME` with a value such as `John Doe`.
+  For example, in `add sn/STUDENT_NUMBER n/NAME`, replace `STUDENT_NUMBER` with a value such as `A0999001X` and `NAME` with a value such as `John Doe`.
 
 * `INDEX` refers to a student or class in the relevant displayed list. Commands taking both indices use
   `STUDENT_INDEX CLASS_INDEX`, in that order. `KEYWORD` in `find` is a full word in a student's name.
@@ -139,14 +141,14 @@ Format: `add sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM] [t/TAG]... `
   New students are not assigned to any class, so they will not appear in an active `listbyclass` view until assigned to that class (and must also meet any attendance threshold). Use `list` to show all students.
 
 Examples:
-* `add sn/A0123456X n/Alice Tan e/alice@u.nus.edu tg/alice_tan`
-* `add sn/A0234567Y n/Benjamin Lim e/benjamin@u.nus.edu`
-* `add e/chloe@u.nus.edu sn/A0345678Z tg/@chloe_ng n/Chloe Ng`
+* `add sn/A0999002Y n/Alice Tan e/alice@u.nus.edu tg/alice_tan`
+* `add sn/A0999003Z n/Benjamin Lim e/benjamin@u.nus.edu`
+* `add e/chloe@u.nus.edu sn/A0999004A tg/@chloe_ng n/Chloe Ng`
 * `add sn/A0800001X n/Anne-Marie O'Connor e/anne@example.com`
 * `add sn/A0800002X n/Ravi S\O Kumar e/ravi@example.com` stores and displays the name as `Ravi S/O Kumar`.
 
 Expected output:
-* `New student added: Alice Tan; Student Number: A0123456X; Email: alice@u.nus.edu; Telegram: @alice_tan`
+* `New student added: Alice Tan; Student Number: A0999002Y; Email: alice@u.nus.edu; Telegram: @alice_tan`
 
 Common errors:
 * Duplicate student number: `A student with this student number already exists.`
@@ -182,7 +184,7 @@ Format: `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]
 Examples:
 *  `edit 1 tg/john_doe e/johndoe@example.com` edits the Telegram username and email address of the 1st student.
 *  `edit 1 tg/` removes the Telegram username of the 1st student.
-*  `edit 2 sn/A0234567Y n/Benjamin Lim t/` edits the student number and name of the 2nd student, and clears all existing tags.
+*  `edit 2 sn/A0999006C n/Benjamin Lim t/` edits the student number and name of the 2nd student, and clears all existing tags.
 
 ### Deleting a student: `delete`
 
@@ -201,7 +203,7 @@ Examples:
 * `find Betsy` followed by `delete 1` deletes the 1st student in the results of the `find` command.
 
 Expected output:
-* `Deleted student: Alice Tan; Student Number: A0123456X; Email: alice@u.nus.edu; Telegram: @alice_tan`
+* `Deleted student: Alice Tan; Student Number: A0999002Y; Email: alice@u.nus.edu; Telegram: @alice_tan`
 
 <box type="warning" seamless>
 
@@ -289,9 +291,13 @@ The result message includes the student count and class (and the threshold when 
 Classes created with `addclass` start empty. Use `assign STUDENT_INDEX CLASS_INDEX`
 to assign an existing student before listing the class. Memberships are saved across restarts.
 
-Example walkthrough (in a fresh data folder with no existing records):
+Example walkthrough:
+
+Use a disposable JAR folder. A fresh folder loads six sample students; the initial `clear` below
+removes all students and classes in that copy so the displayed indices match. Enter each command separately.
 
 ```text
+clear
 add sn/A0999901X n/Zoe Test e/zoe.test@example.com
 add sn/A0999902Y n/Amy Test e/amy.test@example.com
 addclass m/CS2103 c/TEST-103
@@ -301,7 +307,7 @@ listbyclass 1
 ```
 
 The student list shows only Amy Test followed by Zoe Test, with the message
-`Listed 2 students taking CS2103 (TEST-103).` Other students and the class list are unchanged.
+`Listed 2 students taking CS2103 (TEST-103).` The Classes panel still shows TEST-103.
 After closing and reopening TAssist, check the class list and run `listbyclass 1` again to display the saved
 memberships alphabetically. The filtered view itself is not saved. Run `list` to return to all students.
 
@@ -385,7 +391,8 @@ Student (A1111111H) has been unassigned from CS2103-F10.
 
 **Example walkthrough**
 
-Use a fresh data folder with no existing records so the indices below match. Enter each command separately.
+Use a disposable JAR folder. A fresh folder loads six sample students; the initial `clear` below
+removes all students and classes in that copy so the displayed indices match. Enter each command separately.
 
 ```text
 clear
@@ -578,7 +585,8 @@ This changes the class to `CS2101-F12` while keeping its assigned students. Edit
 
 **Example walkthrough**
 
-Use a fresh data folder with no existing records so the indices below match. Enter each command separately.
+Use a disposable JAR folder. A fresh folder loads six sample students; the initial `clear` below
+removes all students and classes in that copy so the displayed indices match. Enter each command separately.
 
 ```text
 clear
@@ -668,7 +676,8 @@ Examples:
 
 **Example walkthrough**
 
-Use a fresh data folder with no existing records for this walkthrough so the indices below match. Enter each command separately.
+Use a disposable JAR folder. A fresh folder loads six sample students; the initial `clear` below
+removes all students and classes in that copy so the displayed indices match. Enter each command separately.
 
 ```text
 clear
@@ -864,7 +873,7 @@ Furthermore, certain edits can cause TAssist to behave in unexpected ways (e.g.,
 
 Action     | Format, Examples
 -----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-**Add**    | `add sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM] [t/TAG]... ` <br> e.g., `add sn/A0123456X n/James Ho e/jamesho@example.com tg/james_ho t/CS2103`
+**Add**    | `add sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM] [t/TAG]... ` <br> e.g., `add sn/A0999005B n/James Ho e/jamesho@example.com tg/james_ho t/CS2103`
 **Edit**   | `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
 **List**   | `list`

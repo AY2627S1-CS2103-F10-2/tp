@@ -10,6 +10,7 @@ Use the project's Java 25 setup. Build with ./gradlew shadowJar
 (Windows: .\gradlew.bat shadowJar). Copy build/libs/TAssist.jar to a
 new, empty folder and run java -jar with that copy's path.
 Packaged TAssist stores data beside its JAR, isolating the test session.
+The new copy starts with six sample students and no classes.
 
 DEFAULT
 The highlighted HINT strip must be visible below input and above output:

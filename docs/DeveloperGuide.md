@@ -275,10 +275,13 @@ in notes rather than shown as additional lifelines. `ModelManager` is accessed t
 
 #### Validation, persistence and lifecycle
 
-* Invalid argument structure, non-positive or overflowing indices, and malformed or impossible dates cause a
+* Invalid argument structure, non-positive or non-integer indices, and malformed or impossible dates cause a
   `ParseException` before command creation. Date syntax uses years `0001` to `9999`; future-date eligibility is
   checked by the model during execution, not by the parser.
-* An index beyond its displayed list, including an empty list, causes a `CommandException` before mutation.
+* Positive decimal indices without leading zeros that exceed `Integer.MAX_VALUE`, such as `2147483648`,
+  are parsed as out-of-range displayed indices.
+  They cause a `CommandException` during execution, rather than a `ParseException`.
+  Any index beyond its displayed list, including an empty list, is rejected before mutation.
   Adding attendance for an unassigned student also fails before mutation.
 * A duplicate addition or an absent date on removal returns `false` from the model; the command converts it
   into a `CommandException`. Model `IllegalArgumentException`s, including future-date errors, are also converted
@@ -451,6 +454,9 @@ assertion lookups, formatting helpers and exception construction to keep the int
 * Both commands report an invalid displayed student or class index with `CommandException`,
   including when the relevant view is empty.
   Both resolve the student before the class, before attempting a membership update.
+  Their shared `ParserUtil#parseIndices` helper uses the same overflow handling as attendance commands:
+  positive decimal indices without leading zeros that exceed `Integer.MAX_VALUE` reach execution
+  and are rejected as out-of-range indices.
 * A duplicate assignment or an absent membership is rejected without changing memberships.
 * On successful command execution, `LogicManager` saves the address book before returning the
   result to its caller. Saving occurs outside the scope of these diagrams. If saving fails,
@@ -809,6 +815,9 @@ Use case ends.
 
 Given below are instructions to test the app manually.
 
+A new JAR folder starts with six sample students and no classes. Follow each scenario's setup:
+some retain the sample records, while others begin with `clear` to establish known displayed indices.
+
 <box type="info" seamless>
 
 **Note:** These instructions only provide a starting point for testers to work on;
@@ -823,7 +832,7 @@ testers are expected to do more *exploratory* testing.
 
    1. Open a terminal in that folder and run `java -jar TAssist.jar`.
       Alternatively, double-click the JAR if your system associates `.jar` files with a compatible Java installation.<br>
-      Expected: The GUI opens with a set of sample contacts. The window size may not be optimal.
+      Expected: The GUI opens with six sample students and no classes. The window size may not be optimal.
 
 1. Saving window preferences
 
@@ -926,8 +935,19 @@ addattendance 2 2 d/2020-01-02
 
 1. Successful assignment and live count updates
 
-   1. Prerequisites: In a fresh data folder, create Alice and Bob with `add`, then create a class with `addclass`.
-      Run `list` and `listclass`; check that Alice is student 1, Bob is student 2, and the class is class 1.
+   1. Prerequisites: Use a disposable JAR folder. A fresh folder loads six sample students;
+      start with `clear` to remove all students and classes in that copy. Enter each command separately:
+
+      ```text
+      clear
+      add sn/A0999501X n/Alice e/alice.assign@example.com
+      add sn/A0999502Y n/Bob e/bob.assign@example.com
+      addclass m/CS2103T c/ASSIGN-T01
+      list
+      listclass
+      ```
+
+      Check that Alice is student 1, Bob is student 2, and ASSIGN-T01 is class 1.
    1. Test case: `assign 1 1`<br>
       Expected: Success feedback identifies Alice and the class; its count becomes 1.
    1. Test case: `find Bob`, then `assign 1 1`<br>
