@@ -576,7 +576,6 @@ and should be addressed in future iterations.
 
 * is a Teaching Assistant (TA) managing multiple modules and tutorial or lab groups.
 * has a need to manage a significant number of student contacts, track assignment submissions, and record attendance.
-* can type fast
 * needs to maintain clear boundaries between the different cohorts and modules they teach.
 * can type fast and prefers typing over mouse interactions to navigate the application.
 * is reasonably comfortable using Command Line Interface (CLI) apps and command shortcuts.
