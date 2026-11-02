@@ -53,7 +53,7 @@ change student or class records. Up/Down in the command box continues to browse 
 **Notes about the command format:**<br>
 
 * Words in `UPPER_CASE` are the parameters to be supplied by the user.<br>
-  For example, in `add sn/STUDENT_NUMBER n/NAME`, replace `STUDENT_NUMBER` with a value such as `A0123456X` and `NAME` with a value such as `John Doe`.
+  For example, in `add sn/STUDENT_NUMBER n/NAME`, replace `STUDENT_NUMBER` with a value such as `A0999001X` and `NAME` with a value such as `John Doe`.
 
 * `INDEX` refers to a student or class in the relevant displayed list. Commands taking both indices use
   `STUDENT_INDEX CLASS_INDEX`, in that order. `KEYWORD` in `find` is a full word in a student's name.
@@ -120,14 +120,14 @@ Format: `add sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM] [t/TAG]... `
   New students are not assigned to any class, so they will not appear in an active `listbyclass` view until assigned to that class (and must also meet any attendance threshold). Use `list` to show all students.
 
 Examples:
-* `add sn/A0123456X n/Alice Tan e/alice@u.nus.edu tg/alice_tan`
-* `add sn/A0234567Y n/Benjamin Lim e/benjamin@u.nus.edu`
-* `add e/chloe@u.nus.edu sn/A0345678Z tg/@chloe_ng n/Chloe Ng`
+* `add sn/A0999002Y n/Alice Tan e/alice@u.nus.edu tg/alice_tan`
+* `add sn/A0999003Z n/Benjamin Lim e/benjamin@u.nus.edu`
+* `add e/chloe@u.nus.edu sn/A0999004A tg/@chloe_ng n/Chloe Ng`
 * `add sn/A0800001X n/Anne-Marie O'Connor e/anne@example.com`
 * `add sn/A0800002X n/Ravi S\O Kumar e/ravi@example.com` stores and displays the name as `Ravi S/O Kumar`.
 
 Expected output:
-* `New student added: Alice Tan; Student Number: A0123456X; Email: alice@u.nus.edu; Telegram: @alice_tan`
+* `New student added: Alice Tan; Student Number: A0999002Y; Email: alice@u.nus.edu; Telegram: @alice_tan`
 
 Common errors:
 * Duplicate student number: `A student with this student number already exists.`
@@ -165,7 +165,7 @@ Format: `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]
 Examples:
 *  `edit 1 tg/john_doe e/johndoe@example.com` edits the Telegram username and email address of the 1st student.
 *  `edit 1 tg/` removes the Telegram username of the 1st student.
-*  `edit 2 sn/A0234567Y n/Benjamin Lim t/` edits the student number and name of the 2nd student, and clears all existing tags.
+*  `edit 2 sn/A0999006C n/Benjamin Lim t/` edits the student number and name of the 2nd student, and clears all existing tags.
 
 ### Deleting a student: `delete`
 
@@ -183,8 +183,8 @@ Examples:
 * `list` followed by `delete 2` deletes the 2nd student in TAssist.
 * `find Betsy` followed by `delete 1` deletes the 1st student in the results of the `find` command.
 
-Expected output:
-* `Deleted student: Alice Tan; Student Number: A0123456X; Email: alice@u.nus.edu; Telegram: @alice_tan`
+Example output (if the deleted student is Alice Tan):
+* `Deleted student: Alice Tan; Student Number: A0999002Y; Email: alice@u.nus.edu; Telegram: @alice_tan`
 
 <box type="warning" seamless>
 
@@ -310,7 +310,8 @@ Student (A1111111H) has been unassigned from CS2103-F10.
 
 **Example walkthrough**
 
-Use a fresh data folder with no existing records so the indices below match. Enter each command separately.
+Use a disposable JAR folder. The initial `clear` below removes all students and classes in that copy
+so the displayed indices match. Enter each command separately.
 
 ```text
 clear
@@ -494,7 +495,8 @@ This changes the class to `CS2101-F12` while keeping its assigned students. Edit
 
 **Example walkthrough**
 
-Use a fresh data folder with no existing records so the indices below match. Enter each command separately.
+Use a disposable JAR folder. The initial `clear` below removes all students and classes in that copy
+so the displayed indices match. Enter each command separately.
 
 ```text
 clear
@@ -584,7 +586,8 @@ Examples:
 
 **Example walkthrough**
 
-Use a fresh data folder with no existing records for this walkthrough so the indices below match. Enter each command separately.
+Use a disposable JAR folder. The initial `clear` below removes all students and classes in that copy
+so the displayed indices match. Enter each command separately.
 
 ```text
 clear
@@ -878,7 +881,7 @@ All known issues will be planned to be fixed in future iterations.
 
 Action     | Format, Examples
 -----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-**Add**    | `add sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM] [t/TAG]... ` <br> e.g., `add sn/A0123456X n/James Ho e/jamesho@example.com tg/james_ho t/CS2103`
+**Add**    | `add sn/STUDENT_NUMBER n/NAME e/EMAIL [tg/TELEGRAM] [t/TAG]... ` <br> e.g., `add sn/A0999005B n/James Ho e/jamesho@example.com tg/james_ho t/CS2103`
 **Edit**   | `edit INDEX [sn/STUDENT_NUMBER] [n/NAME] [e/EMAIL] [tg/TELEGRAM] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
 **List**   | `list`
