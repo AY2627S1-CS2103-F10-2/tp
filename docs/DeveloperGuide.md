@@ -642,7 +642,7 @@ Use case ends.
 
 **Extensions:**
 
-- **1a. Tassist detects an error in entered data.**
+- **1a. TAssist detects an error in entered data.**
   - 1a1. TAssist informs TA of the error and the expected input.
   - Use case ends.
 
@@ -684,7 +684,7 @@ Use case ends.
 
 **Extensions:**
 
-- **1a. Tassist detects an error in entered data.**
+- **1a. TAssist detects an error in entered data.**
   - 1a1. TAssist informs TA of the error and the expected input.
   - Use case ends.
 
@@ -710,7 +710,7 @@ Use case ends.
 
 **Extensions:**
 
-- **1a. Tassist detects an error in entered data.**
+- **1a. TAssist detects an error in entered data.**
   - 1a1. TAssist informs TA of the error and the expected input.
   - Use case ends.
 
@@ -736,7 +736,7 @@ Use case ends.
 
 **Extensions:**
 
-- **1a. Tassist detects an error in entered data.**
+- **1a. TAssist detects an error in entered data.**
   - 1a1. TAssist informs TA of the error and the expected input.
   - Use case ends.
 
@@ -754,7 +754,7 @@ Use case ends.
 
 **Extensions:**
 
-- **1a. Tassist detects an error in entered data.**
+- **1a. TAssist detects an error in entered data.**
   - 1a1. TAssist informs TA of the error and the expected input.
   - Use case ends.
 
