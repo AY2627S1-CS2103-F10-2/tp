@@ -1,0 +1,100 @@
+@startuml
+!include style.puml
+skinparam ArrowFontStyle plain
+mainframe sd List students by class (successful execution)
+
+box Logic LOGIC_COLOR_T1
+participant ":LogicManager" as LogicManager LOGIC_COLOR
+participant ":AddressBookParser" as AddressBookParser LOGIC_COLOR
+participant ":ListByClassCommandParser" as Parser LOGIC_COLOR
+participant "c:ListByClassCommand" as Command LOGIC_COLOR
+participant "r:CommandResult" as Result LOGIC_COLOR
+end box
+
+box Model MODEL_COLOR_T1
+participant "m:ModelManager" as Model MODEL_COLOR
+end box
+
+note over LogicManager, AddressBookParser
+commandText = "listbyclass 1 t/5"
+args = " 1 t/5"
+The displayed class list contains CS2103 (F10-2)
+at index 1. The attendance threshold is 5.
+end note
+
+[-> LogicManager : execute(commandText)
+activate LogicManager
+LogicManager -> AddressBookParser : parseCommand(commandText)
+activate AddressBookParser
+
+create Parser
+AddressBookParser -> Parser : ListByClassCommandParser()
+activate Parser
+Parser --> AddressBookParser
+deactivate Parser
+
+AddressBookParser -> Parser : parse(args)
+activate Parser
+note right of Parser
+Tokenize args to separate the index from t/5.
+ParserUtil.parseIndex(argMultimap.getPreamble()) produces index.
+ParserUtil.parsePositiveInteger(...) produces threshold 5.
+end note
+create Command
+Parser -> Command : ListByClassCommand(index, Optional.of(5))
+activate Command
+Command --> Parser
+deactivate Command
+Parser --> AddressBookParser : c
+deactivate Parser
+AddressBookParser --> LogicManager : c
+deactivate AddressBookParser
+
+note right of LogicManager
+Capture a rollback snapshot before execution
+(model call omitted).
+end note
+
+LogicManager -> Command : execute(m)
+activate Command
+Command -> Model : getFilteredAcademicClassList()
+activate Model
+Model --> Command : lastShownList
+deactivate Model
+note right of Command
+Check index against lastShownList.size().
+academicClass = lastShownList.get(index.getZeroBased()).
+end note
+
+Command -> Model : filterPersonsByClassAndDisplayAttendance(academicClass, threshold)
+activate Model
+note right of Model
+Filter class members with fewer than 5
+attendance dates for this class, sort by name,
+set attendance display class, and refresh students.
+The class view is unchanged.
+end note
+Model --> Command
+deactivate Model
+
+Command -> Model : getFilteredPersonList()
+activate Model
+Model --> Command : displayedPersons
+deactivate Model
+
+create Result
+Command -> Result : CommandResult("Listed N students ... with fewer than 5 dates.")
+activate Result
+Result --> Command
+deactivate Result
+Command --> LogicManager : r
+deactivate Command
+
+note right of LogicManager
+Update command history and save the address book
+before returning (calls omitted).
+Assume saving succeeds.
+end note
+[<-- LogicManager : r
+deactivate LogicManager
+@enduml

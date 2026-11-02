@@ -1,0 +1,74 @@
+@startuml
+!include style.puml
+skinparam ArrowFontStyle plain
+mainframe sd List all academic classes (successful execution)
+
+box Logic LOGIC_COLOR_T1
+participant ":LogicManager" as LogicManager LOGIC_COLOR
+participant ":AddressBookParser" as AddressBookParser LOGIC_COLOR
+participant ":ListClassCommandParser" as Parser LOGIC_COLOR
+participant "c:ListClassCommand" as Command LOGIC_COLOR
+participant "r:CommandResult" as Result LOGIC_COLOR
+end box
+
+box Model MODEL_COLOR_T1
+participant "m:ModelManager" as Model MODEL_COLOR
+end box
+
+note over LogicManager, AddressBookParser
+commandText = "listclass"
+args = ""
+All academic classes are shown in insertion order.
+end note
+
+[-> LogicManager : execute(commandText)
+activate LogicManager
+LogicManager -> AddressBookParser : parseCommand(commandText)
+activate AddressBookParser
+
+create Parser
+AddressBookParser -> Parser : ListClassCommandParser()
+activate Parser
+Parser --> AddressBookParser
+deactivate Parser
+
+AddressBookParser -> Parser : parse(args)
+activate Parser
+create Command
+Parser -> Command : ListClassCommand()
+activate Command
+Command --> Parser
+deactivate Command
+Parser --> AddressBookParser : c
+deactivate Parser
+AddressBookParser --> LogicManager : c
+deactivate AddressBookParser
+
+LogicManager -> Command : execute(m)
+activate Command
+Command -> Model : updateFilteredAcademicClassList(PREDICATE_SHOW_ALL_ACADEMIC_CLASSES)
+activate Model
+note right of Model
+Apply the predicate that accepts every
+academic class and clear the student-based
+class filter.
+end note
+Model --> Command
+deactivate Model
+
+create Result
+Command -> Result : CommandResult("Listed all classes.")
+activate Result
+Result --> Command
+deactivate Result
+Command --> LogicManager : r
+deactivate Command
+
+note right of LogicManager
+LogicManager saves the address book
+before returning (storage calls omitted).
+Assume saving succeeds.
+end note
+[<-- LogicManager : r
+deactivate LogicManager
+@enduml

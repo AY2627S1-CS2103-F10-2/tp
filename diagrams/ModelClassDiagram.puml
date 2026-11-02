@@ -1,0 +1,68 @@
+@startuml
+!include style.puml
+skinparam arrowThickness 1.1
+skinparam arrowColor MODEL_COLOR
+skinparam classBackgroundColor MODEL_COLOR
+
+Package Model as ModelPackage <<Rectangle>>{
+Class "<<interface>>\nReadOnlyAddressBook" as ReadOnlyAddressBook
+Class "<<interface>>\nReadOnlyUserPrefs" as ReadOnlyUserPrefs
+Class "<<interface>>\nModel" as Model
+Class AddressBook
+Class ModelManager
+Class UserPrefs
+
+Class UniquePersonList
+Class Person
+Class Email
+Class StudentNumber
+Class Name
+Class Telegram
+Class Tag
+
+Class UniqueAcademicClassList
+Class AcademicClass
+Class ModuleCode
+Class ClassName
+Class Attendance
+}
+
+Class HiddenOutside #FFFFFF
+HiddenOutside ..> Model
+
+AddressBook .up.|> ReadOnlyAddressBook
+
+ModelManager .up.|> Model
+Model .right.> ReadOnlyUserPrefs
+Model .left.> ReadOnlyAddressBook
+ModelManager -left-> "1" AddressBook
+ModelManager -right-> "1" UserPrefs
+UserPrefs .up.|> ReadOnlyUserPrefs
+
+AddressBook *--> "1" UniquePersonList
+UniquePersonList --> "*" Person : all
+Person *--> "1" StudentNumber
+Person *--> "1" Name
+Person *--> "1" Email
+Person *--> "0..1" Telegram
+Person *--> "*" Tag
+
+AddressBook *--> "1" UniqueAcademicClassList
+UniqueAcademicClassList --> "*" AcademicClass : all
+AcademicClass *--> "1" ModuleCode
+AcademicClass *--> "1" ClassName
+AcademicClass "*" -right-> "*" Person : students
+
+AddressBook "1" *--> "*" Attendance : attendanceRecords
+Attendance "*" --> "1" Person : student
+Attendance "*" --> "1" AcademicClass : academicClass
+
+UniqueAcademicClassList -[hidden]right-> UniquePersonList
+
+StudentNumber -[hidden]right-> Name
+Name -[hidden]right-> Email
+Email -[hidden]right-> Telegram
+
+ModelManager --> "*" Person : filtered
+ModelManager --> "*" AcademicClass : filtered
+@enduml
