@@ -41,8 +41,8 @@ MainWindow *-down-> "1" AcademicClassListPanel
 MainWindow *-down-> "1" StatusBarFooter
 MainWindow *-down-> "1" HelpWindow
 
-PersonListPanel ..> PersonCard : creates
-AcademicClassListPanel ..> AcademicClassCard : creates
+PersonListPanel -down-> "*" PersonCard
+AcademicClassListPanel -down-> "*" AcademicClassCard
 
 MainWindow -left-|> UiPart
 

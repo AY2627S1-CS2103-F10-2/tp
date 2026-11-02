@@ -80,13 +80,6 @@ Both list panels create cards for their displayed records: `PersonCard` for stud
 `AcademicClassCard` for classes. These UI parts inherit from the abstract
 `UiPart<T>` class, which captures common behavior among classes that represent visible GUI parts.
 
-The main diagram focuses on UI parts and their component dependencies, following AB3's structure.
-`CommandBox` forwards entered commands through `MainWindow` to `Logic`. Command-history navigation
-is described separately under [Arrow key command history navigation](#arrow-key-command-history-navigation).
-
-The custom controls `ReadOnlyListView`, `WrappingFlowPane`, and `WrappingTextFlow` extend JavaFX's
-`ListView`, `FlowPane`, and `TextFlow`, respectively.
-
 The `UI` component uses the JavaFX UI framework. The layouts of these UI parts are defined in matching `.fxml` files in `src/main/resources/view`. For example, [`MainWindow.fxml`](https://github.com/AY2627S1-CS2103-F10-2/tp/blob/master/src/main/resources/view/MainWindow.fxml) specifies the layout of [`MainWindow`](https://github.com/AY2627S1-CS2103-F10-2/tp/blob/master/src/main/java/seedu/address/ui/MainWindow.java).
 
 The `UI` component,
