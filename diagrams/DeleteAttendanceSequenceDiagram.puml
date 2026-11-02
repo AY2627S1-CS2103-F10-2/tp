@@ -48,6 +48,11 @@ deactivate Parser
 AddressBookParser --> LogicManager : c
 deactivate AddressBookParser
 
+note right of LogicManager
+Capture a rollback snapshot before execution
+(model call omitted).
+end note
+
 LogicManager -> Command : execute(m)
 activate Command
 Command -> Model : getFilteredPersonList()
