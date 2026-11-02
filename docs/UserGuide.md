@@ -868,7 +868,7 @@ Furthermore, certain edits can cause TAssist to behave in unexpected ways (e.g.,
 
 6. Pasting an extremely large amount of text, such as one million characters, may make the application slow or temporarily unresponsive, even before the command is submitted. Avoid pasting excessively long text into the command box.
 
-7. Directly editing the JSON data file may introduce invalid values or inconsistent records that prevent TAssist from starting. Certain extremely long email values can also cause a startup failure. Use the application’s commands to modify data and back up the data file before editing it manually.
+7. Directly editing the JSON data file may introduce invalid values or inconsistent records that prevent TAssist from starting. Use the application’s commands to modify data and back up the data file before editing it manually.
 
 8. Console errors when clicking list entries, clicking student or class cards may produce a `NullPointerException` in the console. This has been observed on Windows. The application may remain open, but the click is not processed normally. 
 
