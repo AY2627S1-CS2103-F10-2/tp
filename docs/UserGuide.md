@@ -864,8 +864,8 @@ Furthermore, certain edits can cause TAssist to behave in unexpected ways (e.g.,
    Such changes may cause data loss or be overwritten when TAssist next saves. Keep backups and close
    TAssist before editing the file yourself.
 
-5. **Data file locked by another process:** If another process locks the data file or prevents access to it,
-   TAssist may be unable to save changes or open.
+5. **Interference with the lock file:** Other applications may lock `tassist.lock`, preventing TAssist from
+   launching, or delete it where the operating system permits, potentially allowing simultaneous launches.
 
 6. **Very large inputs may make the application unresponsive:** Pasting an extremely large amount of text,
    such as one million characters, may make the application slow or temporarily unresponsive, even before the
