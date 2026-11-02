@@ -72,9 +72,13 @@ The sections below give more details of each component.
 
 The **API** of this component is specified in [`Ui.java`](https://github.com/AY2627S1-CS2103-F10-2/tp/blob/master/src/main/java/seedu/address/ui/Ui.java)
 
-<puml src="diagrams/UiClassDiagram.puml" alt="Structure of the UI Component"/>
+<puml src="diagrams/UiClassDiagram.puml" width="900" alt="UI windows, panels, cards and their dependencies on Logic and Model"/>
 
-The UI consists of a `MainWindow` and its parts, such as `CommandBox`, `ResultDisplay`, `PersonListPanel`, and `StatusBarFooter`. All of these, including `MainWindow`, inherit from the abstract `UiPart` class, which captures common behavior among classes that represent visible GUI parts.
+The UI consists of a `MainWindow` containing `CommandBox`, `ResultDisplay`, `PersonListPanel`,
+`AcademicClassListPanel`, and `StatusBarFooter`, and owning a `HelpWindow` created during construction.
+Both list panels create cards for their displayed records: `PersonCard` for students and
+`AcademicClassCard` for classes. These UI parts inherit from the abstract
+`UiPart<T>` class, which captures common behavior among classes that represent visible GUI parts.
 
 The `UI` component uses the JavaFX UI framework. The layouts of these UI parts are defined in matching `.fxml` files in `src/main/resources/view`. For example, [`MainWindow.fxml`](https://github.com/AY2627S1-CS2103-F10-2/tp/blob/master/src/main/resources/view/MainWindow.fxml) specifies the layout of [`MainWindow`](https://github.com/AY2627S1-CS2103-F10-2/tp/blob/master/src/main/java/seedu/address/ui/MainWindow.java).
 
@@ -83,7 +87,7 @@ The `UI` component,
 * executes user commands using the `Logic` component.
 * listens for changes to `Model` data so that the UI can be updated with the modified data.
 * keeps a reference to the `Logic` component, because the `UI` relies on the `Logic` to execute commands.
-* depends on some classes in the `Model` component because it displays `Person` objects from the model.
+* depends on classes in the `Model` component to display `Person` and `AcademicClass` objects and student attendance.
 
 Student cards use `WrappingFlowPane` for contact details and tags. It calculates each child's
 wrapped height using the proposed available width, and uses the same row calculation for layout.
