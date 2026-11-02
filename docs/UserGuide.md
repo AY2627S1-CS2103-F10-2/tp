@@ -31,25 +31,6 @@ TAssist is a **desktop application for NUS Teaching Assistants who need to manag
    ![Ui](images/Ui.png)
 
 1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the help window.<br>
-   Some example commands you can try:
-
-   * `list` : Lists all students.
-
-   * `add sn/A0123456X n/John Doe e/johnd@example.com tg/john_doe` : Adds a student named `John Doe`.
-
-   * `addclass m/CS2103T c/F10-2` : Creates a class named `F10-2` for module `CS2103T`.
-
-   * `listclass` : Lists all classes.
-
-   * `listbystudent 1` : Lists the classes assigned to the 1st student shown in the current student list.
-
-   * `delete 3` : Deletes the 3rd student shown in the current list.
-
-   * `deleteclass 1` : Deletes the first class in the displayed class list.
-
-   * `clear` : Deletes all students and classes.
-
-   * `exit` : Exits the app.
 
 1. Refer to the [Features](#features) section below for details of each command.
 
