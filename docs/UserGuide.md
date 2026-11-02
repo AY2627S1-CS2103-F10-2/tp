@@ -402,6 +402,8 @@ The student list shows Amy Test at index `1` followed by Zoe Test at index `2`, 
 `Listed 2 students taking CS2103 (TEST-103).` The class remains at class index `1`.
 Although Zoe was added first, Amy now has student index `1` because this view sorts students by name.
 
+![After listbyclass 1: Amy and Zoe are listed alphabetically in CS2103 TEST-103](images/listbyclass-result.png)
+
 After closing and reopening TAssist, check the class list and run `listbyclass 1` again to display the saved
 memberships alphabetically. The filtered view itself is not saved. Run `list` to return to all students.
 
@@ -677,6 +679,8 @@ Example (continue from the [listbyclass walkthrough](#listing-students-by-class-
 Amy's card now shows one attendance day, with `29` under `Feb 2024`. Zoe still has no recorded dates.
 Repeating the same command reports duplicate attendance without increasing Amy's count.
 
+![After adding attendance: Amy has one recorded day on 29 February 2024, while Zoe has none](images/addattendance-result.png)
+
 TAssist displays a confirmation message when the date is recorded. In a `listbyclass` view, the attendance dates
 on the student cards refresh for the selected class. Use `listbyclass CLASS_INDEX` without a threshold to see
 all members of that class, including students hidden by an attendance threshold.
@@ -720,6 +724,8 @@ Example (continue from the [addattendance example](#recording-attendance-addatte
 3. Run `deleteattendance 1 1 d/2024-02-29`.
 
 Amy's card returns to zero attendance days with no dates recorded. Both Amy and Zoe remain assigned to the class.
+
+![After deleting attendance: Amy has no recorded dates and both students remain in CS2103 TEST-103](images/deleteattendance-result.png)
 
 TAssist displays a confirmation message when the date is removed. Trying to remove the same date for the same
 student and class again reports that the date is not recorded. Check the current indices before repeating the command.
