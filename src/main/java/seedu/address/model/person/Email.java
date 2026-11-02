@@ -12,18 +12,19 @@ public class Email {
     public static final int MAX_LENGTH = 200;
     private static final String SPECIAL_CHARACTERS = "+_.-";
     public static final String MESSAGE_CONSTRAINTS = "Emails should be of the format local-part@domain "
-            + "and be at most " + MAX_LENGTH + " characters long, "
-            + "and adhere to the following constraints:\n"
-            + "1. The local-part should only contain alphanumeric characters and these special characters, excluding "
-            + "the parentheses, (" + SPECIAL_CHARACTERS + "). The local-part may not start or end with any special "
-            + "characters.\n"
-            + "2. The local-part is followed by an '@' and then a domain name. The domain name is made up of domain "
-            + "labels separated by periods.\n"
-            + "The domain name must:\n"
-            + "    - contain at least one period\n"
-            + "    - end with a domain label at least 2 characters long\n"
-            + "    - have each domain label start and end with alphanumeric characters\n"
-            + "    - have each domain label consist of alphanumeric characters, separated only by hyphens, if any.";
+            + "and be at most " + MAX_LENGTH + " characters long.\n"
+            + "They must adhere to the following constraints:\n"
+            + "1. The local-part may contain only letters, digits, and these special characters: "
+            + SPECIAL_CHARACTERS + "\n"
+            + "   It must start and end with a letter or digit.\n"
+            + "   Special characters must be separated by at least one letter or digit.\n"
+            + "2. The local-part is followed by an '@' and then a domain name.\n"
+            + "   The domain name must:\n"
+            + "   - contain at least one period separating its labels\n"
+            + "   - end with a label at least 2 characters long\n"
+            + "   - have each label start and end with a letter or digit\n"
+            + "   - contain only letters, digits, and hyphens within each label\n"
+            + "   - have hyphens separated by at least one letter or digit";
     // alphanumeric and special characters
     private static final String ALPHANUMERIC_NO_UNDERSCORE = "[^\\W_]+"; // alphanumeric characters except underscore
     private static final String LOCAL_PART_REGEX = "^" + ALPHANUMERIC_NO_UNDERSCORE + "([" + SPECIAL_CHARACTERS + "]"
