@@ -183,7 +183,7 @@ Examples:
 * `list` followed by `delete 2` deletes the 2nd student in TAssist.
 * `find Betsy` followed by `delete 1` deletes the 1st student in the results of the `find` command.
 
-Expected output:
+Example output (if the deleted student is Alice Tan):
 * `Deleted student: Alice Tan; Student Number: A0999002Y; Email: alice@u.nus.edu; Telegram: @alice_tan`
 
 <box type="warning" seamless>
