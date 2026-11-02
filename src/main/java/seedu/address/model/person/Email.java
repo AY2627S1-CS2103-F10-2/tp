@@ -9,8 +9,10 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
  */
 public class Email {
 
+    public static final int MAX_LENGTH = 200;
     private static final String SPECIAL_CHARACTERS = "+_.-";
     public static final String MESSAGE_CONSTRAINTS = "Emails should be of the format local-part@domain "
+            + "and be at most " + MAX_LENGTH + " characters long, "
             + "and adhere to the following constraints:\n"
             + "1. The local-part should only contain alphanumeric characters and these special characters, excluding "
             + "the parentheses, (" + SPECIAL_CHARACTERS + "). The local-part may not start or end with any special "
@@ -49,7 +51,8 @@ public class Email {
      * Returns true if a given string is a valid email.
      */
     public static boolean isValidEmail(String test) {
-        return test.matches(VALIDATION_REGEX);
+        // Length is checked first to avoid regex backtracking causing a StackOverflowError on very long input
+        return test.length() <= MAX_LENGTH && test.matches(VALIDATION_REGEX);
     }
 
     @Override
