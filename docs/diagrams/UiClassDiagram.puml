@@ -4,7 +4,9 @@ skinparam arrowThickness 1.1
 skinparam arrowColor UI_COLOR_T4
 skinparam classBackgroundColor UI_COLOR
 
-package UI <<Rectangle>>{
+' Custom JavaFX controls are shown separately in UiControlsClassDiagram.puml.
+' Type parameters, utility dependencies, and internal list cells/skins are omitted.
+package UI <<Rectangle>> {
 Class "<<interface>>\nUi" as Ui
 Class "{abstract}\nUiPart" as UiPart
 Class UiManager
@@ -13,8 +15,13 @@ Class HelpWindow
 Class ResultDisplay
 Class PersonListPanel
 Class PersonCard
+Class AcademicClassListPanel
+Class AcademicClassCard
 Class StatusBarFooter
 Class CommandBox
+Class CommandHistory
+Class CommandHints
+Class "<<interface>>\nCommandExecutor" as CommandExecutor
 }
 
 package Model <<Rectangle>> {
@@ -25,18 +32,22 @@ package Logic <<Rectangle>> {
 Class HiddenLogic #FFFFFF
 }
 
-Class HiddenOutside #FFFFFF
-HiddenOutside ..> Ui
-
 UiManager .left.|> Ui
 UiManager -down-> "1" MainWindow
 MainWindow *-down->  "1" CommandBox
 MainWindow *-down-> "1" ResultDisplay
 MainWindow *-down-> "1" PersonListPanel
+MainWindow *-down-> "1" AcademicClassListPanel
 MainWindow *-down-> "1" StatusBarFooter
-MainWindow --> "0..1" HelpWindow
+MainWindow *-down-> "1" HelpWindow
 
-PersonListPanel -down-> "*" PersonCard
+PersonListPanel ..> PersonCard : creates
+AcademicClassListPanel ..> AcademicClassCard : creates
+
+CommandBox *--> "1" CommandHistory
+CommandBox --> "1" CommandExecutor
+CommandBox ..> CommandHints
+MainWindow ..> CommandExecutor : supplies callback
 
 MainWindow -left-|> UiPart
 
@@ -44,17 +55,22 @@ ResultDisplay --|> UiPart
 CommandBox --|> UiPart
 PersonListPanel --|> UiPart
 PersonCard --|> UiPart
+AcademicClassListPanel --|> UiPart
+AcademicClassCard --|> UiPart
 StatusBarFooter --|> UiPart
 HelpWindow --|> UiPart
 
-PersonCard ..> Model
-UiManager -right-> Logic
-MainWindow -left-> Logic
+UI .down.> Model
+UI .down.> Logic
+Logic -[hidden]right-> Model
 
-PersonListPanel -[hidden]left- HelpWindow
-HelpWindow -[hidden]left- CommandBox
-CommandBox -[hidden]left- ResultDisplay
-ResultDisplay -[hidden]left- StatusBarFooter
+' Keep the passive UI parts and command helpers in vertical columns.
+HelpWindow -[hidden]down-> ResultDisplay
+ResultDisplay -[hidden]down-> StatusBarFooter
+CommandHistory -[hidden]down-> CommandHints
+CommandHints -[hidden]down-> CommandExecutor
 
-MainWindow -[hidden]-|> UiPart
+' Keep external component boxes below the UI parts.
+UiPart -[hidden]down-> Logic
+CommandExecutor -[hidden]down-> Model
 @enduml

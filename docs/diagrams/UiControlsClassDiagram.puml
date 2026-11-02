@@ -1,0 +1,40 @@
+@startuml
+!include style.puml
+skinparam arrowThickness 1.1
+skinparam arrowColor UI_COLOR_T4
+skinparam classBackgroundColor UI_COLOR
+
+' The surrounding UI parts are repeated to show where each custom control is used.
+' Their UiPart inheritance is shown in UiClassDiagram.puml.
+package UI <<Rectangle>> {
+Class PersonListPanel
+Class AcademicClassListPanel
+Class PersonCard
+Class AcademicClassCard
+Class ReadOnlyListView
+Class WrappingFlowPane
+Class WrappingTextFlow
+}
+
+package JavaFX <<Rectangle>> {
+Class ListView #777777
+Class FlowPane #777777
+Class TextFlow #777777
+}
+
+PersonListPanel *-down-> "1" ReadOnlyListView
+AcademicClassListPanel *-down-> "1" ReadOnlyListView
+PersonCard *-down-> "2" WrappingFlowPane
+AcademicClassCard *-down-> "1" WrappingTextFlow
+
+ReadOnlyListView -down-|> ListView
+WrappingFlowPane -down-|> FlowPane
+WrappingTextFlow -down-|> TextFlow
+
+' Align the owner, custom control, and JavaFX base class in three columns.
+PersonListPanel -[hidden]right-> AcademicClassListPanel
+AcademicClassListPanel -[hidden]right-> PersonCard
+PersonCard -[hidden]right-> AcademicClassCard
+ReadOnlyListView -[hidden]right-> WrappingFlowPane
+WrappingFlowPane -[hidden]right-> WrappingTextFlow
+@enduml
