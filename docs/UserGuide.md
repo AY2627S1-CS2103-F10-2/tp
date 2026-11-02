@@ -1,6 +1,6 @@
 ---
   layout: default.md
-  title: "TAssist User Guide"
+  title: "User Guide"
   pageNav: 3
 ---
 
