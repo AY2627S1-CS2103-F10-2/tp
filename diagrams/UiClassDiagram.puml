@@ -4,7 +4,9 @@ skinparam arrowThickness 1.1
 skinparam arrowColor UI_COLOR_T4
 skinparam classBackgroundColor UI_COLOR
 
-package UI <<Rectangle>>{
+' Custom JavaFX controls are described in the Developer Guide prose.
+' Type parameters, command helpers, and internal list cells/skins are omitted.
+package UI <<Rectangle>> {
 Class "<<interface>>\nUi" as Ui
 Class "{abstract}\nUiPart" as UiPart
 Class UiManager
@@ -13,6 +15,8 @@ Class HelpWindow
 Class ResultDisplay
 Class PersonListPanel
 Class PersonCard
+Class AcademicClassListPanel
+Class AcademicClassCard
 Class StatusBarFooter
 Class CommandBox
 }
@@ -33,10 +37,12 @@ UiManager -down-> "1" MainWindow
 MainWindow *-down->  "1" CommandBox
 MainWindow *-down-> "1" ResultDisplay
 MainWindow *-down-> "1" PersonListPanel
+MainWindow *-down-> "1" AcademicClassListPanel
 MainWindow *-down-> "1" StatusBarFooter
-MainWindow --> "0..1" HelpWindow
+MainWindow *-down-> "1" HelpWindow
 
 PersonListPanel -down-> "*" PersonCard
+AcademicClassListPanel -down-> "*" AcademicClassCard
 
 MainWindow -left-|> UiPart
 
@@ -44,17 +50,23 @@ ResultDisplay --|> UiPart
 CommandBox --|> UiPart
 PersonListPanel --|> UiPart
 PersonCard --|> UiPart
+AcademicClassListPanel --|> UiPart
+AcademicClassCard --|> UiPart
 StatusBarFooter --|> UiPart
 HelpWindow --|> UiPart
 
 PersonCard ..> Model
+AcademicClassCard ..> Model
 UiManager -right-> Logic
 MainWindow -left-> Logic
 
+' Follow the AB3 layout, with matching student and academic-class panels/cards.
 PersonListPanel -[hidden]left- HelpWindow
 HelpWindow -[hidden]left- CommandBox
 CommandBox -[hidden]left- ResultDisplay
 ResultDisplay -[hidden]left- StatusBarFooter
+PersonListPanel -[hidden]right- AcademicClassListPanel
+PersonCard -[hidden]right- AcademicClassCard
 
 MainWindow -[hidden]-|> UiPart
 @enduml
