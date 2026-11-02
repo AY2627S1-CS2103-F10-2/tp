@@ -185,10 +185,12 @@ It starts at `LogicManager`, omitting the UI caller. The input strings are defin
 <puml src="diagrams/ListByClassSequenceDiagram.puml" alt="Successful listbyclass execution with an attendance threshold, from parsing through class filtering, attendance display and result creation" />
 
 1. `LogicManager` passes `commandText` to `AddressBookParser`, which creates a `ListByClassCommandParser`
-   and calls `parse(args)`. The parser uses `ParserUtil#parseIndex(args)` for the displayed class index and,
-   if `t/THRESHOLD` is present, `ParserUtil#parsePositiveInteger(...)` to validate the positive threshold.
+   and calls `parse(args)`. The parser tokenizes the optional `t/` prefix and uses
+   `ParserUtil#parseIndex(argMultimap.getPreamble())` for the displayed class index. It rejects duplicate `t/`
+   prefixes and, if a threshold is present, uses `ParserUtil#parsePositiveInteger(...)` to validate it.
    It creates a `ListByClassCommand` with the index and optional threshold.
-2. `LogicManager` calls `execute(model)` on the command. The command obtains the currently displayed classes through
+2. `LogicManager` captures a rollback snapshot before calling `execute(model)` on the command.
+   The command obtains the currently displayed classes through
    `Model#getFilteredAcademicClassList()`, checks the index against the list size, and selects the class using
    `lastShownList.get(index.getZeroBased())`.
 3. The command calls `Model#filterPersonsByClassAndDisplayAttendance(academicClass, threshold)`. `ModelManager`
@@ -199,12 +201,13 @@ It starts at `LogicManager`, omitting the UI caller. The input strings are defin
 4. The command obtains the displayed student list and uses its size, the class identity, and the optional threshold
    to construct the success message. With `t/5`, it reports `Listed N students taking CS2103 (F10-2) with fewer
    than 5 recorded attendance dates.` It returns a `CommandResult` to `LogicManager`.
-5. `LogicManager` saves the address book before returning the result, even though this command only changes the view.
+5. `LogicManager` updates command history and saves the address book before returning the result,
+   even though this command only changes the view.
    The view filter itself is not persisted.
 
 The diagram summarises index and threshold parsing, class selection, and the combined model call. It omits
-model-internal filtering and refresh calls, logging (including its extra student-list access), list-size and class-field
-access, message formatting, and storage calls to keep the successful path readable.
+model-internal filtering and refresh calls, logging, list-size and class-field
+access, message formatting, rollback snapshots, history updates and storage calls to keep the successful path readable.
 
 **Other outcomes:** Missing, non-integer, zero, negative, or overflowing indices cause a `ParseException` before
 command creation. A malformed, zero, negative, or overflowing threshold is also rejected before command execution.
@@ -270,7 +273,7 @@ student-class pair. The student and class still exist, but current membership is
 
 Both diagrams follow the existing Logic/Model colours and start at `LogicManager`, omitting the UI caller.
 The constructor arguments denote the parsed student index, class index and date. Parser helpers, list indexing,
-membership inspection, private command helpers, model internals, logging, history and storage calls are summarised
+membership inspection, private command helpers, model internals, logging, rollback snapshots, history and storage calls are summarised
 in notes rather than shown as additional lifelines. `ModelManager` is accessed through the `Model` interface.
 
 #### Validation, persistence and lifecycle
@@ -1032,14 +1035,17 @@ Student and class indices refer to their respective displayed panels.
 | Commands (run in order) | Expected result |
 | --- | --- |
 | `listbyclass 2`, then `listbyclass 1` | The empty class shows no students. Switching back shows Alice (1), then Zoe (2), alphabetically. Both classes remain displayed. |
+| `listbystudent 1`, then `addattendance 1 2 d/2024-02-29`, then `listclass` | Only TEST-A is displayed after filtering classes for Alice. Class index 2 is rejected even though TEST-B exists in storage; no attendance is recorded. `listclass` restores both classes. |
+| `addattendance 1 1 d/2025-02-29` | The impossible calendar date is rejected without recording attendance. |
 | `addattendance 1 1 d/2024-02-29` | Alice gains one attendance date, although Zoe was first in insertion order. Her card shows the date under Feb 2024. |
 | Repeat `addattendance 1 1 d/2024-02-29` | Duplicate attendance is rejected; Alice still has one date. |
 | `addattendance 999 1 d/2024-02-29` | Invalid displayed-index feedback; no attendance changes. |
 | `addattendance 1 1 d/DATE`, replacing `DATE` with tomorrow's local date in `YYYY-MM-DD` format | The future date is rejected. |
 | `listbyclass 1 t/1` | Only Zoe appears, because Alice no longer has fewer than one attendance date. |
 | `addattendance 1 1 d/2024-03-01`, then `listbyclass 1` | Zoe gains a date and leaves the threshold view. Removing the threshold shows both students again. |
-| `deleteattendance 1 1 d/2024-02-29` | Alice's date is removed; her membership and Zoe's date remain. |
+| `listbyclass 1 t/2`, then `deleteattendance 1 1 d/2024-02-29`, then `listbyclass 1 t/1` | Both students initially have fewer than two dates. Removing Alice's date keeps that filter active; the subsequent zero-attendance view shows only Alice. Her membership and Zoe's date remain. |
 | Repeat `deleteattendance 1 1 d/2024-02-29` | Attendance-not-recorded feedback; no further changes. |
+| `listbyclass 1` | Both students reappear: Alice (1) has zero dates and Zoe (2) has one. Use these indices for the unassignment checks below. |
 
 To check retained attendance after unassignment:
 
