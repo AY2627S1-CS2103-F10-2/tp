@@ -24,6 +24,7 @@ Class UniqueAcademicClassList
 Class AcademicClass
 Class ModuleCode
 Class ClassName
+Class Attendance
 }
 
 Class HiddenOutside #FFFFFF
@@ -51,6 +52,10 @@ UniqueAcademicClassList --> "*" AcademicClass : all
 AcademicClass *--> "1" ModuleCode
 AcademicClass *--> "1" ClassName
 AcademicClass "*" -right-> "*" Person : students
+
+AddressBook "1" *--> "*" Attendance : attendanceRecords
+Attendance "*" --> "1" Person : student
+Attendance "*" --> "1" AcademicClass : academicClass
 
 UniqueAcademicClassList -[hidden]right-> UniquePersonList
 
