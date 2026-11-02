@@ -5,7 +5,7 @@
 ![TAssist UI](docs/images/Ui.png)
 
 TAssist is a desktop application for teaching assistants who manage
-students across multiple modules and tutorial classes.
+students across multiple modules and classes.
 
 It is optimised for teaching assistants who prefer fast keyboard-based
 commands while retaining the benefits of a graphical interface.

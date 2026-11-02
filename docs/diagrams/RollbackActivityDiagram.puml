@@ -1,0 +1,19 @@
+@startuml
+skin rose
+skinparam ActivityFontSize 15
+skinparam ArrowFontSize 12
+
+start
+:Create rollback snapshot;
+:Execute command;
+:Save address book;
+
+if () then ([saving fails])
+    :Restore rollback snapshot;
+    :Report save error;
+else ([saving succeeds])
+    :Return command result;
+endif
+
+stop
+@enduml

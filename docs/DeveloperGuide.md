@@ -104,6 +104,9 @@ Here's a (partial) class diagram of the `Logic` component:
 <puml src="diagrams/LogicClassDiagram.puml" width="550"/>
 
 The sequence diagram below illustrates the interactions within the `Logic` component, taking `execute("delete 1")` API call as an example.
+Rollback and command-history handling are omitted for clarity and explained later in
+[What happens when saving fails](#what-happens-when-saving-fails) and
+[Arrow key command history navigation](#arrow-key-command-history-navigation).
 
 <puml src="diagrams/DeleteSequenceDiagram.puml" alt="Interactions Inside the Logic Component for the `delete 1` Command" />
 
@@ -119,7 +122,7 @@ How the `Logic` component works:
 1. This results in a `Command` object (more precisely, an object of one of its subclasses e.g., `DeleteCommand`) which is executed by the `LogicManager`.
 1. The command can communicate with the `Model` when it is executed (e.g. to delete a person).<br>
    Note that although this is shown as a single step in the diagram above for simplicity, the code can require several interactions between the command object and the `Model` to complete the operation.
-1. The result of the command execution is encapsulated as a `CommandResult` object which is returned from `Logic`.
+1. The result of the command execution is encapsulated as a `CommandResult` object which is returned from `Logic` after saving succeeds.
 
 Here are the other classes in `Logic` (omitted from the class diagram above) that are used for parsing a user command:
 
@@ -305,54 +308,6 @@ storage calls are shown at a high level or omitted for clarity.
 
 <puml src="diagrams/ListClassSequenceDiagram.puml" alt="Successful listclass execution through the Logic and Model components" />
 
-### Arrow key command history navigation
-
-Arrow key navigation lets users recall previously executed commands without executing them again. `CommandBox` delegates
-history storage and navigation to its `CommandHistory`, which holds two separate lists and tracks the draft and the
-current browsing position.
-
-Up moves towards older entries and Down moves towards the draft (newer entries). 
-Navigation stops at either boundary, and empty history leaves the input unchanged. 
-Modified arrow keys (such as Shift+Up or Ctrl+Down) do not trigger history navigation. 
-`AddressBook` stores the latest 20 successful command strings, serialized as `commandHistory` in the existing JSON file.
-`LogicManager` appends each successful command before saving and restores the previous history if saving fails.
-History survives `clear` and application restarts. Older JSON files without this field load with empty history.
-`MainWindow` seeds `CommandBox` through `Logic.getCommandHistory()` on startup; drafts, browsing positions and temporary
-edits remain in memory only.
-
-<puml src="diagrams/CommandHistoryObjects.puml" alt="CommandBox linked to CommandHistory, its draft and position, and its original and working command lists" />
-
-| Field | Purpose |
-| --- | --- |
-| `commands` | Stores up to 20 successful commands in execution order, oldest first. Editing past commands does not change these entries. |
-| `workingCommands` | Holds a working copy of the history. Temporary edits remain available until the next non-blank command submission, whether it succeeds or fails. |
-| `draft` | Preserves the input from before the user started browsing history. Moving Down past the newest entry restores it. It is separate from the lists because it has not been successfully executed. |
-| `position` | Identifies the selected entry in `workingCommands`, using a zero-based index. A value equal to the list size represents the draft. |
-
-In the diagram, `position = 2` selects `list`. With four history entries, position 4 represents the draft. Moving Down past `find Alice` restores `addclass m/CS2103 n/f`.
-
-#### Preserving temporary edits with two command lists
-
-`commands` preserves the successfully executed commands. `workingCommands` is a separate list that preserves temporary
-edits while browsing history. These partial object diagrams show only the two lists, with entries numbered from zero.
-
-**Step 1: Recall.** After executing `help`, `find Carol`, `list`, and `find Alice`, the user presses Up to recall `find Alice`.
-Both lists contain the same commands.
-
-<puml src="diagrams/CommandHistoryBeforeEdit.puml" alt="CommandHistory with identical original and working lists before editing a recalled command" />
-
-**Step 2: Edit and navigate away.** The user changes the input to `find Bob` without executing it, then presses Up to recall
-`list`. Before moving, `saveCurrentInput()` saves `find Bob` in `workingCommands`. The original list still contains `find Alice`.
-
-<puml src="diagrams/CommandHistoryAfterEdit.puml" alt="CommandHistory with a temporary edit in the working list while the original list remains unchanged" />
-
-Pressing Down now recalls **`find Bob`**, so the user can continue editing it. Using a single list would either overwrite
-the original history entry or lose the temporary edit. After a successful or failed submission, `resetNavigation()`
-rebuilds `workingCommands` from `commands`, discarding temporary browsing edits.
-
-A successful submission first adds the command to `commands` and clears the draft. A failed submission preserves the
-failed input as the draft without adding it to history. Both cases reset `position` to the draft position.
-
 ### Adding an academic class
 
 #### Implementation
@@ -463,36 +418,6 @@ a `CommandException`. Successful removal refreshes membership-dependent
 student and class filters without resetting the active filters or ordering. Indices may shift as
 records disappear from filtered views. Attendance history is retained for correction or reassignment.
 
-### Preventing simultaneous launches
-
-Before launching JavaFX, `Main#launchWithLock(...)` calls `ApplicationLock#tryAcquire(...)` to obtain
-an operating-system lock on `tassist.lock` in the application folder. This uses `FileChannel#tryLock()`
-to reject another TAssist launch from the same folder. If the lock is already held or cannot be accessed,
-`Main` prints an error and does not launch the application.
-
-The lock is held while TAssist runs and released when the application exits.
-
-Other applications can still modify `data/addressbook.json`. This is a [known issue documented in the User Guide](UserGuide.md#known-issues)
-and should be addressed in future iterations.
-
-### What happens when saving fails
-
-Before executing a parsed command, `LogicManager#execute(...)` calls `Model#createRollback()` to capture
-the current data and displayed lists. After execution, it updates command history and saves the data.
-The command result is returned only after saving succeeds.
-
-If saving throws an `IOException`, including `AccessDeniedException`, `LogicManager` restores the snapshot
-and throws a `CommandException` with the save error. `ModelManager` restores students, classes, memberships,
-attendance and command history, along with the previous filters, student sort order and attendance display.
-The command box retains the failed input without adding it to successful command history.
-
-Snapshots are single-use, and filter predicates must avoid capturing mutable model objects because restoration
-replaces them.
-
-The current rollback implementation handles complete save failures, where no data is written, but does not
-handle recovery of partially saved files. This is [noted in the User Guide](UserGuide.md#known-issues)
-and should be addressed in future iterations.
-
 #### Validation and failure paths
 
 The activity diagram below complements the successful-execution sequence diagrams. Assignment
@@ -531,6 +456,92 @@ assertion lookups, formatting helpers and exception construction to keep the int
   result to its caller. Saving occurs outside the scope of these diagrams. If saving fails,
   `LogicManager` reports a `CommandException`; the in-memory membership change is rolled back.
   A partial write may still leave the saved file incomplete.
+
+### Arrow key command history navigation
+
+Arrow key navigation lets users recall previously executed commands without executing them again. `CommandBox` delegates
+history storage and navigation to its `CommandHistory`, which holds two separate lists and tracks the draft and the
+current browsing position.
+
+Up moves towards older entries and Down moves towards the draft (newer entries). 
+Navigation stops at either boundary, and empty history leaves the input unchanged. 
+Modified arrow keys (such as Shift+Up or Ctrl+Down) do not trigger history navigation. 
+`AddressBook` stores the latest 20 successful command strings, serialized as `commandHistory` in the existing JSON file.
+`LogicManager` appends each successful command before saving and restores the previous history if saving fails.
+History survives `clear` and application restarts. Older JSON files without this field load with empty history.
+`MainWindow` seeds `CommandBox` through `Logic.getCommandHistory()` on startup; drafts, browsing positions and temporary
+edits remain in memory only.
+
+<puml src="diagrams/CommandHistoryObjects.puml" alt="CommandBox linked to CommandHistory, its draft and position, and its original and working command lists" />
+
+| Field | Purpose |
+| --- | --- |
+| `commands` | Stores up to 20 successful commands in execution order, oldest first. Editing past commands does not change these entries. |
+| `workingCommands` | Holds a working copy of the history. Temporary edits remain available until the next non-blank command submission, whether it succeeds or fails. |
+| `draft` | Preserves the input from before the user started browsing history. Moving Down past the newest entry restores it. It is separate from the lists because it has not been successfully executed. |
+| `position` | Identifies the selected entry in `workingCommands`, using a zero-based index. A value equal to the list size represents the draft. |
+
+In the diagram, `position = 2` selects `list`. With four history entries, position 4 represents the draft. Moving Down past `find Alice` restores `addclass m/CS2103 n/f`.
+
+#### Preserving temporary edits with two command lists
+
+`commands` preserves the successfully executed commands. `workingCommands` is a separate list that preserves temporary
+edits while browsing history. These partial object diagrams show only the two lists, with entries numbered from zero.
+
+**Step 1: Recall.** After executing `help`, `find Carol`, `list`, and `find Alice`, the user presses Up to recall `find Alice`.
+Both lists contain the same commands.
+
+<puml src="diagrams/CommandHistoryBeforeEdit.puml" alt="CommandHistory with identical original and working lists before editing a recalled command" />
+
+**Step 2: Edit and navigate away.** The user changes the input to `find Bob` without executing it, then presses Up to recall
+`list`. Before moving, `saveCurrentInput()` saves `find Bob` in `workingCommands`. The original list still contains `find Alice`.
+
+<puml src="diagrams/CommandHistoryAfterEdit.puml" alt="CommandHistory with a temporary edit in the working list while the original list remains unchanged" />
+
+Pressing Down now recalls **`find Bob`**, so the user can continue editing it. Using a single list would either overwrite
+the original history entry or lose the temporary edit. After a successful or failed submission, `resetNavigation()`
+rebuilds `workingCommands` from `commands`, discarding temporary browsing edits.
+
+A successful submission first adds the command to `commands` and clears the draft. A failed submission preserves the
+failed input as the draft without adding it to history. Both cases reset `position` to the draft position.
+
+### Preventing multiple TAssist instances
+
+If two copies of TAssist run from the same folder, each keeps its own data in memory, so saving in one can overwrite changes saved by the other. 
+Therefore, TAssist only allows one instance per folder.
+
+Before launching JavaFX, `Main#launchWithLock(...)` calls `ApplicationLock#tryAcquire(...)` to obtain
+an operating-system lock on `tassist.lock` in the application folder. This uses [`FileChannel#tryLock()`](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/nio/channels/FileChannel.html#tryLock())
+to reject another TAssist launch from the same folder. If the lock is already held or cannot be accessed,
+`Main` prints an error and does not launch the application.
+
+The lock is held while TAssist runs and released when the application exits.
+
+Other applications can still modify `data/addressbook.json`. This is a [known issue documented in the User Guide](UserGuide.md#known-issues)
+and should be addressed in future iterations.
+
+### What happens when saving fails
+
+Before executing a parsed command, `LogicManager#execute(...)` calls `Model#createRollback()` to capture
+the current address book data and display state. After execution, it updates command history and saves the data.
+The command result is returned only after saving succeeds.
+
+The following activity diagram summarises this flow, assuming command parsing and execution succeed.
+Command-history updates are omitted for clarity.
+
+<puml src="diagrams/RollbackActivityDiagram.puml" alt="Create a rollback snapshot, execute the command and save the address book; restore the snapshot if saving fails" />
+
+If saving throws an `IOException`, including `AccessDeniedException`, `LogicManager` restores the snapshot
+and throws a `CommandException` with the save error. `ModelManager` restores students, classes, memberships,
+attendance and command history, along with the previous filters, student sort order and attendance display.
+The command box retains the failed input without adding it to successful command history.
+
+Snapshots are single-use, and filter predicates must avoid capturing mutable model objects because restoration
+replaces them.
+
+The current rollback implementation handles complete save failures, where no data is written, but does not
+handle recovery of partially saved files. This is [noted in the User Guide](UserGuide.md#known-issues)
+and should be addressed in future iterations.
 
 --------------------------------------------------------------------------------------------------------------------
 
