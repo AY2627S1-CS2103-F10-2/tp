@@ -877,7 +877,7 @@ Furthermore, certain edits can cause TAssist to behave in unexpected ways (e.g.,
 
 8. **Console errors when clicking list entries:** Clicking student or class cards may produce a
    `NullPointerException` in the console. This has been observed on Windows. The application may remain open,
-   but the click is not processed normally.
+   but the click is not processed normally. The application remains usable through its commands despite this issue.
 
 All known issues will be planned to be fixed in future iterations.
 
