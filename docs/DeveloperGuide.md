@@ -203,7 +203,7 @@ It starts at `LogicManager`, omitting the UI caller. The input strings are defin
    The view filter itself is not persisted.
 
 The diagram summarises index and threshold parsing, class selection, and the combined model call. It omits
-model-internal filtering and refresh calls, logging (including its extra student-list access), list-size and class-field
+model-internal filtering and refresh calls, logging, list-size and class-field
 access, message formatting, rollback snapshots, history updates and storage calls to keep the successful path readable.
 
 **Other outcomes:** Missing, non-integer, zero, negative, or overflowing indices cause a `ParseException` before
