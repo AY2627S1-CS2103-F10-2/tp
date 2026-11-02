@@ -662,12 +662,6 @@ Use case ends.
 
 Use case ends.
 
-**Extensions:**
-
-- **1a. The search keywords are missing or invalid.**
-  - 1a1. TAssist informs TA of the error and the expected input.
-  - Use case ends.
-
 #### **Assign Student to Class**
 
 **System:** TAssist  
