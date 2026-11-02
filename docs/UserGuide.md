@@ -28,7 +28,6 @@ TAssist is a **desktop application for NUS Teaching Assistants who need to manag
    If double-clicking does not launch TAssist, use the terminal command above so you can see any error messages.
    Run `java -version` to check that the terminal uses Java `25` or later.<br>
    A GUI similar to the one below should appear in a few seconds. The app shows students and classes in separate sections.<br>
-   When no saved data file exists, TAssist starts with six sample students and no classes.<br>
    ![Ui](images/Ui.png)
 
 1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the help window.<br>
@@ -293,8 +292,8 @@ to assign an existing student before listing the class. Memberships are saved ac
 
 Example walkthrough:
 
-Use a disposable JAR folder. A fresh folder loads six sample students; the initial `clear` below
-removes all students and classes in that copy so the displayed indices match. Enter each command separately.
+Use a disposable JAR folder. The initial `clear` below removes all students and classes in that copy
+so the displayed indices match. Enter each command separately.
 
 ```text
 clear
@@ -391,8 +390,8 @@ Student (A1111111H) has been unassigned from CS2103-F10.
 
 **Example walkthrough**
 
-Use a disposable JAR folder. A fresh folder loads six sample students; the initial `clear` below
-removes all students and classes in that copy so the displayed indices match. Enter each command separately.
+Use a disposable JAR folder. The initial `clear` below removes all students and classes in that copy
+so the displayed indices match. Enter each command separately.
 
 ```text
 clear
@@ -585,8 +584,8 @@ This changes the class to `CS2101-F12` while keeping its assigned students. Edit
 
 **Example walkthrough**
 
-Use a disposable JAR folder. A fresh folder loads six sample students; the initial `clear` below
-removes all students and classes in that copy so the displayed indices match. Enter each command separately.
+Use a disposable JAR folder. The initial `clear` below removes all students and classes in that copy
+so the displayed indices match. Enter each command separately.
 
 ```text
 clear
@@ -676,8 +675,8 @@ Examples:
 
 **Example walkthrough**
 
-Use a disposable JAR folder. A fresh folder loads six sample students; the initial `clear` below
-removes all students and classes in that copy so the displayed indices match. Enter each command separately.
+Use a disposable JAR folder. The initial `clear` below removes all students and classes in that copy
+so the displayed indices match. Enter each command separately.
 
 ```text
 clear

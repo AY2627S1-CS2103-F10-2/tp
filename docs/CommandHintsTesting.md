@@ -12,7 +12,6 @@ class scrolling and attendance presentation are outside this change.
 Use the project's Java 25 setup. Build a JAR, copy it into a new folder,
 and run that copy. Packaged TAssist stores data beside its JAR, so this
 keeps the manual session separate from your normal data.
-The new copy starts with six sample students and no classes; it does not start with empty student data.
 
 macOS/Linux, from the repository root:
 

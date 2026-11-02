@@ -815,8 +815,7 @@ Use case ends.
 
 Given below are instructions to test the app manually.
 
-A new JAR folder starts with six sample students and no classes. Follow each scenario's setup:
-some retain the sample records, while others begin with `clear` to establish known displayed indices.
+Follow each scenario's setup, including any initial `clear` command, to establish known displayed indices.
 
 <box type="info" seamless>
 
@@ -832,7 +831,7 @@ testers are expected to do more *exploratory* testing.
 
    1. Open a terminal in that folder and run `java -jar TAssist.jar`.
       Alternatively, double-click the JAR if your system associates `.jar` files with a compatible Java installation.<br>
-      Expected: The GUI opens with six sample students and no classes. The window size may not be optimal.
+      Expected: The GUI opens. The window size may not be optimal.
 
 1. Saving window preferences
 
@@ -935,8 +934,8 @@ addattendance 2 2 d/2020-01-02
 
 1. Successful assignment and live count updates
 
-   1. Prerequisites: Use a disposable JAR folder. A fresh folder loads six sample students;
-      start with `clear` to remove all students and classes in that copy. Enter each command separately:
+   1. Prerequisites: Use a disposable JAR folder. Start with `clear` to remove all students
+      and classes in that copy. Enter each command separately:
 
       ```text
       clear
