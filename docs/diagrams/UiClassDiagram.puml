@@ -4,8 +4,8 @@ skinparam arrowThickness 1.1
 skinparam arrowColor UI_COLOR_T4
 skinparam classBackgroundColor UI_COLOR
 
-' Custom JavaFX controls are shown separately in UiControlsClassDiagram.puml.
-' Type parameters, utility dependencies, and internal list cells/skins are omitted.
+' Custom JavaFX controls are described in the Developer Guide prose.
+' Type parameters, command helpers, and internal list cells/skins are omitted.
 package UI <<Rectangle>> {
 Class "<<interface>>\nUi" as Ui
 Class "{abstract}\nUiPart" as UiPart
@@ -19,9 +19,6 @@ Class AcademicClassListPanel
 Class AcademicClassCard
 Class StatusBarFooter
 Class CommandBox
-Class CommandHistory
-Class CommandHints
-Class "<<interface>>\nCommandExecutor" as CommandExecutor
 }
 
 package Model <<Rectangle>> {
@@ -31,6 +28,9 @@ Class HiddenModel #FFFFFF
 package Logic <<Rectangle>> {
 Class HiddenLogic #FFFFFF
 }
+
+Class HiddenOutside #FFFFFF
+HiddenOutside ..> Ui
 
 UiManager .left.|> Ui
 UiManager -down-> "1" MainWindow
@@ -44,11 +44,6 @@ MainWindow *-down-> "1" HelpWindow
 PersonListPanel ..> PersonCard : creates
 AcademicClassListPanel ..> AcademicClassCard : creates
 
-CommandBox *--> "1" CommandHistory
-CommandBox --> "1" CommandExecutor
-CommandBox ..> CommandHints
-MainWindow ..> CommandExecutor : supplies callback
-
 MainWindow -left-|> UiPart
 
 ResultDisplay --|> UiPart
@@ -60,17 +55,18 @@ AcademicClassCard --|> UiPart
 StatusBarFooter --|> UiPart
 HelpWindow --|> UiPart
 
-UI .down.> Model
-UI .down.> Logic
-Logic -[hidden]right-> Model
+PersonCard ..> Model
+AcademicClassCard ..> Model
+UiManager -right-> Logic
+MainWindow -left-> Logic
 
-' Keep the passive UI parts and command helpers in vertical columns.
-HelpWindow -[hidden]down-> ResultDisplay
-ResultDisplay -[hidden]down-> StatusBarFooter
-CommandHistory -[hidden]down-> CommandHints
-CommandHints -[hidden]down-> CommandExecutor
+' Follow the AB3 layout, with matching student and academic-class panels/cards.
+PersonListPanel -[hidden]left- HelpWindow
+HelpWindow -[hidden]left- CommandBox
+CommandBox -[hidden]left- ResultDisplay
+ResultDisplay -[hidden]left- StatusBarFooter
+PersonListPanel -[hidden]right- AcademicClassListPanel
+PersonCard -[hidden]right- AcademicClassCard
 
-' Keep external component boxes below the UI parts.
-UiPart -[hidden]down-> Logic
-CommandExecutor -[hidden]down-> Model
+MainWindow -[hidden]-|> UiPart
 @enduml
