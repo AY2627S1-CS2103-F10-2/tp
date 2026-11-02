@@ -346,6 +346,60 @@ Rejected commands leave memberships and student counts unchanged.
 
 ![Screenshot highlighting student assignment to class](images/assign-result.png)
 
+### Unassigning a student from an academic class: `unassign`
+
+Removes a student's membership from one academic class. The student remains in the address book and in other classes.
+
+Format: `unassign STUDENT_INDEX CLASS_INDEX`
+
+* Both indices are required positive integers, in student-then-class order, counting from `1` in their respective displayed panels.
+* The student and class must be visible, and the student must already be assigned to that class.
+* After `find`, `listbyclass`, or `listbystudent`, use the indices in the current results. Run `list` to restore all students or `listclass` to restore all classes if the target is hidden.
+* Only membership in the selected class is removed. Student and class records, other memberships, and recorded attendance history are retained.
+* Active filters and ordering are preserved. Membership-dependent views refresh, so a student or class may disappear and remaining indices may shift.
+* After a successful unassignment, both panels scroll to the affected student and class if they remain displayed. A record removed by an active filter stays hidden; the panel does not scroll to a different record in its place. Keyboard focus stays in the command box.
+* Check both panels before repeating a command. Reusing the same indices after a view changes can target a different student or class.
+
+Example: suppose student `A1111111H` is displayed at student index `2` and `CS2103-F10` is displayed at class index `1`:
+
+```text
+unassign 2 1
+```
+
+Expected feedback:
+
+```text
+Student (A1111111H) has been unassigned from CS2103-F10.
+```
+
+**Example walkthrough**
+
+Use a fresh data folder with no existing records so the indices below match. Enter each command separately.
+
+```text
+clear
+add sn/A0999801X n/AlphaDemoAlice e/alpha.demo.alice@example.com
+addclass m/CS2103 c/DEMO-T01
+assign 1 1
+listbyclass 1
+unassign 1 1
+```
+
+Expected feedback: `Student (A0999801X) has been unassigned from CS2103-DEMO-T01.`
+The class remains in the Classes panel with `Students: 0`. The Students panel becomes empty because
+the active view only shows members of that class. Run `list` to see Alice again; her student record has not been deleted.
+
+Common errors:
+
+* Missing, extra, or invalid indices (including zero, negative numbers, decimals, and the old prefixes): `Invalid command format!` followed by the command usage.
+* Student index outside the displayed list: `The student index provided is invalid.`
+* Class index outside the displayed list: `The class index provided is invalid.`
+* Student not assigned to the selected class: `Student (A1234567H) is not assigned to class CS2101-L1.` Repeating an unassignment produces this error only if the indices still identify the same student and class.
+
+Rejected commands leave memberships and student counts unchanged.
+
+![Screenshot highlighting student unassignment from class](images/unassign-result.png)
+
 ### Recording attendance: `addattendance`
 
 Records one attended date for a student in a particular module and class.
@@ -423,61 +477,6 @@ Example (after recording attendance for student index `1` in class index `2` in 
 TAssist displays a confirmation message when the date is removed. Trying to remove the same date for the same
 student and class again reports that the date is not recorded. Check the current indices before repeating the command.
 
-### Editing a class: `editclass`
-
-Changes an academic class's module code or class name. Use this when a class's details change but its existing student memberships should be kept.
-
-Format: `editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]`
-
-**Before you begin:** The academic class must exist. Run `listclass` and check its index in the displayed class list.
-
-* `INDEX` must be a positive integer, such as `1`, `2`, or `3`, and refer to a class in the displayed class list, not the student list.
-* At least one of `m/` or `c/` is required. Each supplied parameter must appear exactly once. You can enter them in either order after the index.
-* `MODULE_CODE` must start with a letter and contain only letters or digits.
-* `CLASS_NAME` may contain letters, digits, and hyphens (`-`), and must contain at least one letter or digit.
-* Leading and trailing spaces in field values are ignored, and letters are converted to uppercase. For example, `cs2103` becomes `CS2103`.
-* Supplied values replace the corresponding existing details. Omitted fields remain unchanged.
-* The resulting module code and class name must not identify another existing class. Different modules can have classes with the same name.
-* Student memberships are preserved. Student records, other classes, and memberships in other classes remain unchanged.
-* Attendance history is preserved, including records for students who are no longer assigned to the class.
-  Check the class's displayed index before using subsequent attendance commands.
-* If the current student view lists members of the edited class, it follows the renamed class and remains alphabetical. Other student filters and their displayed order remain unchanged.
-* Subsequent commands that identify the class by module code and class name must use its updated details.
-
-Examples
-
-Suppose class `F10` in module `CS2103` is at index `1` in the displayed class list. Run:
-
-```text
-editclass 1 c/F11
-```
-
-Expected feedback:
-
-```text
-Edited class: CS2103-F11
-```
-
-You can also change both details, reverse the parameter order, and use lowercase values:
-
-```text
-editclass 1 c/f12 m/cs2101
-```
-
-This changes the class to `CS2101-F12` while keeping its assigned students. Editing a class to its existing details is also accepted and leaves its memberships unchanged.
-
-Common errors:
-
-* Missing or invalid index, or unexpected text before the parameters: `Invalid command format!` followed by the command usage.
-* Index outside the displayed class list: `The class index provided is invalid.`
-* No fields supplied: `At least one field to edit must be provided.`
-* Another class already has the resulting details: `A class with these details already exists!`
-* Repeated parameter: `Multiple values specified for the following single-valued field(s):` followed by the repeated prefixes.
-* Empty or invalid module code or class name: the corresponding validation error from `addclass`.
-* Unknown parameter: rejected as invalid command format or an invalid field value, depending on its position. Only `m/` and `c/` are supported.
-
-Rejected commands leave class details, memberships, and student counts unchanged.
-
 ### Creating a class: `addclass`
 
 Creates an academic class. Created classes appear in the class list section of the UI.
@@ -523,6 +522,80 @@ Common errors:
 For example, `addclass m/123 c/F01` is rejected because the module code starts with a digit.
 `addclass m/CS2103 c/---` is rejected because the class name contains no letter or digit.
 
+### Editing a class: `editclass`
+
+Changes an academic class's module code or class name. Use this when a class's details change but its existing student memberships should be kept.
+
+Format: `editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]`
+
+**Before you begin:** The academic class must exist. Run `listclass` and check its index in the displayed class list.
+
+* `INDEX` must be a positive integer, such as `1`, `2`, or `3`, and refer to a class in the displayed class list, not the student list.
+* At least one of `m/` or `c/` is required. Each supplied parameter must appear exactly once. You can enter them in either order after the index.
+* `MODULE_CODE` must start with a letter and contain only letters or digits.
+* `CLASS_NAME` may contain letters, digits, and hyphens (`-`), and must contain at least one letter or digit.
+* Leading and trailing spaces in field values are ignored, and letters are converted to uppercase. For example, `cs2103` becomes `CS2103`.
+* Supplied values replace the corresponding existing details. Omitted fields remain unchanged.
+* The resulting module code and class name must not identify another existing class. Different modules can have classes with the same name.
+* Student memberships are preserved. Student records, other classes, and memberships in other classes remain unchanged.
+* Attendance history is preserved, including records for students who are no longer assigned to the class.
+  Check the class's displayed index before using subsequent attendance commands.
+* If the current student view lists members of the edited class, it follows the renamed class and remains alphabetical. Other student filters and their displayed order remain unchanged.
+* Subsequent commands that identify the class by module code and class name must use its updated details.
+
+Examples
+
+Suppose class `F10` in module `CS2103` is at index `1` in the displayed class list. Run:
+
+```text
+editclass 1 c/F11
+```
+
+Expected feedback:
+
+```text
+Edited class: CS2103-F11
+```
+
+You can also change both details, reverse the parameter order, and use lowercase values:
+
+```text
+editclass 1 c/f12 m/cs2101
+```
+
+This changes the class to `CS2101-F12` while keeping its assigned students. Editing a class to its existing details is also accepted and leaves its memberships unchanged.
+
+**Example walkthrough**
+
+Use a fresh data folder with no existing records so the indices below match. Enter each command separately.
+
+```text
+clear
+add sn/A0999801X n/AlphaDemoAlice e/alpha.demo.alice@example.com
+addclass m/CS2103 c/DEMO-T01
+assign 1 1
+listbyclass 1
+editclass 1 c/DEMO-T02
+```
+
+Expected feedback: `Edited class: CS2103-DEMO-T02`.
+The Classes panel shows the renamed class with `Students: 1`. Alice remains in the Students panel
+because her membership is preserved and the active class view follows the renamed class.
+
+Common errors:
+
+* Missing or invalid index, or unexpected text before the parameters: `Invalid command format!` followed by the command usage.
+* Index outside the displayed class list: `The class index provided is invalid.`
+* No fields supplied: `At least one field to edit must be provided.`
+* Another class already has the resulting details: `A class with these details already exists!`
+* Repeated parameter: `Multiple values specified for the following single-valued field(s):` followed by the repeated prefixes.
+* Empty or invalid module code or class name: the corresponding validation error from `addclass`.
+* Unknown parameter: rejected as invalid command format or an invalid field value, depending on its position. Only `m/` and `c/` are supported.
+
+Rejected commands leave class details, memberships, and student counts unchanged.
+
+![Screenshot highlighting editing a class](images/editclass-result.png)
+
 ### Deleting a class: `deleteclass`
 
 Deletes the class at the specified index in the currently displayed class list from TAssist.
@@ -548,41 +621,6 @@ Common errors:
 
 * Missing index, non-positive or non-integer input, or extra arguments: `Invalid command format!`, followed by the command usage.
 * An index beyond the displayed list, including any index when the list is empty: `The class index provided is invalid.`
-
-### Unassigning a student from an academic class: `unassign`
-
-Removes a student's membership from one academic class. The student remains in the address book and in other classes.
-
-Format: `unassign STUDENT_INDEX CLASS_INDEX`
-
-* Both indices are required positive integers, in student-then-class order, counting from `1` in their respective displayed panels.
-* The student and class must be visible, and the student must already be assigned to that class.
-* After `find`, `listbyclass`, or `listbystudent`, use the indices in the current results. Run `list` to restore all students or `listclass` to restore all classes if the target is hidden.
-* Only membership in the selected class is removed. Student and class records, other memberships, and recorded attendance history are retained.
-* Active filters and ordering are preserved. Membership-dependent views refresh, so a student or class may disappear and remaining indices may shift.
-* After a successful unassignment, both panels scroll to the affected student and class if they remain displayed. A record removed by an active filter stays hidden; the panel does not scroll to a different record in its place. Keyboard focus stays in the command box.
-* Check both panels before repeating a command. Reusing the same indices after a view changes can target a different student or class.
-
-Example: suppose student `A1111111H` is displayed at student index `2` and `CS2103-F10` is displayed at class index `1`:
-
-```text
-unassign 2 1
-```
-
-Expected feedback:
-
-```text
-Student (A1111111H) has been unassigned from CS2103-F10.
-```
-
-Common errors:
-
-* Missing, extra, or invalid indices (including zero, negative numbers, decimals, and the old prefixes): `Invalid command format!` followed by the command usage.
-* Student index outside the displayed list: `The student index provided is invalid.`
-* Class index outside the displayed list: `The class index provided is invalid.`
-* Student not assigned to the selected class: `Student (A1234567H) is not assigned to class CS2101-L1.` Repeating an unassignment produces this error only if the indices still identify the same student and class.
-
-Rejected commands leave memberships and student counts unchanged.
 
 ### Listing classes by student: `listbystudent`
 
@@ -622,6 +660,7 @@ Examples:
 Use a fresh data folder with no existing records for this walkthrough so the indices below match. Enter each command separately.
 
 ```text
+clear
 add sn/A0999801X n/AlphaDemoAlice e/alpha.demo.alice@example.com
 add sn/A0999802Y n/AlphaDemoBob e/alpha.demo.bob@example.com
 addclass m/CS2103 c/DEMO-T01
