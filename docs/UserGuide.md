@@ -809,7 +809,7 @@ Furthermore, certain edits can cause TAssist to behave in unexpected ways (e.g.,
    Close TAssist and move it to a folder you can write to, such as a dedicated folder in your user directory.
    To retain your records, follow [Moving existing data to the JAR folder](#moving-existing-data-to-the-jar-folder)
    and ensure the copied data file is writable too. If a command has already reported a save error, follow the
-   recovery steps below first.
+   recovery steps below first. 
 
 3. **A failed save may leave an incomplete data file:** TAssist rolls back the failed command's changes in
    memory, so the student records, class memberships and attendance in the running app return to their previous
@@ -838,6 +838,16 @@ Furthermore, certain edits can cause TAssist to behave in unexpected ways (e.g.,
    including malicious software with write access, from changing or deleting `data/addressbook.json`.
    Such changes may cause data loss or be overwritten when TAssist next saves. Keep backups and close
    TAssist before editing the file yourself.
+
+5. If another process locks the data file or prevents access to it, TAssist may be unable to save changes or open.
+
+6. Pasting an extremely large amount of text, such as one million characters, may make the application slow or temporarily unresponsive, even before the command is submitted. Avoid pasting excessively long text into the command box.
+
+7. Directly editing the JSON data file may introduce invalid values or inconsistent records that prevent TAssist from starting. Certain extremely long email values can also cause a startup failure. Use the application’s commands to modify data and back up the data file before editing it manually.
+
+8. Console errors when clicking list entries, clicking student or class cards may produce a `NullPointerException` in the console. This has been observed on Windows. The application may remain open, but the click is not processed normally. 
+
+All known issues will be planned to be fixed in future iterations.
 
 --------------------------------------------------------------------------------------------------------------------
 
