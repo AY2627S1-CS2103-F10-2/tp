@@ -814,7 +814,7 @@ Use case ends.
 | Student Profile | The information stored about a student, such as their student number, name, email address, Telegram username, and class associations. |
 | Communication Handle | Contact information used to communicate with a student, such as their email address or Telegram username. |
 | CLI | Command-Line Interface. The text-based interface through which the user enters commands in TAssist. |
-| Command | A textual instruction entered into TAssist to perform an operation, such as `addstudent`, `find`, or `assign`. |
+| Command | A textual instruction entered into TAssist to perform an operation, such as `add`, `find`, or `assign`. |
 | Command Prefix | A prefix used to specify a parameter in a command, such as `sn/` for student number, `m/` for module, or `c/` for class. |
 
 --------------------------------------------------------------------------------------------------------------------
