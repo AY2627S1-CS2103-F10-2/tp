@@ -14,6 +14,11 @@ box Model MODEL_COLOR_T1
 participant "m:Model" as Model MODEL_COLOR
 end box
 
+note over LogicManager, AddressBookParser
+Successful deletion with at least one displayed student.
+Rollback snapshot, history updates and storage calls are omitted.
+end note
+
 [-> LogicManager : execute("delete 1")
 activate LogicManager
 
@@ -27,11 +32,16 @@ activate DeleteCommandParser
 DeleteCommandParser --> AddressBookParser
 deactivate DeleteCommandParser
 
-AddressBookParser -> DeleteCommandParser : parse("1")
+AddressBookParser -> DeleteCommandParser : parse(" 1")
 activate DeleteCommandParser
 
+note right of DeleteCommandParser
+index = ParserUtil.parseIndex(" 1")
+The parser requires a positive integer.
+end note
+
 create DeleteCommand
-DeleteCommandParser -> DeleteCommand
+DeleteCommandParser -> DeleteCommand : DeleteCommand(index)
 activate DeleteCommand
 
 DeleteCommand --> DeleteCommandParser :
@@ -49,7 +59,18 @@ deactivate AddressBookParser
 LogicManager -> DeleteCommand : execute(m)
 activate DeleteCommand
 
-DeleteCommand -> Model : deletePerson(1)
+DeleteCommand -> Model : getFilteredPersonList()
+activate Model
+Model --> DeleteCommand : lastShownList
+deactivate Model
+
+note over DeleteCommand, Model
+Validate targetIndex against lastShownList.size().
+personToDelete = lastShownList.get(
+    targetIndex.getZeroBased())
+end note
+
+DeleteCommand -> Model : deletePerson(personToDelete)
 activate Model
 
 Model --> DeleteCommand

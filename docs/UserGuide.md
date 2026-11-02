@@ -193,8 +193,14 @@ Format: `delete INDEX`
 * Deletes the student at the specified `INDEX`.
 * The index refers to the index number shown in the displayed student list.
 * The index **must be a positive integer** 1, 2, 3, ...
+* After `find` or `listbyclass`, use the student's index in the current results. For example, if Bob
+  is the only search result, `delete 1` deletes Bob even if he had a different index before the search.
+* Deleting a student removes their memberships in all classes and all of their attendance records.
+  The classes, other students, and other students' memberships and attendance remain.
 * Deleting keeps the current student filter, sorting, and attendance display. If no remaining students match, the student list stays empty instead of showing unrelated students.
 * Check the displayed indexes again before deleting another student, as the remaining students are renumbered. Use `list` to show all students.
+* Successful deletion is saved automatically. If saving fails, the deletion is rolled back;
+  see [Saving the data](#saving-the-data).
 
 Examples:
 * `list` followed by `delete 2` deletes the 2nd student in TAssist.
@@ -202,6 +208,12 @@ Examples:
 
 Expected output:
 * `Deleted student: Alice Tan; Student Number: A0123456X; Email: alice@u.nus.edu; Telegram: @alice_tan`
+
+Common errors:
+* Missing index, zero, negative or non-integer input, or extra arguments: invalid command format,
+  followed by the command usage.
+* A positive index outside the current results, including any index when no students are displayed:
+  `The student index provided is invalid.`
 
 <box type="warning" seamless>
 

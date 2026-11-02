@@ -18,6 +18,8 @@ if () then ([invalid arguments])
 else ([valid arguments])
 endif
 
+:Capture data and displayed-view rollback snapshot;
+
 :Resolve student index in displayed student list;
 if () then ([student index out of range])
     :Report invalid displayed student index;
@@ -50,13 +52,12 @@ else ([unassign])
 endif
 
 :Create success CommandResult;
+:Update command history;
 :Save the address book;
 if () then ([saving fails])
+    :Restore data, memberships, attendance,
+    history and displayed views from snapshot;
     :Report save error;
-    note right
-    The in-memory membership change
-    is not rolled back.
-    end note
     stop
 else ([saving succeeds])
 endif

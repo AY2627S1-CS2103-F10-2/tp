@@ -16,6 +16,11 @@ end box
 
 note over Model : At least one class is displayed before the command runs.
 
+note over LogicManager, AddressBookParser
+Rollback snapshot, history updates and storage calls are omitted.
+Successful results are returned only after saving succeeds.
+end note
+
 [-> LogicManager : execute("deleteclass 1")
 activate LogicManager
 

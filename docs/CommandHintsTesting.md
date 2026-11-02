@@ -67,7 +67,8 @@ java -jar (Join-Path $hintsTestDir "TAssist.jar")
 4. Check that contextual hints include `Press Enter to run.`
    For `deleteclass`, the index refers to the current displayed class list.
    For `assign`, the student index comes first, followed by the class index
-   from their respective displayed lists. Student deletion uses `delete INDEX`.
+   from their respective displayed lists. Student deletion uses `delete INDEX`, where `INDEX`
+   refers to the current Students panel, including filtered search or class results.
    Compare `find` and the six single-index hints with the User Guide and command usage;
    their parameter names must agree.
 5. Type `del`: check for `Matching commands: delete  |  deleteclass  |  deleteattendance`.

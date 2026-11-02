@@ -14,6 +14,11 @@ box Model MODEL_COLOR_T1
 participant "m:ModelManager" as Model MODEL_COLOR
 end box
 
+note over LogicManager, AddressBookParser
+Rollback snapshot, history updates and storage calls are omitted.
+Successful results are returned only after saving succeeds.
+end note
+
 [-> LogicManager : execute(assign)
 activate LogicManager
 

@@ -126,6 +126,8 @@ public interface Model {
     /**
      * Deletes the given person.
      * The person must exist in the address book.
+     * Removes their class memberships and attendance records while retaining the classes.
+     * The caller resolves any displayed-list index to a {@link Person} before calling this method.
      */
     void deletePerson(Person target);
 

@@ -53,7 +53,9 @@ The bulk of the app's work is done by the following four components:
 
 **How the architecture components interact with each other**
 
-The *Sequence Diagram* below shows how the components interact with each other for the scenario where the user issues the command `delete 1`.
+The *Sequence Diagram* below shows successful execution of `delete 1`. The `Logic` component
+resolves index `1` against the currently displayed student list before asking `Model` to delete
+the selected `Person`, then saves the updated address book through `Storage`.
 
 <puml src="diagrams/ArchitectureSequenceDiagram.puml" width="574" />
 
@@ -107,19 +109,23 @@ The sequence diagram below illustrates the interactions within the `Logic` compo
 
 <puml src="diagrams/DeleteSequenceDiagram.puml" alt="Interactions Inside the Logic Component for the `delete 1` Command" />
 
-<box type="info" seamless>
-
-**Note:** The lifeline for `DeleteCommandParser` should end at the destroy marker (X), but due to a limitation of PlantUML, the lifeline continues till the end of diagram.
-</box>
-
-
 How the `Logic` component works:
 
 1. When `Logic` is called upon to execute a command, the command is passed to an `AddressBookParser` object, which in turn creates a parser that matches the command (e.g., `DeleteCommandParser`) and uses it to parse the command.
 1. This results in a `Command` object (more precisely, an object of one of its subclasses e.g., `DeleteCommand`) which is executed by the `LogicManager`.
-1. The command can communicate with the `Model` when it is executed (e.g. to delete a person).<br>
-   Note that although this is shown as a single step in the diagram above for simplicity, the code can require several interactions between the command object and the `Model` to complete the operation.
-1. The result of the command execution is encapsulated as a `CommandResult` object which is returned from `Logic`.
+1. The command communicates with `Model` during execution. For `delete 1`, `DeleteCommand` retrieves
+   `Model#getFilteredPersonList()`, checks that its parsed index is within that list, and selects
+   `lastShownList.get(targetIndex.getZeroBased())`. It passes this `Person` to `Model#deletePerson(...)`.
+   An index outside the displayed list, including an empty list, causes a `CommandException` before deletion.
+1. `ModelManager` delegates deletion to `AddressBook#removePerson(...)`. The address book removes the
+   student, notifies student observers to remove their class memberships, and removes their attendance
+   records. Academic classes remain. The model refreshes the class filter without resetting either view.
+1. The command returns a `CommandResult` containing the deleted student's details. `LogicManager`
+   records the successful command and saves through `Storage` before returning the result to the UI.
+
+The detailed diagram omits the rollback snapshot, command history and storage interactions.
+`LogicManager` captures a rollback before executing the command. If saving fails, it restores the
+student, memberships, attendance, history and displayed views, then reports a `CommandException`.
 
 Here are the other classes in `Logic` (omitted from the class diagram above) that are used for parsing a user command:
 
@@ -139,9 +145,13 @@ The `Model` component,
 
 * stores the address book data i.e., all `Person` objects (which are contained in a `UniquePersonList` object). A `Person` is uniquely identified by its `StudentNumber`: two persons are the same (`Person#isSamePerson()`) if they share a student number. In addition, each `Email` and (if provided) `Telegram` username must be unique across all persons.
 * stores all `AcademicClass` objects in a `UniqueAcademicClassList`. Each class is identified by its `ModuleCode` and `ClassName` and references its assigned students as `Person` objects. Students can belong to multiple classes.
+* stores `Attendance` records linking one student to one class. `AddressBook` notifies registered
+  `StudentObserver` implementations, including `AcademicClass`, when a student is edited or deleted.
+  Deletion removes the student's memberships and attendance records while retaining the classes.
 * stores the `Person` objects selected by the current filter, such as search results, in a separate _filtered_ list. It exposes this list as an unmodifiable `ObservableList<Person>` that the UI can observe and bind to, so the UI updates when the list changes.
 * exposes the academic classes selected by the current filter as an unmodifiable `ObservableList<AcademicClass>` for the UI to observe.
 * stores a `UserPrefs` object that represents the user’s preferences (currently, just the GUI settings). This is exposed to the outside as a `ReadOnlyUserPrefs` object.
+* exposes a single-use `Model.Rollback` callback that restores saved data and displayed views after a save failure.
 * does not depend on any of the other three components (as the `Model` represents data entities of the domain, they should make sense on their own without depending on other components)
 
 ### Storage component
@@ -503,8 +513,9 @@ membership and saving.
 
 The guards distinguish successful and rejected paths. An unchanged membership means that the
 student is already assigned for `assign`, or is not assigned for `unassign`. In either case, the
-command reports an error before `LogicManager` reaches the saving step. A failure to save after
-a successful membership change is different: the in-memory change has already occurred.
+command reports an error before `LogicManager` reaches the saving step. If saving fails after
+a membership change, `LogicManager` restores the data, history and displayed views from the rollback
+snapshot before reporting the save error.
 
 #### Revealing affected records
 
@@ -821,22 +832,57 @@ testers are expected to do more *exploratory* testing.
    1. Relaunch the app using the same launch method and JAR folder.<br>
        Expected: The most recent window size and location are retained.
 
-### Deleting a person
+### Deleting a student
 
-1. Deleting a person while all persons are being shown
+1. Deleting a student while all students are being shown
 
-   1. Prerequisites: List all persons using the `list` command, with multiple persons in the list.
+   1. Prerequisites: Run `list` with multiple students stored in a disposable test copy.
 
    1. Test case: `delete 1`<br>
-      Expected: The first contact is deleted from the list. The status message shows the deleted contact's details.
+      Expected: The first displayed student is deleted. Feedback starts with `Deleted student:` and shows their details.
 
    1. Test case: `delete 0`<br>
-      Expected: No person is deleted. The status message shows error details.
+      Expected: Invalid command format; no student is deleted.
 
-   1. Other incorrect delete commands to try: `delete`, `delete x`, `...` (where x is larger than the list size)<br>
-      Expected: Similar to previous.
+   1. Try `delete`, `delete abc`, and `delete 1 extra`.<br>
+      Expected: Invalid command format, followed by usage information; no records change.
 
-1. _{ more test cases … }_
+   1. Try a positive index larger than the displayed list size, for example `delete 999` when fewer
+      than 999 students are shown.<br>
+      Expected: `The student index provided is invalid.`; no records change.
+
+1. Deleting from a filtered list and checking related records
+
+   Use another disposable copy. Enter these commands separately:
+
+   ```text
+   clear
+   add sn/A0999601X n/Alice Delete e/alice.delete@example.com
+   add sn/A0999602Y n/Bob Delete e/bob.delete@example.com
+   addclass m/CS2103T c/DELETE-T01
+   assign 1 1
+   assign 2 1
+   addattendance 1 1 d/2020-01-01
+   addattendance 2 1 d/2020-01-02
+   find Bob
+   ```
+
+   1. Run `delete 2`.<br>
+      Expected: Invalid displayed student index, although Bob was student 2 before filtering.
+      Bob remains the only displayed student, at index 1.
+   1. Run `listbystudent 1`, then `delete 1`.<br>
+      Expected: Bob is deleted; both filtered panels become empty. The student search and Bob's
+      class filter stay active instead of revealing unrelated records.
+   1. Run `list`, `listclass`, then `listbyclass 1`.<br>
+      Expected: Alice remains assigned to DELETE-T01 with attendance `2020-01-01`.
+      The class remains and shows one student; Bob's membership and attendance are absent.
+   1. Close and reopen the same JAR, then run `listbyclass 1`.<br>
+      Expected: Bob stays deleted, while Alice, the class, her membership and her attendance persist.
+   1. Run `delete 1`, then `delete 1` again.<br>
+      Expected: The first command deletes Alice and leaves the class view empty. The second reports
+      an invalid student index. Run `listclass`: DELETE-T01 remains with zero students.
+
+   For deletion rollback after a save failure, use the [failed-save check under Saving data](#saving-data).
 
 ### Deleting and editing academic classes
 

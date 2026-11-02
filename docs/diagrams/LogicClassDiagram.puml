@@ -19,6 +19,7 @@ Class LogicManager
 
 package Model {
 Class HiddenModel #FFFFFF
+Class "<<interface>>\nModel.Rollback" as Rollback
 }
 
 package Storage {
@@ -35,11 +36,12 @@ XYZCommand -up-|> Command
 LogicManager .left.> Command : <<call>>
 
 LogicManager --> Model
+LogicManager ..> Rollback : restores on save failure
 LogicManager --> Storage
 Storage --[hidden] Model
 Command .[hidden]up.> Storage
 Command .right.> Model
-note right of XYZCommand: XYZCommand = AddCommand, \nFindCommand, etc
+note right of XYZCommand: XYZCommand = AddCommand, \nDeleteCommand, FindCommand, etc
 
 Logic ..> CommandResult
 LogicManager .down.> CommandResult

@@ -1,4 +1,5 @@
 @startuml
+caption Proposed undo/redo design (not implemented)
 skin rose
 skinparam ActivityFontSize 15
 skinparam ArrowFontSize 12

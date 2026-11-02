@@ -12,7 +12,8 @@ import seedu.address.model.Model;
 import seedu.address.model.person.Person;
 
 /**
- * Deletes a person identified using its displayed index from the address book.
+ * Deletes a person identified by their index in the currently displayed student list.
+ * Resolves the index at execution time and passes the selected {@link Person} to the model.
  */
 public class DeleteCommand extends Command {
 

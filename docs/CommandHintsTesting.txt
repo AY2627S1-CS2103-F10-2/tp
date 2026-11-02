@@ -44,7 +44,8 @@ exit
 
 deleteclass uses the current displayed class index. assign uses the student
 index first, then the class index from their respective displayed lists.
-Student deletion uses delete INDEX. Compare find and the six single-index
+Student deletion uses delete INDEX from the current Students panel, including
+filtered search or class results. Compare find and the six single-index
 hints with the User Guide and command usage; their parameter names must agree.
 
 PARTIAL AND UNKNOWN WORDS

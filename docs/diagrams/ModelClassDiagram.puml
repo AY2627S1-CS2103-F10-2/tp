@@ -11,6 +11,7 @@ Class "<<interface>>\nModel" as Model
 Class AddressBook
 Class ModelManager
 Class UserPrefs
+Class "<<interface>>\nModel.Rollback" as Rollback
 
 Class UniquePersonList
 Class Person
@@ -24,6 +25,8 @@ Class UniqueAcademicClassList
 Class AcademicClass
 Class ModuleCode
 Class ClassName
+Class Attendance
+Class "<<interface>>\nStudentObserver" as StudentObserver
 }
 
 Class HiddenOutside #FFFFFF
@@ -37,6 +40,8 @@ Model .left.> ReadOnlyAddressBook
 ModelManager -left-> "1" AddressBook
 ModelManager -right-> "1" UserPrefs
 UserPrefs .up.|> ReadOnlyUserPrefs
+Model ..> Rollback : returns snapshot callback
+ModelManager ..> Rollback : creates
 
 AddressBook *--> "1" UniquePersonList
 UniquePersonList --> "*" Person : all
@@ -51,6 +56,11 @@ UniqueAcademicClassList --> "*" AcademicClass : all
 AcademicClass *--> "1" ModuleCode
 AcademicClass *--> "1" ClassName
 AcademicClass "*" -right-> "*" Person : students
+AcademicClass ..|> StudentObserver
+AddressBook --> "*" StudentObserver : notifies on student changes
+AddressBook *--> "*" Attendance
+Attendance --> "1" Person : student
+Attendance --> "1" AcademicClass : academicClass
 
 UniqueAcademicClassList -[hidden]right-> UniquePersonList
 

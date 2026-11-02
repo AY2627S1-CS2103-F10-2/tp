@@ -1,4 +1,5 @@
 @startuml
+caption Proposed undo/redo design (not implemented)
 !include style.puml
 skinparam ArrowFontStyle plain
 
