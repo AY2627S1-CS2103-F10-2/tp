@@ -28,7 +28,7 @@ TAssist is a **desktop application for NUS Teaching Assistants who need to manag
    If double-clicking does not launch TAssist, use the terminal command above so you can see any error messages.
    Run `java -version` to check that the terminal uses Java `25` or later.<br>
    A GUI similar to the one below should appear in a few seconds. The app shows students and classes in separate sections.<br>
-   ![Ui](images/Ui.png)
+   ![Ui](images/Ui-startup.png)
 
 1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the help window.<br>
    Some example commands you can try:
