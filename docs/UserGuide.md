@@ -469,7 +469,6 @@ Format: `editclass INDEX [m/MODULE_CODE] [c/CLASS_NAME]`
 * Attendance history is preserved, including records for students who are no longer assigned to the class.
   Check the class's displayed index before using subsequent attendance commands.
 * If the current student view lists members of the edited class, it follows the renamed class and remains alphabetical. Other student filters and their displayed order remain unchanged.
-* Subsequent commands that identify the class by module code and class name must use its updated details.
 
 Examples
 
