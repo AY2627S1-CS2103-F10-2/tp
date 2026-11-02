@@ -54,8 +54,8 @@ endif
 if () then ([saving fails])
     :Report save error;
     note right
-    The in-memory membership change
-    is not rolled back.
+    The in-memory AddressBook
+    is rolled back.
     end note
     stop
 else ([saving succeeds])
