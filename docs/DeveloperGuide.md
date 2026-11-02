@@ -104,6 +104,9 @@ Here's a (partial) class diagram of the `Logic` component:
 <puml src="diagrams/LogicClassDiagram.puml" width="550"/>
 
 The sequence diagram below illustrates the interactions within the `Logic` component, taking `execute("delete 1")` API call as an example.
+Rollback and command-history handling are omitted for clarity and explained later in
+[What happens when saving fails](#what-happens-when-saving-fails) and
+[Arrow key command history navigation](#arrow-key-command-history-navigation).
 
 <puml src="diagrams/DeleteSequenceDiagram.puml" alt="Interactions Inside the Logic Component for the `delete 1` Command" />
 
@@ -119,7 +122,7 @@ How the `Logic` component works:
 1. This results in a `Command` object (more precisely, an object of one of its subclasses e.g., `DeleteCommand`) which is executed by the `LogicManager`.
 1. The command can communicate with the `Model` when it is executed (e.g. to delete a person).<br>
    Note that although this is shown as a single step in the diagram above for simplicity, the code can require several interactions between the command object and the `Model` to complete the operation.
-1. The result of the command execution is encapsulated as a `CommandResult` object which is returned from `Logic`.
+1. The result of the command execution is encapsulated as a `CommandResult` object which is returned from `Logic` after saving succeeds.
 
 Here are the other classes in `Logic` (omitted from the class diagram above) that are used for parsing a user command:
 
@@ -478,8 +481,13 @@ and should be addressed in future iterations.
 ### What happens when saving fails
 
 Before executing a parsed command, `LogicManager#execute(...)` calls `Model#createRollback()` to capture
-the current data and displayed lists. After execution, it updates command history and saves the data.
+the current address book data and display state. After execution, it updates command history and saves the data.
 The command result is returned only after saving succeeds.
+
+The following activity diagram summarises this flow, assuming command parsing and execution succeed.
+Command-history updates are omitted for clarity.
+
+<puml src="diagrams/RollbackActivityDiagram.puml" alt="Create a rollback snapshot, execute the command and save the address book; restore the snapshot if saving fails" />
 
 If saving throws an `IOException`, including `AccessDeniedException`, `LogicManager` restores the snapshot
 and throws a `CommandException` with the save error. `ModelManager` restores students, classes, memberships,
