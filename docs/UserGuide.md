@@ -225,20 +225,30 @@ Finds students whose names contain any of the given keywords.
 
 Format: `find KEYWORD [MORE_KEYWORDS]...`
 
+* At least one keyword must be provided.
+* The search considers all stored students, regardless of the students currently displayed, and replaces the current student filter.
 * The search is case-insensitive; for example, `hans` matches `Hans`.
-* Keyword order does not matter; for example, `Hans Bo` matches `Bo Hans`.
 * The search considers only names.
 * Only full words match; for example, `Han` does not match `Hans`.
-* Punctuation remains part of a word: use `Anne-Marie` rather than `Anne` to match `Anne-Marie`, or `O'Connor` to match `O'Connor`.
+* Students matching at least one keyword are returned (an `OR` search); for example, `Hans Bo` returns both `Hans Gruber` and `Bo Yang`.
+* Keyword order does not matter; for example, `Hans Bo` produces the same results as `Bo Hans`.
+* Punctuation remains part of a word. Use `Anne-Marie` rather than `Anne` to match `Anne-Marie`, or `O'Connor` to match `O'Connor`.
   For `John Tan, Jr. (Alex)`, search with `Tan,` or `(Alex)`; `Tan` and `Alex` do not match those words.
-* For a displayed slash, either input form works in searches: `find S\O` and `find S/O` both match the word `S/O`.
-* Students matching at least one keyword are returned (an `OR` search); for example, `Hans Bo` returns `Hans Gruber` and `Bo Yang`.
+* For a displayed slash, either input form works: `find S\O` and `find S/O` both match the word `S/O`.
+* Results are displayed in their original insertion order.
+* Running `find` clears any active `listbyclass` attendance threshold and attendance display.
+* The displayed class list and its current filter remain unchanged. Use `listclass` to show all classes.
+
+The result message reports the number of matching students, including when no students match:
+
+`N student(s) listed!`
 
 Examples:
-* `find John` returns `john` and `John Doe`
-* `find alex david` returns `Alex Yeoh`, `David Li`<br>
 
-  ![result for 'find alex david'](images/findAlexDavidResult.png)
+* `find John` returns students whose names contain the full word `John`, such as `john` and `John Doe`.
+* `find alex david` returns `Alex Yeoh` and `David Li`.
+
+  ![Result for `find alex david`](images/findAlexDavidResult.png)
 
 ### Listing students by class: `listbyclass`
 
