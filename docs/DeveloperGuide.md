@@ -505,10 +505,13 @@ rebuilds `workingCommands` from `commands`, discarding temporary browsing edits.
 A successful submission first adds the command to `commands` and clears the draft. A failed submission preserves the
 failed input as the draft without adding it to history. Both cases reset `position` to the draft position.
 
-### Preventing simultaneous launches
+### Preventing multiple TAssist instances
+
+If two copies of TAssist run from the same folder, each keeps its own data in memory, so saving in one can overwrite changes saved by the other. 
+Therefore, TAssist only allows one instance per folder.
 
 Before launching JavaFX, `Main#launchWithLock(...)` calls `ApplicationLock#tryAcquire(...)` to obtain
-an operating-system lock on `tassist.lock` in the application folder. This uses `FileChannel#tryLock()`
+an operating-system lock on `tassist.lock` in the application folder. This uses [`FileChannel#tryLock()`](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/nio/channels/FileChannel.html#tryLock())
 to reject another TAssist launch from the same folder. If the lock is already held or cannot be accessed,
 `Main` prints an error and does not launch the application.
 

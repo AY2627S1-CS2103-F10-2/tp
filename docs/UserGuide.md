@@ -774,13 +774,14 @@ TAssist does not automatically find, move or merge those files.
 
 If the destination already contains data, choose which file to keep before replacing it; TAssist does not merge the records.
 
-### Preventing simultaneous launches
+### Preventing multiple TAssist instances
 
-Only one copy of TAssist can run from the same folder at a time. This protects your saved data.
-If a second launch does not open a window, close the existing TAssist window before trying again.
+If two copies of TAssist run from the same folder, saving in one could overwrite changes saved by the other.
+To protect your saved data, TAssist only allows one copy to run from each folder at a time.
+
+Therefore, if TAssist is already running from that folder, launching it again will not open another window.
 When launched from a terminal, TAssist displays a message asking you to close the other copy first.
 
-TAssist creates a `tassist.lock` file to prevent simultaneous launches from the same folder.
 
 ### Editing the data file
 
