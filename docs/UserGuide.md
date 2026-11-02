@@ -377,6 +377,7 @@ Student (A1111111H) has been unassigned from CS2103-F10.
 Use a fresh data folder with no existing records so the indices below match. Enter each command separately.
 
 ```text
+clear
 add sn/A0999801X n/AlphaDemoAlice e/alpha.demo.alice@example.com
 addclass m/CS2103 c/DEMO-T01
 assign 1 1
@@ -569,6 +570,7 @@ This changes the class to `CS2101-F12` while keeping its assigned students. Edit
 Use a fresh data folder with no existing records so the indices below match. Enter each command separately.
 
 ```text
+clear
 add sn/A0999801X n/AlphaDemoAlice e/alpha.demo.alice@example.com
 addclass m/CS2103 c/DEMO-T01
 assign 1 1
@@ -658,6 +660,7 @@ Examples:
 Use a fresh data folder with no existing records for this walkthrough so the indices below match. Enter each command separately.
 
 ```text
+clear
 add sn/A0999801X n/AlphaDemoAlice e/alpha.demo.alice@example.com
 add sn/A0999802Y n/AlphaDemoBob e/alpha.demo.bob@example.com
 addclass m/CS2103 c/DEMO-T01
